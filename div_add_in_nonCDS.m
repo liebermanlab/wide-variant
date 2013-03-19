@@ -1,53 +1,52 @@
-function genes=div_add_in_nonCDS(cds, features)
+function allgenes=div_add_in_nonCDS(cds, features)
 
 %Tami Lieberman
 %May 2012
 
 
-
+%This section is to add genes that do not have a CDS in the genebank file,
+%just a gene
 
 %get all genes
 allgenes=extract_feature(features,'gene'); 
-allgenes=gene_name_from_text(allgenes); %neccessary fix to add gene number to gene field
+allgenes=locustag_from_text(allgenes); %neccessary fix to add gene number to gene field
 
 %convert to gene numbers
 allgenesN=div_get_gene_numbers(allgenes);
 cdsN=div_get_gene_numbers(cds);
 
+
 %find overlap
 [found,indices]=ismember(allgenesN, cdsN);
-
-genes=allgenes;
-
 
 
 for i=1:numel(found);
     if found(i)>0
         %carry all other information over
-        genes(i).location=cds(indices(i)).location;
-        genes(i).product=cds(indices(i)).product;
-        genes(i).codon_start=cds(indices(i)).codon_start;
-        genes(i).indices=cds(indices(i)).indices;
-        genes(i).protein_id=cds(indices(i)).protein_id;
-        genes(i).db_xref=cds(indices(i)).db_xref;
-        genes(i).note=cds(indices(i)).note;
-        genes(i).translation=cds(indices(i)).translation;
-        genes(i).text=cds(indices(i)).text;
-        genes(i).locustag=cds(indices(i)).locustag;
+
+        allgenes(i).location=cds(indices(i)).location;
+        allgenes(i).product=cds(indices(i)).product;
+        allgenes(i).codon_start=cds(indices(i)).codon_start;
+        allgenes(i).indices=cds(indices(i)).indices;
+        allgenes(i).protein_id=cds(indices(i)).protein_id;
+        allgenes(i).db_xref=cds(indices(i)).db_xref;
+        allgenes(i).note=cds(indices(i)).note;
+        allgenes(i).translation=cds(indices(i)).translation;
+        allgenes(i).text=cds(indices(i)).text;
+        allgenes(i).locustag=cds(indices(i)).locustag;
     else
         %extract information from text
-        genes(i).product=[];
-        if size(genes(i).text,1) > 2
-            for j=1:size(genes(i).text(3:end,:),1)
-                genes(i).product=[genes(i).product ' ' genes(i).text(2+j,:)];
+        allgenes(i).product=[];
+        if size(allgenes(i).text,1) > 2
+            for j=1:size(allgenes(i).text(3:end,:),1)
+                allgenes(i).product=[allgenes(i).product ' ' allgenes(i).text(2+j,:)];
             end
-            genes(i).product(strfind(genes(i).product,'"'))=[];
-            genes(i).product(strfind(genes(i).product,'/note='):strfind(genes(i).product,'/note=')+5)=[];
+            allgenes(i).product(strfind(allgenes(i).product,'"'))=[];
+            allgenes(i).product(strfind(allgenes(i).product,'/note='):strfind(allgenes(i).product,'/note=')+5)=[];
         end
     end
     
 end
-
 
 
 

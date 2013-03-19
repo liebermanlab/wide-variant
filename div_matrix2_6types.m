@@ -4,12 +4,12 @@ x=zeros(6,size(matrix,3));
 
 %compress into 6 elements
 
-%AT
-%AC
-%AG
-%GC
-%GT
-%GA
+%AT, TA
+%AC, TG
+%AG, TC
+%GC, CG
+%GT, CA
+%GA, CT
 
 x(1,:)=squeeze(matrix(1,2,:)+matrix(2,1,:));
 x(2,:)=squeeze(matrix(1,3,:)+matrix(2,4,:));

@@ -1,3 +1,7 @@
+%% This is the version used for creating the manuscript submitted to Nature Genetics in March 2013
+
+
+
 %% Important variables
 
 %Control is first sample in case
@@ -13,7 +17,8 @@ postfix='12_12_20';
 comparePrevStudy=1;
 usefixedpos=1; fixedscore=282;
 useisolates=1;
-processed=0;
+processed=1;
+processed1=1;
 showGenomicDistributions=0;
 showScattersforIsogenicControl=0;
 
@@ -34,7 +39,6 @@ comparisonpt=2; %comparison to previous isolates;
 noncomparisionsamples=[6 5 7 4];
 
 
-referenceisancestor=1;
 
 
 %figureBlue = [.14 .43 .77];
@@ -56,8 +60,8 @@ prevmutated=[1161 1160 4180 2650 4154 93 2781 2180 3694 4506 220 2317 2321 1250 
 
 
 %loose parameters doesn't have an upper coverage thershold yet
-loose_parameters=struct('minorfreqthreshold',.02, 'minreads_perstrand',30,...
-    'minreads_perstrand_per_allele',2, 'min_bq',15,'min_mq' ,30, 'min_td', 0,...
+loose_parameters=struct('minorfreqthreshold',.02, 'minreads_perstrand',30, 'maxreads_perstrand_percentile', 100, ...
+    'minreads_perstrand_per_allele',2, 'min_bq',15,'min_mq' ,30, 'min_td', 0, 'max_percent_ends', .50, ...
     'max_td',50, 'max_sbp', 10,'max_bqp', 255,'max_tdp',255, 'max_percent_indels', .20, 'min_control_MAF', .01);
 
 
@@ -95,7 +99,7 @@ strict_parameters=struct('minorfreqthreshold',.03, 'maxreads_perstrand_percentil
  
 %% Build position list, display histrograms of each quality score
 
-switch 0
+switch processed1
     case 0
 
         % Get SampleNames and ScafNames
@@ -128,16 +132,18 @@ switch 0
         
         
         %Find diverse positions
-        [dp, positions, numfields, coveragethresholds] = find_diverse_positions(filen, loose_parameters, strict_parameters, SampleDirs, SampleNames, ChrStarts, showGenomicDistributions, showScattersforIsogenicControl);
+
+        [dp, numfields, coveragethresholds] = find_diverse_positions(loose_parameters, SampleDirs, SampleNames, showScattersforIsogenicControl, 0, 'blah');
        
+        
         %Save things
         savename=['Positions_' postfix];
         if useisolates==1
           % Load in isolate information to save alongsize
           load([isolate_directory '/isolatesfinal'])
-          save(savename, 'dp', 'positions', 'numfields', 'coveragethresholds', 'SampleNames', 'isolateCalls', 'isolateNames', 'isolatesCoverage', 'isolatePositions', 'ScafNames', 'ainfo', 'SampleDirs', 'NSample', 'RefGenome')
+          save(savename, 'dp', 'numfields', 'coveragethresholds', 'SampleNames', 'isolateCalls', 'isolateNames', 'isolatesCoverage', 'isolatePositions', 'ScafNames', 'ainfo', 'SampleDirs', 'NSample', 'RefGenome')
         else
-           save(savename, 'dp', 'positions', 'numfields', 'coveragethresholds', 'SampleNames', 'ScafNames', 'ainfo', 'SampleDirs', 'NSample', 'RefGenome')
+           save(savename, 'dp', 'numfields', 'coveragethresholds', 'SampleNames', 'ScafNames', 'ainfo', 'SampleDirs', 'NSample', 'RefGenome')
         end
         
         
@@ -168,7 +174,7 @@ if useisolates==1
     iMajorNT=isolateMajorNT(sortedpositions);
     isolatePositions=isolatePositions(sortedpositions,:);
     isolateCalls=isolateCalls(sortedpositions,:);
-
+    isolatenumber=reshape([isolateNames(:).Sample], 5,29)'; isolatenumber=str2num(isolatenumber(:,4:5));
     
 else
     ip=[];
@@ -216,9 +222,10 @@ otherp=unique([NGpolymorphicp; NGfixedp]);
 
 tic;
 
-switch processed
+switch processed1
     case 0
-        [counts, fwindows, cwindows] = generate_diversity_struct(filen, SampleDirs, p, numfields, window_size) ;
+        
+        [counts, fwindows, cwindows] = generate_diversity_struct(SampleDirs, SampleNames, p, numfields, window_size, 0, 'blah') ;
         [geneloc,  cds, mutations, sequences] = annotate_mutations_auto_gb(positions,ScafNames,RefGenome) ;
         
         savename1=['Counts_annotation_' postfix];
@@ -232,6 +239,8 @@ switch processed
         load(savename2)
 end
 toc;
+
+
 
 
 
@@ -262,19 +271,17 @@ end
 
 %% Table
 
-if useisolates==1
-    [combined_annotation_goodpos, combined_annotation_all, updated_annotation_diverse,  updated_annotation_isolates] = div_clickable_table_isolates(mutations, dp, ip, otherp, isolateCalls, counts,  fwindows, cwindows, isolate_windows, strict_parameters, coveragethresholds, RefGenome, ScafNames, SampleNames, ChrStarts, promotersize);
-else
-    [combined_annotation_goodpos, combined_annotation_all] = div_clickable_table(mutations, p, counts,  fwindows, strict_parameters, RefGenome, ScafNames, SampleNames, ChrStarts, promotersize);
-end
+
+[combined_annotation_goodpos, combined_annotation_all, updated_annotation_diverse,  updated_annotation_isolates] = div_clickable_table_isolates(mutations, dp, ip, otherp, isolateCalls, counts,  fwindows, cwindows, isolate_windows, strict_parameters, coveragethresholds, RefGenome, ScafNames, SampleNames, ChrStarts, promotersize);
+
 
  
 
-genes={combined_annotation_all.gene};
+genes={combined_annotation_all.locustag};
 types=[combined_annotation_all.type];
 itypes=[updated_annotation_isolates.type];
 typesmatrix=repmat(types,7,1)';
-%igenes={updated_annotation_isolates.gene),1)';
+%igenes={updated_annotation_isolates.locustag),1)';
 
 genes2=genes; genes2(cellfun(@numel,genes)<2)={'BDAG_00000'};
 gm=cell2mat(genes2');
@@ -298,24 +305,37 @@ minorAF=div_minor_allele_freq(counts);
 goodpos=div_test_thresholds(counts,strict_parameters, coveragethresholds);
 
 
-if referenceisancestor
-    ancnt=refnt';
-    ancnt(p==2849264)=1; %glycosyltransferase
-    % if reference isn't found in any of our samples, use mode
-    for i=1:numel(allp)
-        if isempty(find(maNT(i,samples)==refnt(i),1))
-            ancnt(i)=mode(maNT(i,samples));
-            %if its a 3/2 split, go with what pt 3 has (based on phylogeny), otherwise use mode
-            
-            if sum(maNT(i,samples)==ancnt(i))==3
-                ancnt(i)=maNT(i,sampleclosesttoroot);
-            end
+%ancestor nucleotide not created in general way
+ancnt=refnt';
+ancnt(p==2849264)=1; %glycosyltransferase
+for i=1:numel(allp)
+    % if reference isn't maNNT in any of our samples, use mode
+    if isempty(find(maNT(i,samples)==refnt(i),1))
+        ancnt(i)=mode(maNT(i,samples));
+        %if its a 3/2 split, go with what pt 3 has (based on phylogeny), otherwise use mode
+        if sum(maNT(i,samples)==ancnt(i))==3
+            ancnt(i)=maNT(i,sampleclosesttoroot);
         end
     end
-else
-    ancnt=mode([maNT(:,samples) refnt'],2);
-end
+    %this loop was used to check positions where the mode did not agree,
+    %compared against
+    %1102_updated_names_SNPchart_l35_s25_r3_annotated_lca.csv
+    %with the reference against previous data
+%     if refnt(i)~=mode(maNT(i,samples)) & ((sum(goodpos(i,:))+sum(fixedpos(i,:)))>0);
+%         disp(p2chrpos(allp(i),ChrStarts));
+%         disp(maNT(i,samples))
+%         disp(refnt(i))
+%         disp(ancnt(i))
+%         minorsamples=find(goodpos(i,:)>0 & ismember(1:NSample,samples));
+%         if numel(minorsamples)>0
+%             disp([maNT(i,samples) minorNT(i,minorsamples)])
+%             disp(mode([maNT(i,samples) minorNT(i,minorsamples)]))
+%         else
+%             disp(mode([maNT(i,samples)]))
+%         end
+%     end
 
+end
 
 % find positions samples in which alternative allele is fixed
 % force fixedpos called if it was called in another strain (cpm >0) and mutation allele frequency is greater than .95
@@ -486,7 +506,7 @@ set(gca, 'GridLineStyle', ':');
 
 %get coding sequence numbers
 allcds=[cds{:}];
-allgenenames=char({allcds.gene}');
+allgenenames=char({allcds.locustag}');
 allgenenums=str2num(allgenenames(:,6:end));
 
 %get sizes
@@ -648,7 +668,7 @@ end
 switch processed
     case 0
         savename=['callable_positions_' postfix];
-        callablePos= div_genomic_positions_with_potential_to_call_diversity(filen,SampleDirs, strict_parameters, coveragethresholds, GenomeLength);
+        callablePos= div_genomic_positions_with_potential_to_call_diversity(SampleDirs, SampleNames, strict_parameters, coveragethresholds, GenomeLength, 0, 'blah');
         %remove from callable if diverse in control
         callablePos(p(maf(:,1)<strict_parameters.min_control_MAF),:)=0;
         save(savename,'callablePos')
@@ -700,17 +720,18 @@ for i=samples
 end
 
 %Plot
-figure(21); clf;
+figure(27); clf;
 k=1;
-for i=samples(1:end-1);
+for j=1:4;
     
+    i=samples(j); ymax=numtrials;
     subplot(numel(samples),1,k); hold on;
 
    
     [freq, bins]=hist(expectedNumberMultipleMutatedGenes(:,i),max(expectedNumberMultipleMutatedGenes(:,i)));
-    bar(bins-.5,freq,'FaceColor', rgb('gray'), 'EdgeColor', 'w')
+    bar(bins-.5,freq,'FaceColor', rgb('white'), 'EdgeColor', 'k', 'EdgeColor', 'k', 'LineWidth', 1.2)
     
-    bar(numel(multiple_locations_within_sampleperlength{i}),numtrials,.25,'FaceColor',rgb('DarkMagenta'),'EdgeColor', rgb('DarkMagenta'))
+    bar(numel(multiple_locations_within_sampleperlength{i}),numtrials,.25,'FaceColor',rgb('Blue'),'EdgeColor', rgb('Blue'))
     
     %title(SampleNames(i).Sample)
       axis([-0.6 10 -.01 numtrials])
@@ -718,17 +739,22 @@ for i=samples(1:end-1);
     set(gca,'YTick', [.25*numtrials .5*numtrials .75*numtrials numtrials])
     set(gca,'YTicklabel', {'.25', '.50', '.75', '1'})
     k=k+1;
+    text(9, .7*ymax, ['P' num2str(j)], 'Color', rgb('Black'), 'FontSize', 14, 'Interpreter', 'none')
+
 end;
 
 
 %Plot hypermutator with slightly different settings
-i=samples(end);
+i=samples(end); j=5; ymax=numtrials/4;
 subplot(numel(samples),1,k); cla; hold on;
 [freq, bins]=hist(expectedNumberMultipleMutatedGenes(:,i),max(expectedNumberMultipleMutatedGenes(:,i)));
-bar(bins-.5,freq,1,'FaceColor', rgb('gray'), 'EdgeColor', 'w')
-bar(numel(multiple_locations_within_sampleperlength{i}),numtrials,.25, 'FaceColor',rgb('DarkMagenta'),'EdgeColor', rgb('DarkMagenta'))
+bar(bins-.5,freq,'FaceColor', rgb('white'), 'EdgeColor', 'k', 'EdgeColor', 'k', 'LineWidth', 1.2)
+bar(numel(multiple_locations_within_sampleperlength{i}),numtrials,.25, 'FaceColor',rgb('Blue'),'EdgeColor', rgb('Blue'))
+
+text(9, .7*ymax, ['P' num2str(j)], 'Color', rgb('Black'), 'FontSize', 14, 'Interpreter', 'none')
+
 %title(SampleNames(i).Sample)
-axis([-.6 10 -.001 numtrials/4])
+axis([-.6 10 -.001 ymax])
 set(gca,'YTick', [.05*numtrials .10*numtrials .15*numtrials .2*numtrials])
 set(gca,'YTicklabel', {'.05', '.10', '.15', '.20'})
 %set(gca,'XTick', 0:5:20)
@@ -814,7 +840,7 @@ figure; hist(genesizes(genesizes>0),140)
  
 
 
-switch 1
+switch 0
     case 0
         
         %this section was built with a different strategy in mind.
@@ -995,6 +1021,34 @@ expected_percentN = (sum(onlyImutO(:,nonmutatorsamples),2)'*percentN_types) / su
 expected = expected_percentN/(1 - expected_percentN); 
 
 
+
+%% sanity check for percentN matrix -- gc ratio as function of aa
+GCcodon=zeros(3,1);
+ATcodon=zeros(3,1);
+
+gs=find(ismember(types,['N' 'S']));
+
+
+for g=1:numel(gs)
+    a=combined_annotation_all(gs).Sequence; [~,a]=ismember(a,'atcg');
+    for i=1:3:numel(a)
+        for j=1:3
+            if ismember(a(i+j-1),[1 2])
+                ATcodon(j)=ATcodon(j)+1;
+            else
+                GCcodon(j)=GCcodon(j)+1;
+            end
+        end
+    end
+end
+
+approxATprobN=sum([1 1 .33]'.*ATcodon)/sum(ATcodon);
+approxGCprobN=sum([1 1 .33]'.*GCcodon)/sum(GCcodon);
+
+
+%most AT codons are used at first codon
+%got results of ATcodon
+
 %% Types of mutations for each patient
 
 figure(3004); clf; hold on;
@@ -1159,6 +1213,112 @@ legend({'Mutations in other genes', 'Mutation in genes under selection'}, 'Locat
 axis([0 1 -inf inf])
 
 [~,codingp]=kstest2(othersAF, selectionAF)
+
+
+%% Compare fingerprint between two samples from same patient
+
+patient2fingerprintgenes = unique([multiple_locations_within_sample{2}; multiple_locations_within_sample{3}]);
+
+colors2=[rgb('Red');rgb('Orange');rgb('Green');rgb('Blue');rgb('Purple')];
+
+
+
+patient2fingerprintgenes= patient2fingerprintgenes([1 3 4 2 5]);
+
+figure(51); clf; hold on;
+for i=1:numel(patient2fingerprintgenes);
+
+    x=i*20;
+    y=1;
+    p1=patch([x; x+15; x+15; x], [y; y; y+.2; y+.2],rgb('Black'));
+    set(p1,'EdgeColor',rgb('Black'),'LineWidth',1)
+    text(x+3, y+.1, ['BDAG_0' num2str(patient2fingerprintgenes(i))], 'Color', rgb('White'), 'FontWeight', 'bold', 'FontSize', 10, 'Interpreter', 'none')
+    disp(['BDAG_0' num2str(patient2fingerprintgenes(i))])
+    fingerprintp=find(gn==patient2fingerprintgenes(i) & sum(goodpos(:,2:3),2)>0);
+  %  disp(mutAF(fingerprintp,2:3))
+    for j=1:numel(fingerprintp)
+        k=x+j*2+5*(combined_annotation_all(fingerprintp(j)).nt_pos/((combined_annotation_all(fingerprintp(j)).loc2)-(combined_annotation_all(fingerprintp(j)).loc1)));
+        %time 0
+        if goodpos(fingerprintp(j),2)>0
+            patch([k; k+1; k+1; k], [y+.2; y+.2; y+.2+mutAF(fingerprintp(j),2); y+.2+mutAF(fingerprintp(j),2)],colors2(j,:));
+        end
+        if goodpos(fingerprintp(j),3)>0
+            patch([k; k+1; k+1; k], [y; y; y-mutAF(fingerprintp(j),3); y-mutAF(fingerprintp(j),3)],colors2(j,:));
+        end
+        
+        disp(combined_annotation_all(fingerprintp(j)).muts)
+    end
+
+    grid(gca)
+    set(gca, 'GridLineStyle', ':');
+    set(gca,'Ytick',[.2 .4 .6 .8  1.4 1.6 1.8 2 ])
+    set(gca,'Yticklabel',[.8 .6 .4 .2 .2 .4 .6 .8])
+    set(gca,'Xtick',[0]) 
+    set(gca,'YAxisLocation','Right')
+
+end
+
+axis([15 120 0 2.7])
+
+%% Multiply mutated genes in isolates -supplemental figure
+
+
+treeorder=[41,33,40,37,3,28,25,15,26,10,27,18,17,38,14,8,7,21,16,9,6,30,5,35,29,4,2,13,1];
+[~,isolateorder]=ismember(treeorder,isolatenumber);
+treeCalls=isolateCalls(:,isolateorder);
+
+%get multiply mutated genes
+igenes=gn(ismember(chrpos2index(positions,ChrStarts),chrpos2index(isolatePositions,ChrStarts)));
+[~,multiple_p_in_isolates]=div_pairwise_nts_in_same_gene(igenes(igenes>0));
+for i=1:numel(multiple_p_in_isolates)
+    if  ~ (sum(ismember(igenes,multiple_p_in_isolates(i))) / genesizes(multiple_p_in_isolates(i)) > (1/genelengththreshold))
+        multiple_p_in_isolates(i)=0;
+    end
+end
+multiple_p_in_isolates(multiple_p_in_isolates==0)=[];
+
+%convenient data structures
+isolatep=chrpos2index(isolatePositions,ChrStarts);
+isolateAnc=NTs(ancnt(ismember(p,isolatep)));
+isolateAnci=ancnt(ismember(p,isolatep));
+
+
+
+figure(57); clf; hold on;
+colors3=[rgb('Blue');rgb('Red');rgb('Green')];
+numisolates=size(treeCalls,2);
+
+%Plot lines
+plot([ones(1,numisolates); (10*numel(multiple_p_in_isolates)*ones(1,numisolates))],[1:numisolates; 1:numisolates], 'Color',rgb('Gray'),'LineStyle',':')
+%plot([4+8*(1:numel(multiple_p_in_isolates)); 4+8*(1:numel(multiple_p_in_isolates))], [ones(1,numel(multiple_p_in_isolates)); ((numisolates+5)*ones(1,numel(multiple_p_in_isolates)))], 'Color',rgb('Gray'),'LineStyle',':')
+
+%axis([-3 95 -5 32])
+
+x=1;
+for i=1:numel(multiple_p_in_isolates)
+    
+    
+    x=x+8;
+    y=numel(multiple_p_in_isolates);
+    
+    text(x, numisolates+3, ['0' num2str(multiple_p_in_isolates(i))], 'Color', rgb('Black'), 'FontWeight', 'bold', 'FontSize', 8, 'Interpreter', 'none')
+    disp(multiple_p_in_isolates(i));
+    genent=find(ismember(igenes,multiple_p_in_isolates(i)));
+    
+    
+    for j=1:numel(genent)
+        ind=genent(j);
+        annotationind=find(p==isolatep(ind));
+        mutantisolates=find(treeCalls(ind,:)~=isolateAnc(ind));
+        a=[combined_annotation_all(annotationind).AA(isolateAnci(ind)) num2str(floor(combined_annotation_all(annotationind).AApos))];
+        for k=1:numel(mutantisolates)
+            ai=[a combined_annotation_all(annotationind).AA(find(NTs==treeCalls(ind,mutantisolates(k))))];
+            text(x,1+numisolates-mutantisolates(k), ai, 'Color', colors3(j,:), 'FontSize', 8, 'Interpreter', 'none');
+            %   mutantisolates=mutantisolates(isolateorder);
+        end
+    end
+end
+axis([-5 10*numel(multiple_p_in_isolates) -2 numisolates+3])
 
 
 %% Intragenic versus promoter
@@ -1354,11 +1514,15 @@ set(gca,'Xtick',[0 1])
 
 
 
+disp('95% confidence interval for genes mutated multiple times within the same sample')
+disp([um2,lm2])
+
+
 
 % same plot, hortizonal 
 figure(998); clf; hold on;
 
-barh(1, m2N/m2S/expectedm2, 'FaceColor', rgb('DarkMagenta'), 'EdgeColor', 'none', 'BarWidth', .65);
+barh(1, m2N/m2S/expectedm2, 'FaceColor', rgb('Blue'), 'EdgeColor', 'none', 'BarWidth', .65);
 plot([lm2 um2], [1 1], '-', 'Color', rgb('DarkGray'), 'LineWidth',1);
 
 
@@ -1979,8 +2143,7 @@ end
 
 
 
-treeorder=['TL005'; 'TL030'; 'TL028'; 'TL027'; 'TL018'; 'TL007'; 'TL021'; 'TL006'; 'TL014'; 'TL009'; 'TL008'; 'TL038'; 'TL016'; 'TL017'; 'TL010'; 'TL026'; 'TL015'; 'TL025'; 'TL004'; 'TL002'; 'TL029'; 'TL035'; 'TL041'; 'TL001'; 'TL013'; 'TL033'; 'TL040'; 'TL003'; 'TL037'];
-[~,isolateorder]=ismember({isolateNames.Sample},treeorder);
+[~,isolateorder]=ismember(isolatenumber,treeorder);
 
 figure(86)
 clf; hold on;
@@ -2056,28 +2219,122 @@ set(gca,'Xticklabel',{SampleNames(samples).Sample})
 set(h,'FaceColor', 'w', 'EdgeColor', rgb('DarkRed'), 'LineWidth', 3)
 
 
-figure(484); clf; hold on;
-h=barh([4 3 2 1], avgdistancefromPTanc(nonmutatorsamples)*GenomeLength./sum(callablePos(:,nonmutatorsamples)), .5);
+
+%% Figure 4
+
+
+
+
+
+isolateRef=repmat(NTs(ancnt(ismember(p,ip)))',1,numel(isolateNames));
+isolatedistance=sum(isolateCalls~=isolateRef & isolateCalls~='N') *GenomeLength./ isolatesCoverage';
+
+
+scrsz = get(0,'ScreenSize');
+figure(870);
+set(870,'Position',[100 scrsz(4)-100 scrsz(3)/6 500]);clf;hold on;
+
+
+subplot(3,1,1); hold on;
+xmax=max(isolatedistance)+1;
+ymax=14.5;
+hist([-8 isolatedistance],12);
+colormap([rgb('gray')])
+h2=bar(mean(isolatedistance), 50, .5);
+set(h2, 'FaceColor', 'k', 'EdgeColor', 'None');
+axis([0 xmax -inf ymax])
+grid(gca)
+set(gca, 'GridLineStyle', ':');
+set(gca,'Xtick',0:5:max(isolatedistance))
+
+%manually add top axis
+timeaxes=2.5:2.5:12.5;
+axisp=get(gca,'Position');
+for i=1:numel(timeaxes)
+    j=2.1*timeaxes(i);
+    timel=num2str(timeaxes(i));
+    annotation('textbox', [-.022-(.007*(numel(timel)-1))+axisp(1)+((j/xmax)*axisp(3)), .035+axisp(2)+axisp(4), 0, 0], 'string',timel)
+    line([j; j], [ymax; ymax*.95], 'LineStyle','-', 'Color', 'k')
+end
+line([0; xmax], [ymax; ymax], 'LineStyle','-', 'Color', 'k')
+
+meanisoaltedistance=mean(isolatedistance);
+meanisoaltedistanceu=(meanisoaltedistance + 1.97*sqrt(meanisoaltedistance/29))/2.1
+meanisoaltedistancel=(meanisoaltedistance - 1.97*sqrt(meanisoaltedistance/29))/2.1
+
+
+
+
+subplot(2,1,2); hold on;
+xmax=max(isolatedistance)+1;
+ymax=numel(samples(1:end-1))+1;
+normalizeddistance=avgdistancefromPTanc*GenomeLength./sum(callablePos);
+h=barh([4 3 2 1], normalizeddistance(nonmutatorsamples), .5);
+timedistanceu=(normalizeddistance(nonmutatorsamples) + 1.97*sqrt(normalizeddistance(nonmutatorsamples)/500))/2.1
+timedistancel=(normalizeddistance(nonmutatorsamples) - 1.97*sqrt(normalizeddistance(nonmutatorsamples)/500))/2.1
+
 disp(avgdistancefromPTanc(nonmutatorsamples)*GenomeLength./sum(callablePos(:,nonmutatorsamples))/2.1)
 %xlabel('Average number of SNPs to patient LCA (?p)')
 set(gca,'Ytick',1:numel(samples(1:end-1)))
 set(gca,'Yticklabel',{'P4', 'P3', 'P2', 'P1'})
-% set(gca,'XAxisLocation','Top')
-% set(gca, 'Xtick', 0:5.25:21)
-% set(gca, 'Xticklabel', [0:5.25:21]/2.1)
 % xlabel('Average years to patient LCA (?p)')
 set(h,'FaceColor', rgb('Black'), 'EdgeColor', 'None')
-axis([0 28 0 numel(samples(1:end-1))+1 ])
+axis([0 xmax 0 ymax ])
 grid(gca)
 set(gca, 'GridLineStyle', ':');
 
+%manually add top axis
+axisp=get(gca,'Position');
+for i=1:numel(timeaxes)
+    j=2.1*timeaxes(i);
+    timel=num2str(timeaxes(i));
+    annotation('textbox', [-.022-(.007*(numel(timel)-1))+axisp(1)+((j/xmax)*axisp(3)), .035+axisp(2)+axisp(4), 0, 0], 'string',timel);
+    line([j; j], [ymax; ymax*.95], 'LineStyle','-', 'Color', 'k');
+end
+line([0; xmax], [ymax; ymax], 'LineStyle','-', 'Color', 'k');
 
-figure(485); clf; hold on;
-barh([sum(goodpos(:,samples))./sum(goodpos(:,samples)+fixedpos(:,samples));sum(fixedpos(:,samples))./sum(fixedpos(:,samples)+goodpos(:,samples))]','stacked')
-xlabel('Fraction of mutations')
-set(gca,'Ytick',1:numel(samples))
-set(gca,'Yticklabel',{SampleNames(samples).Sample})
-colormap([tamismagenta;tamisgreen]);
+
+
+
+
+%scatterplot -- compare to chart
+
+%Data taken from email with Kelly Flett, March 7th 2013
+%same order as samples
+patientFirstPositiveCulture=[7.1 8.6 9.3 9.0 9.3];
+patientLastNegativeCulture=[8.4 8.8 9.6 9.6 11.2];
+
+figure(880);
+set(880,'Position',[scrsz(3)/9 scrsz(3)/9 scrsz(3)/9 scrsz(3)/9]);clf;hold on;
+plot([0 10], [0 10], 'k--')
+for i=1:4
+    p1=patch([patientFirstPositiveCulture(i); patientLastNegativeCulture(i); patientLastNegativeCulture(i); patientFirstPositiveCulture(i)], [timedistancel(i); timedistancel(i); timedistanceu(i); timedistanceu(i)],rgb('Gray'));
+    line([patientFirstPositiveCulture(i); patientLastNegativeCulture(i)], [normalizeddistance(samples(i))/2.1; normalizeddistance(samples(i))/2.1], 'LineStyle','-', 'Color', rgb('Black'), 'LineWidth',2);
+    
+    %line([patientFirstPositiveCulture(i); patientFirstPositiveCulture(i)], [timedistancel(i); timedistanceu(i)], 'LineStyle','-', 'Color', rgb('Black'), 'LineWidth', 5);
+    set(p1,'EdgeColor','None')
+    text(patientFirstPositiveCulture(i), timedistanceu(i)+.1, ['P' num2str(i)])
+end
+
+% %isolates
+% p1=patch([patientFirstPositiveCulture(1); patientLastNegativeCulture(1); patientLastNegativeCulture(1); patientFirstPositiveCulture(1)], [meanisoaltedistancel; meanisoaltedistancel; meanisoaltedistanceu; meanisoaltedistanceu],rgb('LightGray'));
+% set(p1,'EdgeColor','None')
+% text(patientFirstPositiveCulture(1), meanisoaltedistance/2.1+.2, ['P1 isolates'])
+% line([patientFirstPositiveCulture(1); patientLastNegativeCulture(1)], [meanisoaltedistance/2.1; meanisoaltedistance/2.1], 'LineStyle','-', 'Color', rgb('Black'), 'LineWidth',2);
+
+set(gca,'Xtick',5:10)
+set(gca,'Ytick',5:10)
+
+grid(gca)
+set(gca, 'GridLineStyle', ':');
+axis([4.5 10 4.5 10 ])
+xlabel('Years to first known colonization')
+ylabel('Years to sample LCA')
+
+
+
+
+
 
 
 
@@ -2179,7 +2436,7 @@ save('formatrix', 'subm','polym', 'multiple_annotations')
 
 for i=1:numel(multiple_locations_within_sample_all)
     j=find(gn==multiple_locations_within_sample_all(i),1);
-     disp(combined_annotation_all(j).gene)
+     disp(combined_annotation_all(j).locustag)
      disp(combined_annotation_all(j).protein)
 %     disp([combined_annotation_all(gn==multiple_locations_within_sample_all(i)&sum(goodpos,2)>0).muts])
 %     disp(genesizes(multiple_locations_within_sample_all(i)))
@@ -2190,7 +2447,7 @@ end
 
 for i=1:numel(multiple_locations_within_sample_all)
     j=find(gn==multiple_locations_within_sample_all(i),1);
-    disp(['>' combined_annotation_all(j).gene ]) %'-' combined_annotation_all(j).protein])
+    disp(['>' combined_annotation_all(j).locustag ]) %'-' combined_annotation_all(j).protein])
     disp(combined_annotation_all(j).translation)
 end
 
@@ -2238,7 +2495,22 @@ title('All samples')
 axis([0 .5 -inf inf])
 
 
-%each sample
+
+%isolates are still in terms of major allele frequency 
+%isolates from sample 2
+figure(850);clf;
+hist(iMAF,10) 
+xlabel('Major allele frequency')
+ylabel('Number of positions')
+title('Sputum2 - isolate estimate')
+axis([.5 1 -inf inf])
+
+%% Figure 3b -- histograms of mutation frequency
+
+
+piedata= [sum(goodpos); sum(fixedpos)];
+%histograms of major allele frequency
+figure(801); clf;
 for j=1:numel(samples)
     
     i=samples(j);
@@ -2259,39 +2531,71 @@ for j=1:numel(samples)
     axis([0 1 -inf max(b)+5])
     disp(SampleNames(i).Sample)
     disp([sum(fixedpos(:,i)) sum(goodpos(:,i))])
-    
+    movepieto(pie(piedata(:,i),[0  1], {'',''}), .8, .6*(max(b)+5), .1, (max(b)+5)/3);
+    colormap([[1 0 1]; tamisgreen])
 end
 set(gca,'Ytick',[15 30 45 60])
 
-%isolates are still in terms of major allele frequency 
-%isolates from sample 2
-figure(850);clf;
-hist(iMAF,10) 
-xlabel('Major allele frequency')
-ylabel('Number of positions')
-title('Sputum2 - isolate estimate')
-axis([.5 1 -inf inf])
+
+%isolates -- this should probably be in isolates pipeline
+figure(12); clf; hold on;
+pie([183 11],[0  1], {'',''})
+colormap([[1 0 1]; tamisgreen])
+axis([-2 2 -2 2])
+
+%% Isolates divergence from lca comparision to LCA
 
 
 
-%% Isolates divergence
 
-isolateRef=repmat(NTs(ancnt(ismember(p,ip)))',1,numel(isolateNames));
-isolatedistance=sum(isolateCalls~=isolateRef & isolateCalls~='N') *GenomeLength./ isolatesCoverage';
-
-figure(870); clf; hold on;
-hist([-8 isolatedistance],12)
-set(gca,'Xtick',0:5:max(isolatedistance))
-axis([0 max(isolatedistance)+1 -inf inf])
+%Replot,approximately discrete, with Poisson on top
+figure(871); clf; hold on;
+nbins=1+max(isolatedistance);
+[bins,patches]=hist(isolatedistance,nbins);
+bar(patches,bins/numisolates);
 colormap([rgb('Gray')])
-axis([0 max(isolatedistance)+1 -inf 14.5])
-h=bar(mean(isolatedistance), 50, .5);
+axis([0 max(isolatedistance)+1 -inf inf])
+h=bar(mean(isolatedistance), .1, .5);
 set(h, 'FaceColor', 'k', 'EdgeColor', 'None');
 grid(gca)
 set(gca, 'GridLineStyle', ':');
-set(gca,'XAxisLocation','Top')
-set(gca,'Xtick',0:2.1*2.5:31.5)
-set(gca,'Xticklabel',0:2.5:15)
+
+x=1:30;
+lambda=mean(isolatedistance);
+ppdf=(lambda.^x)./factorial(x)*exp(-lambda);
+h=plot(x,ppdf,'r', 'LineWidth',4);
+legend(h,{['Poisson with lambda= ' num2str(mean(isolatedistance))]});
+
+
+%Replot with Poisson simulated variables in a histogram on top
+
+figure(872); clf; hold on;
+nbins=12; numtrials=1000;
+%expected
+[bins1,patches1]=hist([-8 poissrnd(lambda, 1, numtrials)],nbins);
+b1=bar(patches1,bins1/numtrials, 'FaceColor', 'k', 'EdgeColor', 'None');
+alpha(get(b1,'children'),1);
+%observed
+[bins2,patches2]=hist([-8 isolatedistance],nbins);
+b2=bar(patches2,bins2/numisolates, 'FaceColor', 'r', 'EdgeColor', 'None');
+alpha(get(b2,'children'),.9);
+
+set(gca,'Xtick',0:5:max(isolatedistance))
+colormap([rgb('Gray')])
+axis([0 max(isolatedistance)+1 -inf max([bins2/numisolates bins1/numtrials])*1.2])
+grid(gca)
+set(gca, 'GridLineStyle', ':');
+set(gca,'Xtick',0:5:max(isolatedistance))
+legend({['Poisson with lambda= ' num2str(mean(isolatedistance))],'Observed'},'Location','NorthWest')
+
+disp('95% Confidence interval for avg distance to LCA (SNPs per genome)')
+sdm=sqrt(lambda/numisolates);
+disp([lambda - 1.96*sdm lambda+1.96*sdm])
+
+disp('95% Confidence interval for time to LCA (years)')
+disp([lambda - 1.96*sdm lambda+1.96*sdm]/2.1)
+xlabel('Number of mutations per isolate')
+ylabel('Frequency observed')
 
 
 %% Simulation for overlap with previous study
@@ -2354,6 +2658,23 @@ bar(numel(intersect(multiple, multiple_locations_within_sample_all)),numtrials, 
 
 
 
+%% Gene names from literature search
+
+genenames={};
+genenames{1166}='pbpG';
+genenames{2180}='gyrA';
+genenames{856}='lptG';
+genenames{2321}='wbpX';
+genenames{2311}='noeC';
+genenames{3997}='huvA';
+genenames{1606}='orbA';
+genenames{2124}='lutC';
+genenames{1161}='fixL';
+genenames{2877}='rpoD';
+genenames{2219}='spoT';
+genenames{1143}='argA';
+
+
 
 
 %% Make table for adjaceny matrix and network
@@ -2365,14 +2686,21 @@ totalm=polym+subm;
 
 for i=1:numel(multiple_locations_within_sample_all)
     k=1;
+    
+    if numel(genenames{multiple_locations_within_sample_all(i)})>0
+        name=genenames{multiple_locations_within_sample_all(i)};
+    else
+        name=num2str(multiple_locations_within_sample_all(i));
+    end
+    
     for j=samples
         
         if subm(i,j)>0
-            disp([num2str(multiple_locations_within_sample_all(i)) ' sub P' num2str(k)])
+            disp([name ' sub P' num2str(k)])
         elseif polym(i,j)==1
-            disp([num2str(multiple_locations_within_sample_all(i)) ' poly P' num2str(k)])
+            disp([name ' poly P' num2str(k)])
         elseif polym(i,j)>1
-            disp([num2str(multiple_locations_within_sample_all(i)) ' mpoly P' num2str(k)])
+            disp([name ' mpoly P' num2str(k)])
         end
          k=k+1;
     end

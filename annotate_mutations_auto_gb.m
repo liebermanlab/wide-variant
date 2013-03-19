@@ -3,7 +3,7 @@ function [an, df, mut, sequences] = annotate_mutations_auto_gb(Positions,Scaf,Re
 nts='atcg';
 rc='tagc';
 
-tic; fprintf(1,'annotate_mutations... ') ;
+tic; fprintf(1,'annotate_mutations...\n ') ;
 an = zeros(size(Positions,1),1) ;
 sequences={};
 for i=1:length(Scaf)
@@ -16,9 +16,13 @@ for i=1:length(Scaf)
         fr.Sequence=lower(fr2.Sequence);
     end
     
-    genes = gene_name_from_text(fr.CDS) ;
+   
+    genes = locustag_from_text(fr.CDS) ;
     genes = div_add_in_nonCDS(genes, fr.Features);
-    df{i} = parse_all_locations_gb(genes, fr.Sequence) ;
+    df{i} = parse_all_locations_gb(genes, fr.Sequence) ;  %also reverses strands in this, sorts by position
+    %sort by position on genome
+    [~,sortedpositions]=sort([df{i}.loc1]);df{i}=df{i}(sortedpositions);
+    
     
     z = Positions(:,1)==i ;
     an(z) = genomic_position(df{i},Positions(z,2)) ;
@@ -54,14 +58,13 @@ for i=1:size(Positions,1)
         mut(i).note   = cdf.note ;
         mut(i).locustag   = cdf.locustag ;
         mut(i).translation = cdf.translation;
-        
-        frame=0;
-        
+                
         
         %fix frame annotation problems specific to Bdolosa genome
-%         if strcmp(RefGenome,'Bdolosa')
-%             frame=ana_Bdolosa_checkframe(mut(i).gene);
-%         end
+        if strcmp(RefGenome,'Bdolosa')
+           % disp(mut(i).locustag)
+            frame=ana_Bdolosa_checkframe(mut(i).locustag, Positions(i,2), double(mut(i).loc1));
+        end
         
         mut(i).translation=nt2aa(mut(i).Sequence, 'ACGTOnly', false, 'ALTERNATIVESTARTCODONS','F', 'GENETICCODE', 11) ;
 

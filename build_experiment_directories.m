@@ -30,7 +30,7 @@ fast_q='sysbio_15m';
 demultiplex_q='sysbio_2h';
 filter_q='sysbio_2h';
 alignment_q='sysbio_12h';
-processing_q='sysbio_2h';
+processing_q='sysbio_12h';
 plotting_q='sysbio_int_2h';
 
 %overwrite

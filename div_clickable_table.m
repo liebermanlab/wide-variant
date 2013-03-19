@@ -70,11 +70,10 @@ goodpositions=zeros(Npositions,1);
 %Nonsynonymous vs Syonymous, major and minor allele
 for i=1:Npositions
     
-    
     annotations(i).maf=nan(Nsamples,1);
     annotations(i).mutAF=nan(Nsamples,1);
     if ancnti(i) > 0
-        annotations(i).nts=[NTs(ancnti(i))];
+        annotations(i).nts=[NTs(ancnti(i))]; 
     else
         annotations(i).nts=[];
     end
@@ -242,6 +241,8 @@ h.checkbox1 = uicontrol('Units','normalized','Style','checkbox','String','Show A
         end
         
         
+        disp(ind)
+        
         %disp(squeeze(cnts(:,ind,:)))
         %Bar charts of counts
         div_bar_charts(squeeze(cnts(:,ind,:)), sample, {SampleInfo.Sample})
@@ -255,7 +256,6 @@ h.checkbox1 = uicontrol('Units','normalized','Style','checkbox','String','Show A
            div_maf_window(annotations(ind), allp(ind)-ChrStarts(chr), window_size, [], squeeze(fwindows(:,ind,:)), allp(region)-ChrStarts(chr), goodmaf(region,:), {SampleInfo.Sample},sample,showlegends)
            div_cov_window(annotations(ind), allp(ind)-ChrStarts(chr), window_size, squeeze(cwindows(:,ind,:)), {SampleInfo.Sample},sample, showlegends)
         end
-        
         
 
         

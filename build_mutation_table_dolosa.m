@@ -1,6 +1,6 @@
 %% Important variables to set each time
 
-run_postfix='13_02_26';
+run_postfix='13_03_04';
 
 
 %Run in cluster?
@@ -9,7 +9,7 @@ jobsubmitoptions='sysbio_2h'; %short -W 0:15
 
 %get data from other positions? (found in analysis of single isolates, previous study)
 get_data_at_other_specific_positions=1;
-positionfiles={};
+positionfiles={'/files/SysBio/KISHONY LAB/Old_Illumina_pipeline_no_diversity_retired_13_01/Case_2012_11_isolates_from_sputum2/positions.mat'};
 
 %output options -- this useful graph has not been tested since updating code
 gscatters=0;
@@ -20,11 +20,10 @@ window_size=500;
 %analyze diversity?
 analyze_diversity=1;
 
-
-loose_parameters=struct('minorfreqthreshold',.01, 'minreads_perstrand',10,...
-    'maxreads_perstrand_percentile', 100,'minreads_perstrand_per_allele',1,...
-    'min_bq',15,'min_mq' ,30, 'min_td', 10, 'max_td',90, 'max_sbp', 5,...
-    'max_bqp', 255,'max_tdp',255, 'max_percent_ends', .50, 'max_percent_indels', .30, 'min_control_MAF', .01);
+loose_parameters=struct('minorfreqthreshold',.02, 'minreads_perstrand',30,...
+    'maxreads_perstrand_percentile', 100,'minreads_perstrand_per_allele',2,...
+    'min_bq',15,'min_mq' ,30, 'min_td', 0, 'max_td',50, 'max_sbp', 10,...
+    'max_bqp', 255,'max_tdp',255, 'max_percent_ends', .20, 'max_percent_indels', .30, 'min_control_MAF', .01);
 
 %most threshold checks are strictly > or strictly <
 %loose parameters doesn't have an upper coverage thershold yet

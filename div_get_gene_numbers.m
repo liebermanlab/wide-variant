@@ -13,8 +13,8 @@ for i = 1:length(genestructure)
     end
 end
 
-genesN=unique(genesN);
-% genesN=cell2mat({genestructure.locustag}');
-% genesN=str2num(genesN(:,6:end));
+%genesN=unique(genesN);  %not sure why this was here previously, commented
+%out
+%3/6/13
 
 end

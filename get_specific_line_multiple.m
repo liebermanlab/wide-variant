@@ -32,14 +32,14 @@ while ~feof(fid) && ~isempty(ipos)
         pos = iscf*1e8 + raw_pos ;
         if pos>=pos_list(ipos)
             if any(pos==pos_list)
-                score=str2num(s(f(5)+1:f(6)-1));
+                score=str2num(s(f(5)+1:f(6)-1));  %right now this uses the score column, might be best to use fq column... though this is used in downstream processing
                 if prevpos~=pos
                     y=y+1;
                     topscore=0;
                     ipos = find(pos_list>prevpos,1) ;
                     prevpos=pos ;
                 end
-                if score >= topscore %write only if new or better than previous guess
+                if score >= topscore &  ~(s(f(4):f(4)+1)=='.' &  strcmp(s(f(6)+3:f(6)+7),'INDEL')) %%write only if new or better than previous guess.  some cases where samtools shows a weakly supported indel as a variant without putting it into the column
                     lins{y} = s ;
                     indx(y) = find(pos_list==pos,1) ;
                     topscore=score;

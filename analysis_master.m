@@ -1,12 +1,18 @@
 %% Set important variables each run
 
-run_postfix='13_01_08'; %must match postfix in build_mutation_table_master.m
+global controlsample
+
+path('../scripts',path)
+
+run_postfix='13_02_26'; %must match postfix in build_mutation_table_master.m
 
 %run options
 loadwindows=1;
 promotersize=150;
-ancestorsample=1;
+controlsample=1;
 referenceisancestor=0;
+ancestoriscontrol=1;
+ancestorismode=1; %use mode of major alleles as ancestor
 
 %filter parameters
 qual_0=282;
@@ -64,10 +70,6 @@ if numel(SampleNames)>10
     showlegends=0;
 end
 
-%% Temporary:: Fix annotation structure
-[geneloc,  cds, mutations, sequences] = annotate_mutations_auto_gb(positions,ScafNames,RefGenome) ;
-
-
 
 %% Fixed mutations:  Quality threshold anaysis (set value for qual_0)
 
@@ -91,14 +93,27 @@ end
 
 %% Create useful matrices and vectors
 
-%Ancestral nucleotide at each position
-if ancestorsample>0
-    [ancnt, ancnti] = ancestorfromsample(Calls,ancestorsample);
+
+[maf, maNT, minorNT] = div_major_allele_freq(counts);
+
+if ancestoriscontrol>0
+    %Ancestral nucleotide at each position
+    disp(['Using sample ' num2str(ancestoriscontrol) ' of major alleles as ancestor...\n']);
+    [ancnt, ancnti] = ancestorfromsample(Calls,controlsample);
+elseif ancestorismode==1
+    disp('Using mode of major alleles as ancestor...\n');
+    ancnti=mode(maNT,2);
+    temp=ancnti; temp(ancnti>4 | ancnti<1)=5; NTsN='ATCGN';
+    ancnt=NTsN(temp)';
+else
+    disp('Error: choose setting for ancestor')
+    stop
 end
+    
+    
 ancnt_m=repmat(ancnt,1,Nsample);
 ancnti_m=repmat(ancnti,1,Nsample);
 
-[maf, maNT, minorNT] = div_major_allele_freq(counts);
 
 %Hasmutation
 diversemutation=div_test_thresholds(counts,strict_parameters, coveragethresholds);
@@ -112,7 +127,7 @@ minormutation=(hasmutation & (ancnti_m==maNT));
 
 %% Generate table
 
-[q, annotation_all] = div_clickable_table(mutations, p, ancnti, counts,  fwindows, cwindows, mutAF, diversemutation, RefGenome, ScafNames, SampleInfo, ChrStarts, promotersize, showlegends);
+[q, annotation_all] = div_clickable_table(mutations, Calls, p, ancnti, counts,  fwindows, cwindows, mutAF, diversemutation, RefGenome, ScafNames, SampleInfo, ChrStarts, promotersize, showlegends);
 
 
 %% More useful information
@@ -130,23 +145,20 @@ save(['mutation_analysis_' run_postfix], 'mutations', 'Nsample', 'mutAF', 'genes
 
 
 
-
-
-stop
-
-
-
-
-
-%% Find coverable positions
-
-if analyze_diversity==1
-    fprintf(1,'Finding genomic positions with potential to call diversity\n');
-    callablePos= div_genomic_positions_with_potential_to_call_diversity(SampleDirs, SampleNames, strict_parameters, coveragethresholds, GenomeLength, Parallel, jobsubmitoptions, generatehists);
-    %remove from callable if diverse in control
-    [maf, maNT, minorNT] = div_major_allele_freq(counts);
-    callablePos(p(maf(:,1)<strict_parameters.min_control_MAF),:)=0;
-end   
+% 
+% 
+% 
+% 
+% 
+% %% Find coverable positions
+% 
+% if analyze_diversity==1
+%     fprintf(1,'Finding genomic positions with potential to call diversity\n');
+%     callablePos= div_genomic_positions_with_potential_to_call_diversity(SampleDirs, SampleNames, strict_parameters, coveragethresholds, GenomeLength, Parallel, jobsubmitoptions, generatehists);
+%     %remove from callable if diverse in control
+%     [maf, maNT, minorNT] = div_major_allele_freq(counts);
+%     callablePos(p(maf(:,1)<strict_parameters.min_control_MAF),:)=0;
+% end   
 
 %coverage positions in isolates previously generated with a python script and stored
 %in a text file (based on FQ in strain.vcf)

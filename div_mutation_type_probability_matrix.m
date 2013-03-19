@@ -29,10 +29,7 @@ end
 
 
 for i=1:size(Positions,1)
-    disp(i)
-    
-    disp(Positions(i,2))
-    disp(i)
+
     ref=Sequences{Positions(i,1)}(Positions(i,2));
     
     
@@ -64,7 +61,7 @@ for i=1:size(Positions,1)
                 
                 ncn = p-(aan-1)*3 ;
                 codon = cdf.Sequence(aan*3-2:aan*3) ;
-                refAA= double(nt2aa(codon, 'ACGTOnly', false, 'ALTERNATIVESTARTCODONS','F'));
+                refAA= double(nt2aa(codon, 'ACGTOnly', false, 'ALTERNATIVESTARTCODONS','F', 'GENETICCODE', 11));
                 for j=nonref %for each nts
                     
                     
@@ -80,7 +77,7 @@ for i=1:size(Positions,1)
                     end
                     
                     %is same?
-                    if double(nt2aa(codon, 'ACGTOnly', false, 'ALTERNATIVESTARTCODONS','F')) ~= refAA
+                    if double(nt2aa(codon, 'ACGTOnly', false, 'ALTERNATIVESTARTCODONS','F', 'GENETICCODE', 11)) ~= refAA
                         m(ref,j,1) = m(ref,j,1)+1;
                         m_coding_strand(coi,cni,1) = m_coding_strand(coi,cni,1)+1;
                     else

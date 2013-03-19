@@ -14,7 +14,7 @@ for c=1:numel(codingsequences)
     x=find(z);  z(x(intragenic))=0;
     cgenes(intragenic)=[];
     
-    cgenenums=char({codingsequences{c}(cgenes).gene}');
+    cgenenums=char({codingsequences{c}(cgenes).locustag}');
     gn(z) = str2num(cgenenums(:,6:end));
     
 end

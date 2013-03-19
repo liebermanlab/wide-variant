@@ -1,5 +1,6 @@
-function f=ana_Bdolosa_checkframe(genename)
+function f=ana_Bdolosa_checkframe(genename, position, start)
 
+f=0;
 
 if strcmp(genename,'BDAG_00258')
     f=2;  % this adjustment makes the start of the protein out of f, but mutations are later and start of protein is probably wrong
@@ -36,8 +37,7 @@ if strcmp(genename,'BDAG_02943')
     %have mutations in both.
     %this is on the forward strand
     %these boundaries are approximate
-    if ( double(Positions(i,2)) -double(mut(i).loc1) + 1) < 350
-
+    if (position - start + 1) < 350
         f = 1; %mutations are  in center, beginning out of f
     else
         f = 3;
