@@ -331,7 +331,10 @@ if ~exist('alignment_stats','dir')
     mkdir('alignment_stats')
     !mv run_parallel_unix_commands_fast_tmp/*  alignment_stats/
 end
-summarize_alignments('bowtie2')
+
+%this will only work if bowtie two was used. creates a data strucutre for
+%later visualization of alignments
+summarize_alignments 
 
 fprintf(1,'Create .bam and sort... \n') ;
 run_parallel_unix_commands_fast({'/opt/samtools/bin/samtools view -bS -o aligned.bam aligned.sam'},alignment_q,Parallel,dirs);

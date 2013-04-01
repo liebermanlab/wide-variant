@@ -207,7 +207,7 @@ run_parallel_unix_commands_fast(cmds,jobsubmitoptions1,2);
 
 save(['mutation_table_' run_postfix], 'RefGenome', 'ScafNames', 'ChrStarts', 'GenomeLength', 'p', 'positions', 'coveragethresholds', 'counts',  'geneloc', 'cds', 'mutations', 'Calls', 'Quals', 'sequences', '-v7.3')
 save(['windows_' run_postfix], 'fwindows', 'cwindows', '-v7.3')
-save(['MutGenVCF_' run_postfix], 'MutGenVCF', '-v7.3')
+% save(['MutGenVCF_' run_postfix], 'MutGenVCF', '-v7.3')
 
-%end
+end
 

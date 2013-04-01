@@ -80,7 +80,7 @@ elseif Parallel==2
         fprintf(fid,'%s\n',cmds{min(i,end)}) ;
         fclose(fid) ;
         eval(sprintf('!chmod +x %s',fname))
-        eval(sprintf('!bsub -q %s -o %s %s',qname,oname,fname))
+        eval(sprintf('!bsub -q %s -o %s ./%s',qname,oname,fname))
     end
     fprintf('Continuing without waiting for last batch of jobs to finish...\n')
 else
