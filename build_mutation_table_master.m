@@ -1,3 +1,7 @@
+function build_mutation_table_master(scriptspath)
+
+
+
 %% Important variables to set each time
 
 run_postfix='13_02_26';
@@ -5,23 +9,23 @@ run_postfix='13_02_26';
 
 %Run in cluster?
 Parallel=1;
-jobsubmitoptions='sysbio_2h'; %short -W 0:15
+jobsubmitoptions1='sysbio_15m'; %short -W 0:15
+jobsubmitoptions2='sysbio_12h'; %short -W 0:15
 
-%get data from other positions? (found in analysis of single isolates, previous study)
-get_data_at_other_specific_positions=1;
-positionfiles={};
-
-%output options -- this useful graph has not been tested since updating code
-gscatters=0;
-
-%parameters used during initial data structure generation
-window_size=500;
-
-%analyze diversity?
-analyze_diversity=1;
+global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 1;
 
 
-loose_parameters=struct('minorfreqthreshold',.01, 'minreads_perstrand',10,...
+positionfiles={}; %get data from other positions? (found in analysis of single isolates, previous study)
+
+gscatters=0; %output options -- this useful graph has not been tested since updating code
+
+window_size=500; %parameters used during initial data structure generation
+
+analyze_diversity=1; %analyze diversity?
+
+looseFQmax=-20;
+
+loose_parameters=struct('minorfreqthreshold',.01, 'minreads_perstrand',2,...
     'maxreads_perstrand_percentile', 100,'minreads_perstrand_per_allele',1,...
     'min_bq',15,'min_mq' ,30, 'min_td', 10, 'max_td',90, 'max_sbp', 5,...
     'max_bqp', 255,'max_tdp',255, 'max_percent_ends', .50, 'max_percent_indels', .30, 'min_control_MAF', .01);
@@ -34,7 +38,9 @@ loose_parameters=struct('minorfreqthreshold',.01, 'minreads_perstrand',10,...
 %maxreads_perstrand_percentile is which threshold in list .01:.01:1 ...
 %    e.g. 98 is 98 percentile of covered positions
 
-% ___ create parameters log ___ %
+
+
+%% create parameters log 
 
 % add window size to log 
 log_parameters = loose_parameters; 
@@ -43,17 +49,49 @@ log_parameters.('window_size') = window_size;
 % set log directory
 logfolder = 'log_build_mutation_table'; 
 if exist(logfolder, 'dir') ~= 7
-    mkdir(logfolder)
+    mkdir(logfolder);
 end
 
-save_structure_parameters(logfolder, log_parameters); 
+global TEMPORARYFOLDER;
+timestamp=save_structure_parameters(logfolder, log_parameters);
+TEMPORARYFOLDER=['/scratch/kishony_illumina_temp/' timestamp];
 
-% _____________________________ %
+if ~exist('/scratch/kishony_illumina_temp/','dir')
+    mkdir('/scratch/kishony_illumina_temp/')
+end
+mkdir(TEMPORARYFOLDER)
+
+
+%% Set path
+
+global SCRIPTSPATH;
+
+if nargin > 0
+     SCRIPTSPATH = scriptspath;
+else
+   a=pwd; SCRIPTSPATH=[a(1:find(double(a)==47,1,'last')) 'scripts']; 
+   if ~exist(SCRIPTSPATH, 'dir')
+       fprintf(['Could not find ' SCRIPTSPATH '...\n'])
+       error('Error: Must run from an experiment folder, with scripts folder in parent directory')
+   else
+       path(SCRIPTSPATH,path);
+   end
+end
+
+fprintf(['Usings scripts directory: ' SCRIPTSPATH  '\n']);
+
+
+
+%% Set main folder
+if RUN_ON_CLUSTER == 1
+    mainfolder='/files/SysBio/KISHONY LAB/illumina_pipeline';
+else
+    mainfolder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
+end
 
 
 
 %% Read in csv files 
-path('../scripts',path)
 
 
 % Get SampleInfo and ScafNames
@@ -67,7 +105,7 @@ SampleDirs = {} ;
 
 % Ensure that there is one reference genome
 for i=1:NSample
-    SampleDirs{i} = ['../' SampleInfo(i).ExperimentFolder '/' SampleInfo(i).Sample '/' SampleInfo(i).AlignmentFolder ] ;
+    SampleDirs{i} = [SampleInfo(i).ExperimentFolder '/' SampleInfo(i).Sample '/' SampleInfo(i).AlignmentFolder ] ;
     ainfo = load([SampleDirs{i} '/alignment_info']) ;
     RefGenome{i} = ainfo.ae.Genome ;
 end
@@ -82,7 +120,7 @@ end
 
 % Get Scafold names and build useful informations
 RefGenome = RefGenome{1} ;
-fr = fastaread(['../Reference_Genomes/' RefGenome '/genome.fasta']) ;
+fr = fastaread([mainfolder '/Reference_Genomes/' RefGenome '/genome.fasta']) ;
 GenomeLength=0;
 ChrStarts=[];
 
@@ -97,17 +135,17 @@ end
 
 
 
+
 %% Get all positions
 
 fprintf(1,'\n\nFinding positions with at least 1 fixed mutation...\n');
 
-cp = generate_positions(SampleDirs, SampleNames, ScafNames, ChrStarts, 100000, Parallel, jobsubmitoptions);
+cp = generate_positions(SampleDirs, SampleNames, ScafNames, ChrStarts, looseFQmax, 100000, Parallel, jobsubmitoptions1);
 fprintf(1,'Found %g positions where samtools called a variant in at least one sample \n',length(cp)) ;
 
 
 op=[];
-if get_data_at_other_specific_positions==1
-    
+if numel(positionfiles)>0
     for i=1:numel(positionfiles)
         other=load(positionfiles{i});
         op=[op; chrpos2index(other.Positions, ChrStarts)];
@@ -117,12 +155,9 @@ end
 dp=[];
 if analyze_diversity
     fprintf(1,'\nFinding single nucleotide positions with diversity...');
-    if ~exist('intermediate_diversity_matfiles')
-        mkdir('intermediate_diversity_matfiles')
-    end
     
     %Find diverse positions
-    [dp, numfields, coveragethresholds] = find_diverse_positions(loose_parameters, SampleDirs, SampleNames, gscatters, Parallel, jobsubmitoptions);
+    [dp, numfields, coveragethresholds] = find_diverse_positions(loose_parameters, SampleDirs, SampleNames, gscatters, Parallel, jobsubmitoptions1);
 
     fprintf(1,'Found %g diverse positions that meet loose parameters in at least 1 sample \n',length(dp)) ;
     memreq=2*4*length(dp)*numel(SampleNames)*(2*window_size)/1000;
@@ -133,6 +168,7 @@ end
 
 allp=unique([dp; op; cp;]);
 p=sort(allp);
+p=p(p>0); %remove any 0s
 positions=p2chrpos(p,ChrStarts);
 
 
@@ -140,9 +176,26 @@ positions=p2chrpos(p,ChrStarts);
 
 fprintf(1,'\nAcquiring detailed information at each potential position...\n');
 fprintf(1,'vcf...');
-[MutGenVCF, Calls, Quals] = generate_mutgenvcf_auto(positions,SampleDirs,SampleNames, ScafNames,jobsubmitoptions,Parallel) ;                
+[MutGenVCF, Calls, Quals] = generate_mutgenvcf_auto(positions,SampleDirs,SampleNames, ScafNames,jobsubmitoptions2,Parallel) ;                
 fprintf(1,'diversity.mat...');
-[counts, fwindows, cwindows] = generate_diversity_struct(SampleDirs, SampleNames, p, numfields, window_size, Parallel, jobsubmitoptions) ;
+[counts, fwindows, cwindows] = generate_diversity_struct(SampleDirs, SampleNames, p, numfields, window_size, Parallel, jobsubmitoptions2) ;
+
+
+%% Copy over selected files so they don't get erased from scratch
+
+fprintf(1,'\n\nCopying files over from scratch to pwd for storage...\n');
+
+cmds={}; 
+for i=1:NSample
+    if ~exist(SampleNames{i},'dir')
+        %don't use run_parallel_unix_commands_fast, because we want this to
+        %run in background, and we aren't using the output at all
+        mkdir(SampleNames{i})
+    end
+    cmds{end+1}=['cp ' SampleDirs{i} '/* ' SampleNames{i} '/'];
+end
+run_parallel_unix_commands_fast(cmds,jobsubmitoptions1,2);
+
 
 
 %% Annotations
@@ -153,8 +206,8 @@ fprintf(1,'diversity.mat...');
 
 
 save(['mutation_table_' run_postfix], 'RefGenome', 'ScafNames', 'ChrStarts', 'GenomeLength', 'p', 'positions', 'coveragethresholds', 'counts',  'geneloc', 'cds', 'mutations', 'Calls', 'Quals', 'sequences', '-v7.3')
-save(['windows_' run_postfix], 'fwindows', 'cwindows')
-save(['MutGenVCF_' run_postfix], 'MutGenVCF')
+save(['windows_' run_postfix], 'fwindows', 'cwindows', '-v7.3')
+save(['MutGenVCF_' run_postfix], 'MutGenVCF', '-v7.3')
 
-
+%end
 

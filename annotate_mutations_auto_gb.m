@@ -1,5 +1,13 @@
 function [an, df, mut, sequences] = annotate_mutations_auto_gb(Positions,Scaf,RefGenome)
 
+global RUN_ON_CLUSTER
+
+if RUN_ON_CLUSTER == 1
+    mainfolder='/files/SysBio/KISHONY LAB/illumina_pipeline';
+else
+    mainfolder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
+end
+
 nts='atcg';
 rc='tagc';
 
@@ -9,10 +17,10 @@ sequences={};
 for i=1:length(Scaf)
     
     a=Scaf{i};f=find(a=='|',2,'last');fn = a(f(1)+1:f(2)-1) ;
-    fr = genbankread(['../Reference_Genomes/' RefGenome '/' fn '.gb']) ;
+    fr = genbankread([mainfolder '/Reference_Genomes/' RefGenome '/' fn '.gb']) ;
     %SK: if no Sequence in gb file, use fasta
     if isempty(fr.Sequence)
-        fr2=fastaread(['../Reference_Genomes/' RefGenome '/genome.fasta']);
+        fr2=fastaread([mainfolder '/Reference_Genomes/' RefGenome '/genome.fasta']);
         fr.Sequence=lower(fr2.Sequence);
     end
     
@@ -68,7 +76,7 @@ for i=1:size(Positions,1)
         
         mut(i).translation=nt2aa(mut(i).Sequence, 'ACGTOnly', false, 'ALTERNATIVESTARTCODONS','F', 'GENETICCODE', 11) ;
 
-        if frame~=0
+        if strcmp(RefGenome,'Bdolosa') & frame~=0
             mut(i).Sequence=mut(i).Sequence(frame:end);
             if mut(i).strand==0
                 mut(i).loc1 = cdf.loc1 + (frame - 1);

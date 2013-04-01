@@ -1,6 +1,8 @@
 function  [Counts, FWindows, CWindows] = generate_diversity_struct(SampleDirs, SampleNames, p, numfields, window_size, parallel, jobsubmitoptions)
 
 
+global TEMPORARYFOLDER
+
 createwindows=1;
 
 fprintf(1,'Creating counts 3 dimensional matrix \n') ;
@@ -23,20 +25,21 @@ if parallel==1
     %run others
     parallel_params={};
     for i=1:numel(SampleNames)
-        parallel_params{end+1}={SampleDirs{i}, SampleNames{i}, p, window_size};        
+        parallel_params{end+1}={SampleDirs{i}, SampleNames{i}, p, window_size, TEMPORARYFOLDER};        
     end
+    
     
     run_parallel_matlab_commands('generate_diversity_struct_single_sample', parallel_params, jobsubmitoptions, 1);
     
     
     %load files
     for i=1:size(SampleNames)
-        load(['intermediate_diversity_matfiles/countsatp_' SampleNames{i} '.mat'])
+        load([TEMPORARYFOLDER '/countsatp_' SampleNames{i} '.mat'])
         Counts(:,:,i)=Countsi;
         if createwindows==1
             FWindows(:,:,i)=FWindowsi;
             CWindows(:,:,i)=CWindowsi;
-            delete(['intermediate_diversity_matfiles/countsatp_' SampleNames{i} '.mat'])
+            delete([TEMPORARYFOLDER '/countsatp_' SampleNames{i} '.mat'])
         end
     end
 

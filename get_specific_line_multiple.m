@@ -1,8 +1,14 @@
-function get_specific_line_multiple(filename,SampleName, ScafNames,mut_list)
+function get_specific_line_multiple(filename,SampleName, ScafNames,mut_list, tempfolder)
 
 
 %Modification to allow for search for all lines in strain.vcf that match
 %that position. Only record info for best position.
+
+if nargin < 5
+    tempfolder = '';
+end
+
+
 
 Tab=9 ;
 
@@ -51,7 +57,7 @@ end
 fprintf(1,' %6.0f \n',toc) ;
 indx=ind(indx) ;
 
-save(['vcfinfo_' char(SampleName)], 'lins', 'indx')
+save([tempfolder '/vcfinfo_' char(SampleName)], 'lins', 'indx')
 
 end
 

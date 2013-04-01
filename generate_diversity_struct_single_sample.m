@@ -1,4 +1,10 @@
-function  generate_diversity_struct_single_sample(SampleDir, SampleName, p, window_size)
+function  generate_diversity_struct_single_sample(SampleDir, SampleName, p, window_size, tempfolder)
+
+
+
+if nargin < 5
+    tempfolder = '';
+end
 
 
 fprintf(1,'Creating counts 3 dimensional matrix \n') ;
@@ -44,13 +50,13 @@ for j=1:length(p)
     end
 end
 
-Counts=data(:,p);
+Counts=data(:,p');
 
 Countsi=Counts;
 FWindowsi=FWindows;
 CWindowsi=CWindows;
 
-save(['intermediate_diversity_matfiles/countsatp_' SampleName], 'Countsi', 'FWindowsi', 'CWindowsi')
+save([tempfolder '/countsatp_' SampleName], 'Countsi', 'FWindowsi', 'CWindowsi')
 
 
 

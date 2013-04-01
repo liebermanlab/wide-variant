@@ -1,6 +1,9 @@
-function [p, coveragethresholds, controlMAF, numfields] = find_diverse_positions_single_sample(params, SampleDir, SampleName, controlMAF)
+function [p, coveragethresholds, controlMAF, numfields] = find_diverse_positions_single_sample(params, SampleDir, SampleName, controlMAF, tempfolder)
 
 
+if nargin < 5
+    tempfolder = '';
+end
 
 %unpack parameters
 minorfreqthreshold=params.minorfreqthreshold;
@@ -156,5 +159,5 @@ numfields=size(data,1);
 p_sample=p;
 coveragethresholds_sample=coveragethresholds;
 
-save(['diverse_' char(SampleName)], 'p_sample', 'coveragethresholds_sample')
+save([tempfolder '/diverse_' char(SampleName)], 'p_sample', 'coveragethresholds_sample')
 

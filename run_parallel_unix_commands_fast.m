@@ -9,6 +9,11 @@ function run_parallel_unix_commands_fast(cmds, qname, Parallel, dirs)
 % to search for output line including 'Subject: ' and then check whether
 % 'Done'
 
+%Comes in 3 flavors, designated by Parallel
+%Parallel = 1 -> run on cluster, wait for output
+%Parallel = 2 -> run on cluster, do not wait for output
+%Otherwise-- run sequentially, wait for output
+
 if nargin < 4
     dirs = {'.'} ;
 end
@@ -23,7 +28,9 @@ end
 
 
 
-if Parallel
+
+
+if Parallel==1
     dr = 'run_parallel_unix_commands_fast_tmp' ;
     outs={}; %list of orchestra output files to expect.
     if ~exist(dr,'dir')
@@ -64,6 +71,18 @@ if Parallel
         disp(done) ;
     end
     
+elseif Parallel==2
+    for i=1:max(length(cmds),length(dirs))
+        fname = ['tmp' num2str(i) '.sh'] ;
+        oname = ['out' num2str(i) '.txt'] ;
+        fid = fopen(fname,'w') ;
+        fprintf(fid,'cd "%s"\n',dirs{min(i,end)}) ;
+        fprintf(fid,'%s\n',cmds{min(i,end)}) ;
+        fclose(fid) ;
+        eval(sprintf('!chmod +x %s',fname))
+        eval(sprintf('!bsub -q %s -o %s %s',qname,oname,fname))
+    end
+    fprintf('Continuing without waiting for last batch of jobs to finish...\n')
 else
     cdr = pwd ;
     for i=1:max(length(cmds),length(dirs))

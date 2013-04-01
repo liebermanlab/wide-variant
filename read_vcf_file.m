@@ -3,7 +3,8 @@ Tab=9 ;
 y=0 ;
 
 fid = fopen(filename,'r') ;
-clear lins 
+
+
 
 i=0 ;
 while ~feof(fid) 
@@ -17,6 +18,10 @@ while ~feof(fid)
     end
 end
 
+if ~exist('lins', 'var')
+    lins=0;
+end
+    
 fclose(fid) ;
 
 end

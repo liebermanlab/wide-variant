@@ -1,5 +1,7 @@
 function [p, numfields, coveragethresholds] = find_diverse_positions(params, SampleDirs, SampleNames, showscatters, parallel, jobsubmitoptions)
 
+global TEMPORARYFOLDER; 
+
 %p is a structure that contains the list of genomic positions meetings
 %params
 
@@ -19,13 +21,13 @@ if parallel==1
     %run on control -- not parallel
     fprintf(1,['\nAnalyzing isogenic control (' SampleNames{1} ')\n']) ;
     
-    [p_control, coveragethresholds_control, MAF_control, numfields] = find_diverse_positions_single_sample(params, SampleDirs{1}, SampleNames{1}, [0]);
+    [p_control, coveragethresholds_control, MAF_control, numfields] = find_diverse_positions_single_sample(params, SampleDirs{1}, SampleNames{1}, [0], TEMPORARYFOLDER);
     
     
     %run others
     parallel_params={};
     for i=2:size(SampleNames)
-        parallel_params{end+1}={params, SampleDirs{i}, SampleNames{i}, MAF_control};        
+        parallel_params{end+1}={params, SampleDirs{i}, SampleNames{i}, MAF_control, TEMPORARYFOLDER};        
     end
     run_parallel_matlab_commands('find_diverse_positions_single_sample', parallel_params, jobsubmitoptions, 1);
     
@@ -38,13 +40,14 @@ if parallel==1
     
     for i=2:size(SampleNames)
         %http://www.vsoch.com/2010/11/loading-dynamic-variables-in-a-static-workspace-in-matlab/
-        diverse=load(['diverse_' SampleNames{i} '.mat']);
+        diverse=load([TEMPORARYFOLDER '/diverse_' SampleNames{i} '.mat']);
         p(:,i)=diverse.p_sample;
         coveragethresholds(:,i)=diverse.coveragethresholds_sample;
-       delete(['diverse_' SampleNames{i} '.mat'])
+       delete([TEMPORARYFOLDER '/diverse_' SampleNames{i} '.mat'])
     end
-
+    delete([TEMPORARYFOLDER '/diverse_' SampleNames{1} '.mat'])
     
+
     %return some information
     p=find(sum(p,2)>0);
         
