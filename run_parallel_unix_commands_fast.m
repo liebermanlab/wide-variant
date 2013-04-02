@@ -54,7 +54,7 @@ if Parallel==1
     while done < max(length(cmds),length(dirs))
         pause(10) ;
         for i=1:length(outs)
-            if exist(outs{i})
+            if exist(outs{i},'file')
                 fid=fopen(outs{i});
                 l=fgetl(fid);
                 while isempty(strfind(l,'Subject: Job '))
@@ -64,11 +64,11 @@ if Parallel==1
                     done=done+1;
                     outs{i}=[];
                 else
-                    error('A job failed. Check run_parallel_unix_commands_fast_tmp for error message')
+                    error(['A job failed. Check run_parallel_unix_commands_fast_tmp/out' num2str(i) '.txt for error message'])
                 end
             end    
         end
-        disp(done) ;
+        disp(done);
     end
     
 elseif Parallel==2

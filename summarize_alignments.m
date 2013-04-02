@@ -43,5 +43,5 @@ for i=1:numel(files)
 end
     
     
-save('../alignment_stats', 'alignments');
+save('alignment_summary', 'alignments');
     
