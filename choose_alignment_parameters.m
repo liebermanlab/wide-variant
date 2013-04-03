@@ -15,10 +15,15 @@ function choose_alignment_parameters(filename)
         percent_aligned(alignment,sample)= alignments(i).uniquepairs/alignments(i).totalpairs;
     end
     
-    HeatMap(percent_aligned, 'ColumnLabels', samples, 'RowLabels',  alignmenttypes, 'ColumnLabelsRotate', 65)
-    set(gca, 'XTick', 1:numel(samples))
-    set(gca, 'XTickLabel', samples)
-    set(gca, 'YTickLabel', alignmenttypes)
-    ylabel(alignmenttypes)
-
+    % use imagesc instead of HeatMap
+    figure; 
+    lims = [0 1]; 
+    h = imagesc(percent_aligned, lims);
+    colorbar; 
+    set(gca, 'XTickLabel', samples); 
+    set(gca, 'XTick', 1:numel(samples)); 
+    set(gca, 'YTickLabel', []); 
+    set(gca, 'YTick', []); 
+    th = title(alignmenttypes, 'FontSize', 24, 'FontWeight', 'bold'); 
+    set(th, 'Interpreter', 'none'); 
 end

@@ -15,7 +15,6 @@ function runtime = save_structure_parameters(logfolder, struc)
         class(fieldname); 
         fieldvalue = struc.(all_fields{i}); 
         class(fieldvalue);
-        fprintf(filehandle, '%s,%d\n', fieldname, fieldvalue)
     end
     
     fclose(filehandle); 
