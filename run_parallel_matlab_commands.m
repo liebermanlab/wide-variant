@@ -22,7 +22,11 @@ if Parallel
     submit(job)
     fprintf(['Sent ' num2str(length(params)) ' jobs. Waiting...\n'])
     waitForState(job)
-    destroy(job) %supresses writing of error files
+    if strcmp(job.State,'finished')
+        destroy(job) %supresses writing of error files
+    else
+        error('Matlab jobs failed. Inspect Job folders')
+    end
 else
     for i=1:length(params)
         func(params{i}{:});
