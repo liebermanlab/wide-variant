@@ -2,18 +2,16 @@
 
 global controlsample
 
-path('../scripts',path)
-
 run_postfix='13_02_26'; %must match postfix in build_mutation_table_master.m
 
 %run options
+onlySNPs=1; 
 loadwindows=1;
 promotersize=150;
 controlsample=1;
 referenceisancestor=0;
 ancestoriscontrol=1;
 ancestorismode=1; %use mode of major alleles as ancestor
-%onlySNPs=1; doesn't work yet
 
 
 %filter parameters
@@ -44,17 +42,8 @@ save_structure_parameters(logfolder, log_parameters);
 
 
 
-%% Set useful useful variables
 
 
-NTs='ATCG';
-scrsz = get(0,'ScreenSize');
-% if onlySNPs
-%     acceptabletypes=NTs;
-% else
-%     acceptabletypes='ATCGDI';
-% end
-acceptabletypes='ATCGDI'
 
 
 
@@ -64,6 +53,21 @@ SampleInfo = read_sample_names ;
 SampleNames={SampleInfo(:).Sample}';
 load(['mutation_table_' run_postfix])
 % load(['MutGenVCF_' run_postfix])
+
+
+
+
+%% Set useful useful variables
+
+
+NTs='ATCG';
+scrsz = get(0,'ScreenSize');
+if onlySNPs
+     acceptabletypes=NTs;
+     Calls(~ismember(Calls,'ATCG'))='N';
+else
+     acceptabletypes='ATCGDI';
+end
 
 
 Nsample=numel(SampleNames);
@@ -80,6 +84,8 @@ if numel(SampleNames)>10
 end
 
 
+
+
 %% Fixed mutations:  Quality threshold anaysis (set value for qual_0)
 
 %Number of mutations
@@ -88,7 +94,7 @@ plot(qual_0,sum(MutQual>=qual_0),'dr', 'MarkerFaceColor', 'r', 'MarkerSize', 10)
 
 %Pairwise distance between strains
 step=floor(qual_0/10);
-qual_th = sort([0:step:(max(MutQual)) qual_0 max(MutQual)-1]) ; 
+qual_th = sort([0:step:min([max(MutQual)-1 qual_0+20]) qual_0]) ; 
 figure(7);clf
 set(gcf,'position',[10   570   560   420])
 for m=1:length(qual_th)
@@ -136,17 +142,7 @@ minormutation=(hasmutation & (ancnti_m==maNT));
 
 %% Generate table
 
-[q, annotation_all] = div_clickable_table(mutations, Calls, p, ancnti, counts,  fwindows, cwindows, mutAF, diversemutation, RefGenome, ScafNames, SampleInfo, ChrStarts, promotersize, showlegends);
-
-
-%% Only snps
-
-SNPCalls=Calls; SNPCalls(~ismember(SNPCalls,'ATCG'))='N';
-SNPQual = ana_mutation_quality(SNPCalls,Quals,0);
-fixedSNP=((ancnt_m~='N') & (ismember(Calls,'ATCG')) & (Calls~=ancnt_m)  & repmat(SNPQual,1,Nsample)>=qual_0);
-[mutAF, mutantNT]=mutant_frequency(counts, fixedSNP, ancnti, Calls);
-
-[q, annotation_all_snps] = div_clickable_table(mutations, SNPCalls, p, ancnti, counts,  fwindows, cwindows, mutAF, diversemutation, RefGenome, ScafNames, SampleInfo, ChrStarts, promotersize, showlegends);
+[q, annotation_all] = div_clickable_table(mutations, Calls, p, ancnti, counts,  fwindows, cwindows, mutAF, diversemutation, MutQual, RefGenome, ScafNames, SampleInfo, ChrStarts, promotersize, showlegends);
 
 
 
