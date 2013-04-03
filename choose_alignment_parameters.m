@@ -1,7 +1,7 @@
-function choose_alignment_parameters(directory)
+function choose_alignment_parameters(filename)
 
 
-    load(directory);
+    load(filename);
     
     alignmenttypes=unique({alignments.alignment});
     samples=unique({alignments.sample});

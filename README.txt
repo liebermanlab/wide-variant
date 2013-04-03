@@ -21,9 +21,10 @@ This step creates sam, pileup, vcf, and diversity.mat (info on this structure be
 
 ----- (C) Gather raw data at potentially variant sites---------
 This step creates 3 structures which summarize the position at every potentially variant site across all samples. Descriptions below.
-1. Inspect header of build_mutation_table_master for hardcoded variables (logged each run)
-2. Open up MATLAB on interactive session on cluster in this case folder and run build_mutation_table_master
-
+1. Set up a case folder with sample_names.csv . If calling polymorphic positions, the isogenic control must be the first sample in sample_names.csv (Case folder). 
+2. When setting up case folder, each sample must have a single alignment parameter chosen. Each case can only have one Reference Genome but can have different parameter sets. You can chose the parameter sets by using the matlab function choose_alignment_parameters([path]/alignment_summary)
+3. Inspect header of build_mutation_table_master for hardcoded variables (logged each run)
+4. Open up MATLAB on interactive session on cluster in this case folder and run build_mutation_table_master
 
 --- (D) Filter and produce interactive table and useful data structures -----
 1. Inspect header of analysis_master for hardcoded variables (logged each run). Ensure value of postfix matches what was run for step ©.
