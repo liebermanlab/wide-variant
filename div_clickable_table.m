@@ -1,4 +1,4 @@
-function [annotations, allannotations] = div_clickable_table(muts, calls, allp, ancnti, cnts, fwindows, cwindows, mutAF, isdiverse, RefGenome, ScafNames, SampleInfo, ChrStarts, promoterdistance, showlegends)
+function [annotations, allannotations] = div_clickable_table(muts, calls, allp, ancnti, cnts, fwindows, cwindows, mutAF, isdiverse, MutQual, RefGenome, ScafNames, SampleInfo, ChrStarts, promoterdistance, showlegends)
 
 
 %p input is params
@@ -34,7 +34,7 @@ Nsamples=size(maf,2);
 annotations=muts;
 for i=1:Npositions
     
-    
+    annotations(i).qual=MutQual(i);
     annotations(i).AApos=floor(((double(annotations(i).nt_pos)-1)/3+1)*10)/10;
     
     
@@ -151,11 +151,11 @@ end
 
 %generate table
 if numel(ScafNames)>1
-    colnames={'Type','Chr','Pos', 'Locustag', 'Gene','Annotation', 'AApos', 'NTs', 'AAs'};
-    widths=num2cell([12, 12, 58, 50, 38, 250, 42, 40, 40, ones(1,numel(SampleInfo))*26]);
+    colnames={'Qual', 'Type','Chr','Pos', 'Locustag', 'Gene','Annotation', 'AApos', 'NTs', 'AAs'};
+    widths=num2cell([38, 12, 12, 58, 50, 38, 250, 42, 40, 40, ones(1,numel(SampleInfo))*26]);
 else
-    colnames={'Type','Pos', 'Locustag','Gene','Annotation', 'AApos', 'NTs', 'AAs'};
-    widths=num2cell([12, 58, 50, 38, 250, 45, 40, 40, ones(1,numel(SampleInfo))*26]);
+    colnames={'Qual', 'Type','Pos', 'Locustag','Gene','Annotation', 'AApos', 'NTs', 'AAs'};
+    widths=num2cell([38, 12, 58, 50, 38, 250, 45, 40, 40, ones(1,numel(SampleInfo))*26]);
 end
 
 nonsamplecols=numel(colnames);
@@ -173,11 +173,11 @@ for i=1:numel(annotations)
     end
     %generate table
     if numel(ScafNames)>1
-        tabledata(i,1:nonsamplecols)=[{annotations(i).type} {annotations(i).scafold} {annotations(i).pos} ...
+        tabledata(i,1:nonsamplecols)=[{[annotations(i).qual]} {annotations(i).type} {annotations(i).scafold} {annotations(i).pos} ...
         {locustag} {annotations(i).gene} {annotations(i).annotation} {annotations(i).AApos} {[annotations(i).nts]} ...
         {[annotations(i).AAs]}];
     else
-        tabledata(i,1:nonsamplecols)=[{annotations(i).type} {annotations(i).pos} ...
+        tabledata(i,1:nonsamplecols)=[{[annotations(i).qual]} {annotations(i).type} {annotations(i).pos} ...
         {locustag} {annotations(i).gene} {annotations(i).annotation} {annotations(i).AApos} {[annotations(i).nts]} ...
         {[annotations(i).AAs]}];
     end
