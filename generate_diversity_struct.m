@@ -25,7 +25,7 @@ if parallel==1
     %run others
     parallel_params={};
     for i=1:numel(SampleNames)
-        parallel_params{end+1}={SampleDirs{i}, SampleNames{i}, p, window_size, TEMPORARYFOLDER};        
+        parallel_params{end+1}={SampleDirs{i}, SampleNames{i}, p, window_size, createwindows, TEMPORARYFOLDER};        
     end
     
     

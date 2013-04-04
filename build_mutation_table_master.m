@@ -9,6 +9,7 @@ run_postfix='13_04_02';
 
 %Run in cluster?
 Parallel=1;
+onlysnps=1;
 jobsubmitoptions1='sysbio_12h'; %short -W 0:15
 jobsubmitoptions2='sysbio_12h'; %short -W 0:15
 
@@ -137,7 +138,7 @@ end
 
 fprintf(1,'\n\nFinding positions with at least 1 fixed mutation...\n');
 
-cp = generate_positions(SampleDirs, SampleNames, GenomeLength, ScafNames, ChrStarts, looseFQmax, 100000, Parallel, jobsubmitoptions1);
+cp = generate_positions(SampleDirs, SampleNames, GenomeLength, ScafNames, ChrStarts, looseFQmax, onlysnps, 100000, Parallel, jobsubmitoptions1);
 fprintf(1,'Found %g positions where samtools called a variant in at least one sample \n',length(cp)) ;
 
 
@@ -151,12 +152,12 @@ end
 
 dp=[];
 if analyze_diversity
-    fprintf(1,'\nFinding single nucleotide positions with diversity...');
+    fprintf(1,'\nFinding single nucleotide positions with within-sample polymorphisms...');
     
     %Find diverse positions
     [dp, numfields, coveragethresholds] = find_diverse_positions(loose_parameters, SampleDirs, SampleNames, gscatters, Parallel, jobsubmitoptions1);
 
-    fprintf(1,'Found %g diverse positions that meet loose parameters in at least 1 sample \n',length(dp)) ;
+    fprintf(1,'Found %g positions with within-sample polymorphism that meets loose parameters in at least 1 sample \n',length(dp)) ;
     memreq=2*4*length(dp)*numel(SampleNames)*(2*window_size)/1000;
     fprintf(1,['Ensure that enough memory was requested when starting matlab session (use -R rusage[mem=' num2str(memreq) '])\n']);
     fprintf(1,'If p is large, frequency and coverage windows are not generated-- use smaller window or stricter parameters\n');
@@ -174,11 +175,13 @@ positions=p2chrpos(p,ChrStarts);
 fprintf(1,'\nAcquiring detailed information at each potential position...\n');
 fprintf(1,'vcf...');
 [MutGenVCF, Calls, Quals] = generate_mutgenvcf_auto(positions,SampleDirs,SampleNames, ScafNames,jobsubmitoptions2,Parallel) ;                
+
+
 fprintf(1,'diversity.mat...');
 [counts, fwindows, cwindows] = generate_diversity_struct(SampleDirs, SampleNames, p, numfields, window_size, Parallel, jobsubmitoptions2) ;
 
 
-%% Copy over selected files so they don't get erased from scratch
+%% Copy over select files so they don't get erased from scratch
 
 fprintf(1,'\n\nCopying files over from scratch to pwd for storage...\n');
 

@@ -1,4 +1,4 @@
-function p = generate_positions(SampleDirs, SampleNames, GenomeLength, ScafNames, ChrStarts, maxFQ, L, parallel, jobsubmitoptions)      
+function p = generate_positions(SampleDirs, SampleNames, GenomeLength, ScafNames, ChrStarts, maxFQ, onlysnps, L, parallel, jobsubmitoptions)      
 % unlike generate_mutations_genotypes, this functions creates a list of mutated positions (chromosome, position) rather than a list of mutaions (chromosome, position, ref, alt).
 % changes are mainly in not reading reference and alelle columns.  
 
@@ -17,7 +17,7 @@ if parallel==1
     %run analysis
     parallel_params={};
     for i=1:length(SampleDirs)    
-        parallel_params{end+1}={SampleDirs{i}, SampleNames{i}, ScafNames, maxFQ, L, TEMPORARYFOLDER};        
+        parallel_params{end+1}={SampleDirs{i}, SampleNames{i}, ScafNames, maxFQ, onlysnps, L, TEMPORARYFOLDER};        
     end
     run_parallel_matlab_commands('generate_positions_single_sample', parallel_params, jobsubmitoptions, 1);
     
@@ -35,7 +35,8 @@ if parallel==1
 
     p=find(timesvariant>0 & timesvariant <numel(SampleDirs));
     
-    fprintf(['Not considering ' num2str(sum(timesvariant==numel(SampleDirs))) ' positions where all samples have a variant compared to the reference'])
+    fprintf(['Not considering ' num2str(sum(timesvariant==numel(SampleDirs))) ' positions where all samples have a variant compared to the reference...\n'])
+
     
 else
 
