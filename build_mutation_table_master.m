@@ -4,12 +4,12 @@ function build_mutation_table_master(scriptspath)
 
 %% Important variables to set each time
 
-run_postfix='13_02_26';
+run_postfix='13_04_02';
 
 
 %Run in cluster?
 Parallel=1;
-jobsubmitoptions1='sysbio_15m'; %short -W 0:15
+jobsubmitoptions1='sysbio_12h'; %short -W 0:15
 jobsubmitoptions2='sysbio_12h'; %short -W 0:15
 
 global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 1;
@@ -23,7 +23,7 @@ window_size=500; %parameters used during initial data structure generation
 
 analyze_diversity=1; %analyze diversity?
 
-looseFQmax=-20;
+looseFQmax=-30;
 
 loose_parameters=struct('minorfreqthreshold',.01, 'minreads_perstrand',2,...
     'maxreads_perstrand_percentile', 100,'minreads_perstrand_per_allele',1,...
@@ -54,11 +54,8 @@ end
 
 global TEMPORARYFOLDER;
 timestamp=save_structure_parameters(logfolder, log_parameters);
-TEMPORARYFOLDER=['/scratch/kishony_illumina_temp/' timestamp];
+TEMPORARYFOLDER=['/scratch/' timestamp];
 
-if ~exist('/scratch/kishony_illumina_temp/','dir')
-    mkdir('/scratch/kishony_illumina_temp/')
-end
 mkdir(TEMPORARYFOLDER)
 
 

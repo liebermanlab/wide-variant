@@ -1,9 +1,4 @@
-------------------------------------------------------
-------------------------------------------------------
-Overview
-------------------------------------------------------
-------------------------------------------------------
-
+----- Overview -------------------------------------
 This pipeline is intended to be run in 4 steps.
 (A) Set up proper folders and documents.
 (B) Process raw data files into sample-specific files, using 1 set of parameters per sample, or many (This is the 'experiment' step, build_experiment directories)
@@ -13,63 +8,52 @@ This pipeline is intended to be run in 4 steps.
 The purpose of separating the experiment and case steps is, for each sample, to try many sets of filter and alignment parameters. Then we can select the best parameter set to move forward with when comparing across samples.
 
 
-
-------------------------------------------------------
-------------------------------------------------------
-How to run this pipeline
-------------------------------------------------------
-------------------------------------------------------
-
-
 ----- (A) Setup ----------------------------------------
-1. Get files from github. Put them on a directory readable by the orchestra cluster, preferably in the KISHONY LAB folder. You need to also set up sickle (a filtering program) by logging into orchestra, navigating into sickle-master and typing 'make'. Making sickle on your local computer will not work-- you need to be logged into the cluster.
-2. Set up reference genome folder in Reference_Genomes. Add fasta and genebank files. Name the fasta file genome.fasta. There may be multiple genebank files-- name each genebank file the name of the corresponding chromosome/scaffold in the fasta file (e.g. NC_002695.1.gb).
-3. Set up an experiment folder with samples.csv, read_filter_params.csv, alignment_params.csv. This is best in "/scratch" folder in orchestra AND CANNOT HAVE A SPACE IN THE PATH. See other folder for examples. In samples.csv, use spaces to indicate multiple alignment parameters for a given sample. Line delimiter must be written by excel (I think this is '\r' . Textwrangler doesn't seem to work).
-
+1. Set up reference genome folder in Reference_Genomes. Add fasta and genebank files. Name the fasta file genome.fasta. There may be multiple genebank files-- name each genebank file the name of the corresponding chromosome/scaffold in the fasta file (e.g. NC_002695.1.gb).
+2. Set up an experiment folder with samples.csv, read_filter_params.csv, alignment_params.csv. This is best in "/scratch" folder in orchestra AND CANNOT HAVE A SPACE IN THE PATH. See other folder for examples. In samples.csv, use spaces to indicate multiple alignment parameters for a given sample. Line delimiter must be written by excel (I think this is '\r' . Textwrangler doesn't seem to work).
+3. Set up a case folder with sample_names.csv . If calling polymorphic positions, the isogenic control must be the first sample in sample_names.csv (Case folder). The last column of this folder may need to be adjusted after running part B. 
 
 
 ----- (B) Process raw data files ------------------
 This step creates sam, pileup, vcf, and diversity.mat (info on this structure below) files for finding polymorphisms. It also creates a .bai file which helps for IGV viewer and samtools view, two ways of visualizing alignments. A future version of this pipeline should also create coverage maps at this point, as coverage maps do not depend on other samples. In short, any sample-specific file should be created in this step.
-1. Open up MATLAB on interactive session on cluster in this experiment folder and run build_experiment_directories(pathdirectory) in this folder
-
-e.g.
-cd /scratch/[myexperimentfolder]/
-bsub -Is -q sysbio_int_2d matlab
-scriptsdirectory =/files/SysBio/KISHONY LAB/[mydirectory]/scripts/
-path(scriptsdirectory,path)
-build_experiment_directories(scriptsdirectory)
-
+1. Open up MATLAB on interactive session on cluster in this experiment folder and run build_experiment_directories
 
 
 ----- (C) Gather raw data at potentially variant sites---------
 This step creates 3 structures which summarize the position at every potentially variant site across all samples. Descriptions below.
-
 1. Set up a case folder with sample_names.csv . If calling polymorphic positions, the isogenic control must be the first sample in sample_names.csv (Case folder). 
 2. When setting up case folder, each sample must have a single alignment parameter chosen. Each case can only have one Reference Genome but can have different parameter sets. You can chose the parameter sets by using the matlab function choose_alignment_parameters([path]/alignment_summary)
 3. Inspect header of build_mutation_table_master for hardcoded variables (logged each run)
 4. Open up MATLAB on interactive session on cluster in this case folder and run build_mutation_table_master
 
-e.g.
-cd /files/SysBio/KISHONY LAB/[mydirectory]/[Mycasefolder]
-choose_alignment_parameters([experimentfolder])
-(set up sample_names.csv)
-build_mutation_table_master(scriptsdirectory)
-
-
 --- (D) Filter and produce interactive table and useful data structures -----
-1. Inspect header of analysis_master for hardcoded variables (logged each run). Ensure value of postfix matches what was run for step C. Consider including indwells or not.
-2. (Optional) Copy this folder to a local directory not on the cluster, as reading and writing on the cluster takes forever. The tradeoff is the large file size. The next issue of this pipeline will include a folder for copying that includes fewer files. (Alternative) Can copy only .m and .csv files and it should work locally. 
-3. Open up MATLAB locally in this the folder and run analysis_master
+1. Inspect header of analysis_master for hardcoded variables (logged each run). Ensure value of postfix matches what was run for step ©.
+2. Open up MATLAB locally in this the folder and run analysis_master
 
 
 
 
 
-------------------------------------------------------
-------------------------------------------------------
-Description of variables inputted to analysis_master
-------------------------------------------------------
-------------------------------------------------------
+-----Example---------------------------------------
+(Make reference genome folder with fasta and genebank files)
+ssh USER@orchestra.med.harvard.edu          (on HMS machine, simply: ssh orchestra)
+(Make experiment folder and csv files in scratch)
+cd [experimentfolder]
+bsub -Is -q sysbio_int_2d matlab
+scriptsdirectory =[scriptsdirectory]
+path(scriptsdirectory,path)
+build_experiment_directories(scriptsdirectory)
+
+
+(Make case folder and csv file)
+cd [casefolder]
+build_mutation_table_master
+
+
+(switch to running matlab locally, from Case Folder)
+
+analysis_master
+
 
 
 ---About mutation_table_[postfix].mat--------------
