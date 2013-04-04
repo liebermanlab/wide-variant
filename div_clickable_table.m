@@ -152,10 +152,10 @@ end
 %generate table
 if numel(ScafNames)>1
     colnames={'Qual', 'Type','Chr','Pos', 'Locustag', 'Gene','Annotation', 'AApos', 'NTs', 'AAs'};
-    widths=num2cell([38, 12, 12, 58, 50, 38, 250, 42, 40, 40, ones(1,numel(SampleInfo))*26]);
+    widths=num2cell([48, 16, 12, 58, 50, 38, 250, 42, 40, 40, ones(1,numel(SampleInfo))*26]);
 else
     colnames={'Qual', 'Type','Pos', 'Locustag','Gene','Annotation', 'AApos', 'NTs', 'AAs'};
-    widths=num2cell([38, 12, 58, 50, 38, 250, 45, 40, 40, ones(1,numel(SampleInfo))*26]);
+    widths=num2cell([48, 16, 58, 50, 38, 250, 45, 40, 40, ones(1,numel(SampleInfo))*26]);
 end
 
 nonsamplecols=numel(colnames);

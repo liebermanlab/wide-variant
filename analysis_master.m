@@ -15,7 +15,7 @@ ancestorismode=1; %use mode of major alleles as ancestor
 
 
 %filter parameters
-qual_0=35;
+qual_0=40;
 
 strict_parameters=struct('minorfreqthreshold',.03, 'maxreads_perstrand_percentile',99,...
     'minreads_perstrand',30, 'minreads_perstrand_per_allele',2,'min_bq',19,'min_mq', 33, 'min_td', 7,...
@@ -159,6 +159,9 @@ genes=locustags2numbers({annotation_all.locustag});
 %%
 
 save(['mutation_analysis_' run_postfix], 'mutations', 'Nsample', 'mutAF', 'genes')
+
+
+
 
 
 
