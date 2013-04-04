@@ -1,4 +1,4 @@
-function p = generate_positions(SampleDirs, SampleNames, ScafNames, ChrStarts, maxFQ, L, parallel, jobsubmitoptions)      
+function p = generate_positions(SampleDirs, SampleNames, GenomeLength, ScafNames, ChrStarts, maxFQ, L, parallel, jobsubmitoptions)      
 % unlike generate_mutations_genotypes, this functions creates a list of mutated positions (chromosome, position) rather than a list of mutaions (chromosome, position, ref, alt).
 % changes are mainly in not reading reference and alelle columns.  
 
@@ -11,7 +11,7 @@ global TEMPORARYFOLDER;
 
 if parallel==1
 
-    
+    timesvariant=zeros(GenomeLength,1);
     
     
     %run analysis
@@ -23,18 +23,19 @@ if parallel==1
     
     
     %load files
-    p=[];
     for i=1:length(SampleDirs)  
         %http://www.vsoch.com/2010/11/loading-dynamic-variables-in-a-static-workspace-in-matlab/
         pos=load([TEMPORARYFOLDER '/vcf_' SampleNames{i} '.mat']);
         if numel(pos.Positions>0)
-            p=union(p, chrpos2index(pos.Positions,ChrStarts));
+            x=chrpos2index(pos.Positions,ChrStarts);
+            timesvariant(x)=timesvariant(x)+1;           
         end
         delete([TEMPORARYFOLDER '/vcf_' SampleNames{i} '.mat'])
     end
 
-   
-        
+    p=find(timesvariant>0 & timesvariant <numel(SampleDirs));
+    
+    fprintf(['Not considering ' num2str(sum(timesvariant==numel(SampleDirs))) ' positions where all samples have a variant compared to the reference'])
     
 else
 

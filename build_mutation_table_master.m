@@ -140,7 +140,7 @@ end
 
 fprintf(1,'\n\nFinding positions with at least 1 fixed mutation...\n');
 
-cp = generate_positions(SampleDirs, SampleNames, ScafNames, ChrStarts, looseFQmax, 100000, Parallel, jobsubmitoptions1);
+cp = generate_positions(SampleDirs, SampleNames, GenomeLength, ScafNames, ChrStarts, looseFQmax, 100000, Parallel, jobsubmitoptions1);
 fprintf(1,'Found %g positions where samtools called a variant in at least one sample \n',length(cp)) ;
 
 
