@@ -7,7 +7,7 @@ global TEMPORARYFOLDER;
 %Updated January 2012 to also return Call and Gen
 
 
-MutGenVCF = VCF_struct ;
+MutGenVCF = VCF_struct_light ;
 
 params = {} ;
 for i=1:numel(StrainDirs)
@@ -23,9 +23,9 @@ for i=1:numel(StrainDirs)
     for k=1:size(Positions,1) ;
         j = find(vcf.indx==k) ;
         if isempty(j)
-            MutGenVCF(k,i).qual = nan ;
+            MutGenVCF(k,i).scaf = nan ;
             MutGenVCF(k,i).pos = nan ;
-            MutGenVCF(k,i).gen2 = nan ;
+            MutGenVCF(k,i).alt = nan ;
             MutGenVCF(k,i).FQ = nan ;
         else
             MutGenVCF(k,i) = read_vcf_line(vcf.lins{j}) ;
