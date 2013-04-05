@@ -1,6 +1,6 @@
-function Positions = generate_positions_single_sample(StrainDir, SampleName, ScafNames, maxFQ, onlysnps, L, tempfolder)      
+function Positions = generate_positions_single_sample(StrainDir, SampleName, ScafNames, maxFQ, onlysnps, L, tempfolder)
 % unlike generate_mutations_genotypes, this functions creates a list of mutated positions (chromosome, position) rather than a list of mutaions (chromosome, position, ref, alt).
-% changes are mainly in not reading reference and alelle columns.  
+% changes are mainly in not reading reference and alelle columns.
 
 % an earlier version created a structure called Genotypes, this has since
 % been removed
@@ -10,7 +10,7 @@ if nargin < 5
 end
 
 
-K = 0 ; 
+K = 0 ;
 Positions = zeros(L,2) ;
 Mnum = zeros(L,1) ;
 include=zeros(L,1);
@@ -22,7 +22,8 @@ if isstruct(vcf)
         ScfN = find(strcmp(vcf(j).scaf,ScafNames)) ;
         pos = vcf(j).pos ;
         num = ScfN*1e8+pos ;
-        if ~find(Mnum(1:K)==num,1) && (numel(vcf(j).alt)==1 || onlysnps==0)
+        Mindx=find(Mnum(1:K)==num,1) ;
+        if ((isempty(Mindx)) & (numel(vcf(j).alt)==1 | onlysnps==0))
             K=K+1 ;
             Positions(K,:) = [ScfN, pos] ;
             Mnum(K) = num ;

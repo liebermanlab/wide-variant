@@ -1,4 +1,4 @@
-function build_mutation_table_master(scriptspath)
+%function build_mutation_table_master(scriptspath)
 
 
 
@@ -10,7 +10,7 @@ run_postfix='13_04_02';
 %Run in cluster?
 Parallel=1;
 onlysnps=1;
-jobsubmitoptions1='sysbio_12h'; %short -W 0:15
+jobsubmitoptions1='sysbio_15m'; %short -W 0:15
 jobsubmitoptions2='sysbio_12h'; %short -W 0:15
 
 global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 1;
@@ -64,17 +64,21 @@ mkdir(TEMPORARYFOLDER)
 
 global SCRIPTSPATH;
 
-if nargin > 0
-     SCRIPTSPATH = scriptspath;
-else
-   a=pwd; SCRIPTSPATH=[a(1:find(double(a)==47,1,'last')) 'scripts']; 
-   if ~exist(SCRIPTSPATH, 'dir')
-       fprintf(['Could not find ' SCRIPTSPATH '...\n'])
-       error('Error: Must run from an experiment folder, with scripts folder in parent directory')
-   else
-       path(SCRIPTSPATH,path);
-   end
-end
+%For use as script
+SCRIPTSPATH = scriptsdirectory;
+
+%For use as function
+% if nargin > 0
+%      SCRIPTSPATH = scriptspath;
+% else
+%    a=pwd; SCRIPTSPATH=[a(1:find(double(a)==47,1,'last')) 'scripts']; 
+%    if ~exist(SCRIPTSPATH, 'dir')
+%        fprintf(['Could not find ' SCRIPTSPATH '...\n'])
+%        error('Error: Must run from an experiment folder, with scripts folder in parent directory')
+%    else
+%        path(SCRIPTSPATH,path);
+%    end
+% end
 
 fprintf(['Usings scripts directory: ' SCRIPTSPATH  '\n']);
 
@@ -209,5 +213,5 @@ save(['mutation_table_' run_postfix], 'RefGenome', 'ScafNames', 'ChrStarts', 'Ge
 save(['windows_' run_postfix], 'fwindows', 'cwindows', '-v7.3')
 % save(['MutGenVCF_' run_postfix], 'MutGenVCF', '-v7.3')
 
-end
+%end
 

@@ -19,14 +19,24 @@ if Parallel
         createTask(job, func, 0, params{i});
     end
     
+    
+    
     submit(job)
     fprintf(['Sent ' num2str(length(params)) ' jobs. Waiting...\n'])
     waitForState(job)
-    %if strcmp(job.State,'finished')
-    %    destroy(job) %supresses writing of error files
-    %else
-    %    error('Matlab jobs failed. Inspect Job folders')
-    %end
+    
+    for i=1:length(params)
+        if (isempty(job.Tasks(i).FinishTime)) | (~isempty(job.Tasks(i).ErrorMessage))
+            if (~isempty(job.Tasks(i).ErrorMessage)
+                error(['Matlab job [' num2str(i) '] failed because of time limitation'])
+            else
+                disp(job.Task(i).ErrorMessage)
+                error(['Matlab job [' num2str(i) '] failed (others may have failed also)'])
+            end
+        end
+    end
+    
+    
 else
     for i=1:length(params)
         func(params{i}{:});
