@@ -2,7 +2,7 @@
 
 global controlsample
 
-run_postfix='13_02_26'; %must match postfix in build_mutation_table_master.m
+run_postfix='13_04_02'; %must match postfix in build_mutation_table_master.m
 
 %run options
 onlySNPs=1; 
