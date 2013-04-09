@@ -13,6 +13,7 @@ end
 par(1).scaf = str{1} ;
 par.pos = str2num(str{2}) ;
 par.alt = str{5} ;
+par.ref = str{4} ;
 t = read_vcf_info(str{8}) ;
 par.FQ = t.FQ ;
 

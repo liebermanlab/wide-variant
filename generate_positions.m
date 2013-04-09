@@ -38,6 +38,7 @@ if parallel==1
     fprintf(['Not considering ' num2str(sum(timesvariant==numel(SampleDirs))) ' positions where all samples have a variant compared to the reference...\n'])
 
     
+    
 else
 
     K = 0 ; 

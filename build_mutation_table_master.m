@@ -10,7 +10,7 @@ run_postfix='13_04_02';
 %Run in cluster?
 Parallel=1;
 onlysnps=1;
-jobsubmitoptions1='sysbio_15m'; %short -W 0:15
+jobsubmitoptions1='sysbio_2h'; %short -W 0:15
 jobsubmitoptions2='sysbio_12h'; %short -W 0:15
 
 global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 1;
