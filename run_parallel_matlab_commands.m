@@ -27,7 +27,7 @@ if Parallel
     
     for i=1:length(params)
         if (isempty(job.Tasks(i).FinishTime)) | (~isempty(job.Tasks(i).ErrorMessage))
-            if (~isempty(job.Tasks(i).ErrorMessage)
+            if (~isempty(job.Tasks(i).ErrorMessage))
                 error(['Matlab job [' num2str(i) '] failed because of time limitation'])
             else
                 disp(job.Task(i).ErrorMessage)
