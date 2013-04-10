@@ -1,4 +1,4 @@
-%function build_mutation_table_master(scriptspath)
+function build_mutation_table_master(scriptsdirectory)
 
 
 
@@ -10,7 +10,7 @@ run_postfix='13_04_02';
 %Run in cluster?
 Parallel=1;
 onlysnps=1;
-jobsubmitoptions1='sysbio_15m'; %short -W 0:15
+jobsubmitoptions1='sysbio_2h'; %short -W 0:15
 jobsubmitoptions2='sysbio_12h'; %short -W 0:15
 
 global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 1;
@@ -178,7 +178,7 @@ positions=p2chrpos(p,ChrStarts);
 
 fprintf(1,'\nAcquiring detailed information at each potential position...\n');
 fprintf(1,'vcf...');
-[MutGenVCF, Calls, Quals] = generate_mutgenvcf_auto(positions,SampleDirs,SampleNames, ScafNames,jobsubmitoptions2,Parallel) ;                
+[Calls, Quals] = gather_vcf_info(positions,SampleDirs,SampleNames, ScafNames,ChrStarts,jobsubmitoptions2,Parallel) ;                
 
 
 fprintf(1,'diversity.mat...');
@@ -213,5 +213,5 @@ save(['mutation_table_' run_postfix], 'RefGenome', 'ScafNames', 'ChrStarts', 'Ge
 save(['windows_' run_postfix], 'fwindows', 'cwindows', '-v7.3')
 % save(['MutGenVCF_' run_postfix], 'MutGenVCF', '-v7.3')
 
-%end
+end
 
