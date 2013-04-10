@@ -16,9 +16,9 @@ def load_genome_sequence(filename, filetype):
     mutable_seq = seq_record.seq.tomutable() 
     return seq_record, mutable_seq
 
-def edit_genome_sequence( genome_seq, var_file ):
+def edit_genome_sequence( mutable_seq, var_file ):
     # params
-    nucleotides = ['A', 'T', 'C', 'G']
+    nucleotides = ('A', 'T', 'C', 'G')
     counter = 0
 
     # open variant file
@@ -29,15 +29,15 @@ def edit_genome_sequence( genome_seq, var_file ):
         pos, ref, var, qual = line.split()
         if float(qual)>30: # qual filter 
             if (ref and var) in nucleotides: # replace only SNPs, not indels
-                fasta_nucleotide = genome_seq[int(pos)-1] 
+                fasta_nucleotide = mutable_seq[int(pos)-1] 
                 # check that ref in VCF and FASTA are the same 
                 if ref == fasta_nucleotide: 
-                    genome_seq[int(pos)-1] = ref 
+                    mutable_seq[int(pos)-1] = var 
                     counter +=1 
     var_filehandle.close()
 
     print 'Replaced %i SNP positions' %counter
-    return genome_seq
+    return mutable_seq
 
 def save_new_file( edited_mutseq, unedited_seq_record, variant_file, filetype, output_file ):
     # save edited Seq as gb or fasta file 
