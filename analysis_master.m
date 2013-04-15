@@ -109,10 +109,24 @@ qual_th = sort([0:step:min([max(MutQual)-1 qual_0+20]) qual_0]) ;
 
 
 
+%% Compare to isogenic control to set diversity thresholds
+
+[maf, maNT, minorNT] = div_major_allele_freq(counts);
+
+controlFreq=maf(:,1);
+controlNT=maNT(:,1);
+
+samplestocompare=[2];
+
+for i=samplestocompare
+    div_clickable_scatter_sigcolor(maf(:,1), maf(:,i), 'Control MAF', ['MAF in ' SampleNames(i)], i, strict_parameters, coveragethresholds, counts, fwindows, cwindows, positions, mutations, RefGenome, ScafNames,  ChrStarts, SampleInfo);
+end
+
+
+
 %% Create useful matrices and vectors
 
 
-[maf, maNT, minorNT] = div_major_allele_freq(counts);
 
 if ancestoriscontrol>0
     %Ancestral nucleotide at each position
@@ -143,7 +157,11 @@ minormutation=(hasmutation & (ancnti_m==maNT));
 [mutAF, mutantNT]=mutant_frequency(counts, hasmutation, ancnti, Calls);
 
 
-%% Generate table
+
+
+
+
+%% Generate table -- inspect lower MutQuals and toggle qual_0
 
 QualSort=1;
 [q, annotation_all, sorted_table_data] = div_clickable_table(mutations, Calls, p, ancnti, ...

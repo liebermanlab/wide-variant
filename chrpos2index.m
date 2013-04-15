@@ -2,7 +2,7 @@ function p = chrpos2index(pos, cstarts)
 
 if (size(pos,1) < size(pos,2)) & (size(pos,2)>2)
     pos=pos';
-    fprintf(1,'reversed orientation of chrpos');
+  %  fprintf(1,'reversed orientation of chrpos');
 end
 
 

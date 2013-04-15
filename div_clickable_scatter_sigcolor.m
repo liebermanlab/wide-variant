@@ -1,9 +1,11 @@
 
-function div_clickable_scatter_sigcolor(x,y, xname, yname, sample, params, covthresholds, cnts, dwindows, iwindows, cwindows, pos, annotations, RefGenome, ScafNames, ChrStarts, SampleNames)
+function div_clickable_scatter_sigcolor(x,y, xname, yname, sample, params, covthresholds, cnts, fwindows, cwindows, pos, annotations, RefGenome, ScafNames, ChrStarts, SampleInfo)
+
+
 
 
 IsGenomeLoaded = false ;
-window_size=floor(size(dwindows,1)/2);
+window_size=floor(size(fwindows,1)/2);
 
 
 %Calculate important things, used later for plotting window
@@ -15,8 +17,11 @@ goodmaf=zeros(size(d)); goodmaf(d>0)=dmaf(d>0);
 
 figure;
 clf ; hold on
+subplot(2,1,1);
 
-search_ind = find(good) ;
+search_ind = 1:numel(good) ;
+%search_ind = find(good) ;
+%search_ind = find(~good) ;
 
 
 plot(x(~good),y(~good),'o','MarkerSize', 4, 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'k', 'ButtonDownFcn',@clicked) ;
@@ -25,11 +30,39 @@ plot(x(good),y(good),'o','MarkerSize', 4, 'MarkerFaceColor', 'r', 'MarkerEdgeCol
 
 
 
+
 axis([.5 1 .5 1])
 
 xlabel(xname)
 ylabel(yname)
-title(SampleNames(sample).Sample)
+title(SampleInfo(sample).Sample)
+
+
+% Decide where to click
+
+% Create the button group.
+h = uibuttongroup('visible','off','Position',[0 0 .5 .4]);
+% Create three radio buttons in the button group.
+u0 = uicontrol('Style','Radio','String','Inspect nearest position regardless of color',...
+    'pos',[10 75 1100 30],'parent',h,'HandleVisibility','off');
+u1 = uicontrol('Style','Radio','String','Inspect nearest called position (red)',...
+    'pos',[10 50 1100 30],'parent',h,'HandleVisibility','off');
+u2 = uicontrol('Style','Radio','String','Inspect nearest uncalled position (black)',...
+    'pos',[10 25 1100 30],'parent',h,'HandleVisibility','off');
+% Initialize some button group properties. 
+set(h,'SelectionChangeFcn',@selcbk);
+set(h,'SelectedObject',[]);  % No selection
+set(h,'Visible','on');
+
+
+    function selcbk(source,eventdata)
+        
+        if strcmp(get(get(source,'SelectedObject'),'String'),'Inspect nearest called position (red)');
+            search_ind = find(good);
+        elseif strcmp(get(get(source,'SelectedObject'),'String'),'Inspect nearest uncalled position (black)');
+            search_ind = find(~good);
+        end
+    end
 
     function clicked(src,event)
         
@@ -66,14 +99,17 @@ title(SampleNames(sample).Sample)
 
 
         %Bar charts of counts
-        div_bar_charts(squeeze(cnts(:,ind,:)), sample, {SampleNames.Sample})
+        div_bar_charts(squeeze(cnts(:,ind,:)), sample, {SampleInfo.Sample})
      
         
         
         %Plot MAF in region neighboring locus
         region=(find(p>p(ind)-window_size,1):find(p<p(ind)+window_size,1,'last'));
-        div_maf_window(annotations(ind), p(ind)-ChrStarts(chr), window_size, iwindows{ind}, squeeze(dwindows(:,ind,:)),  p(region)-ChrStarts(chr), goodmaf(region,:), {SampleNames.Sample})
-        div_cov_window(annotations(ind), p(ind)-ChrStarts(chr), window_size, squeeze(cwindows(:,ind,:)), {SampleNames.Sample})
+        if numel(fwindows)>1
+           div_maf_window(annotations(ind), allp(ind)-ChrStarts(chr), window_size, [], squeeze(fwindows(:,ind,:)), allp(region)-ChrStarts(chr), goodmaf(region,:), {SampleInfo.Sample},sample,showlegends)
+           div_cov_window(annotations(ind), allp(ind)-ChrStarts(chr), window_size, squeeze(cwindows(:,ind,:)), {SampleInfo.Sample},sample, showlegends)
+        end
+        
 
         
         
@@ -82,12 +118,12 @@ title(SampleNames(sample).Sample)
         %settings. then remover the comments %*
         
         
-        if show_alignment
+        if show_alignment==1
             
             t = tcpip('localhost', 60152) ;
             fopen(t) ;
             
-            bai_name = [SampleNames(sample).ExperimentFolder '/' SampleNames(sample).Sample '/' SampleNames(sample).AlignmentFolder '/aligned.sorted.bam.bai' ];
+            bai_name = [SampleInfo(sample).ExperimentFolder '/' SampleInfo(sample).Sample '/' SampleInfo(sample).AlignmentFolder '/aligned.sorted.bam.bai' ];
             
             
             if ~exist(['../' bai_name ], 'file')
