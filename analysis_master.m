@@ -142,11 +142,13 @@ minormutation=(hasmutation & (ancnti_m==maNT));
 
 %% Generate table
 
+QualSort=1;
 [q, annotation_all, sorted_table_data] = div_clickable_table(mutations, Calls, p, ancnti, ...
                                             counts,  fwindows, cwindows, ...
                                             mutAF, diversemutation, MutQual, ...
                                             RefGenome, ScafNames, SampleInfo, ...
-                                            ChrStarts, promotersize, showlegends);
+                                            ChrStarts, promotersize, showlegends, ...
+                                            QualSort);
 
 
 
@@ -157,6 +159,11 @@ typesmatrix=repmat(types,1,Nsample);
 
 genes=locustags2numbers({annotation_all.locustag});
 
+
+
+%% Generate input file for phylip
+
+generate_phylip_input(Calls(sum(mutAF>0,2)>0,:), SampleNames, 'phylipinput.txt')
     
 %%
 

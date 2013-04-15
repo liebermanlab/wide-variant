@@ -1,4 +1,4 @@
-function [annotations, allannotations, sorted_tabledata] = div_clickable_table(muts, calls, allp, ancnti, cnts, fwindows, cwindows, mutAF, isdiverse, MutQual, RefGenome, ScafNames, SampleInfo, ChrStarts, promoterdistance, showlegends)
+function [annotations, allannotations, sorted_tabledata] = div_clickable_table(muts, calls, allp, ancnti, cnts, fwindows, cwindows, mutAF, isdiverse, MutQual, RefGenome, ScafNames, SampleInfo, ChrStarts, promoterdistance, showlegends, QualSort)
 
 
 %p input is params
@@ -199,9 +199,13 @@ for i=1:numel(annotations)
 end
 
 % sort table by descending quality val
-sorted_tabledata = flipdim(sortrows(tabledata,1), 1); 
-
-
+if QualSort==1
+    [sorted_tabledata, sortedpositions] = sortrows(tabledata,1);
+else
+    sorted_tabledata = tabledata;
+    sortedpositions=1:size(tabledata,2);
+end
+    
 %display table
 figure();clf;hold on;
 set(gcf, 'Position',[10         50        1250         550]);
@@ -226,15 +230,14 @@ h.checkbox1 = uicontrol('Units','normalized','Style','checkbox','String','Show A
         rc = event.Indices ;
         dt = get(src,'data') ;
         
-        ind=rc(1);
+        ind=sortedpositions(rc(1));
+        
+               
         chr=annotations(ind).scafold;
         position= annotations(ind).pos;
+                
+        disp(annotations(ind))
         
-        indexes=find(goodpositions);
-        
-        %disp(annotations(ind))
-        
-        disp(indexes(ind))
         if rc(2) > nonsamplecols
             sample=rc(2)-nonsamplecols;
             disp(sample)
@@ -242,10 +245,9 @@ h.checkbox1 = uicontrol('Units','normalized','Style','checkbox','String','Show A
             sample=1;
         end
         
+
         
-        disp(ind)
         
-        %disp(squeeze(cnts(:,ind,:)))
         %Bar charts of counts
         div_bar_charts(squeeze(cnts(:,ind,:)), sample, {SampleInfo.Sample})
         
