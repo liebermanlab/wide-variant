@@ -1,6 +1,9 @@
 %% Set important variables each run
 
+global SCRIPTSDIRECTORY
 global controlsample
+SCRIPTSDIRECTORY=scriptsdirectory;
+
 
 run_postfix='13_04_02'; %must match postfix in build_mutation_table_master.m
 
@@ -163,9 +166,12 @@ genes=locustags2numbers({annotation_all.locustag});
 
 %% Generate input file for phylip
 
-generate_phylip_input(Calls(sum(mutAF>0,2)>0,:), SampleNames, 'phylipinput.txt')
+generate_parsimony_tree(Calls(sum(mutAF>0,2)>0,:), SampleNames)
+%the generated [timestamp]_out.tree file is best viewed in FigTree
+
+
     
-%%
+%% Save
 
 save(['mutation_analysis_' run_postfix], 'mutations', 'Nsample', 'mutAF', 'genes')
 
