@@ -26,14 +26,17 @@ def edit_genome_sequence( mutable_seq, var_file ):
 
     # for each variant, replace reference genome seq 
     for line in var_filehandle: 
-        pos, ref, var, qual = line.split()
-        if float(qual)>30: # qual filter 
-            if (ref and var) in nucleotides: # replace only SNPs, not indels
-                fasta_nucleotide = mutable_seq[int(pos)-1] 
-                # check that ref in VCF and FASTA are the same 
-                if ref == fasta_nucleotide: 
-                    mutable_seq[int(pos)-1] = var 
-                    counter +=1 
+        # ignore headers in vcf 
+        if line.startswith('#') is False:
+            lineout = line.split()
+            pos, ref, var, qual = lineout[1], lineout[3], lineout[4], lineout[5] 
+            if float(qual)>30: # qual filter 
+                if (ref and var) in nucleotides: # replace only SNPs, not indels
+                    fasta_nucleotide = mutable_seq[int(pos)-1] 
+                    # check that ref in VCF and FASTA are the same 
+                    if ref == fasta_nucleotide: 
+                        mutable_seq[int(pos)-1] = var 
+                        counter +=1 
     var_filehandle.close()
 
     print 'Replaced %i SNP positions' %counter

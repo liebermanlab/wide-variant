@@ -95,14 +95,14 @@ plot(qual_0,sum(MutQual>=qual_0),'dr', 'MarkerFaceColor', 'r', 'MarkerSize', 10)
 %Pairwise distance between strains
 step=floor(qual_0/10);
 qual_th = sort([0:step:min([max(MutQual)-1 qual_0+20]) qual_0]) ; 
-figure(7);clf
-set(gcf,'position',[10   570   560   420])
-for m=1:length(qual_th)
-    Calls_temp = Calls ; Calls_temp(Quals<qual_th(m)) = 'N' ;
-    df = ana_strain_distance(Calls_temp(:,1:Nsample),SampleNames) ;
-    title(sprintf('Quality > %g',qual_th(m))) ;
-    pause
-end
+% figure(7);clf
+% set(gcf,'position',[10   570   560   420])
+% for m=1:length(qual_th)
+%     Calls_temp = Calls ; Calls_temp(Quals<qual_th(m)) = 'N' ;
+%     df = ana_strain_distance(Calls_temp(:,1:Nsample),SampleNames) ;
+%     title(sprintf('Quality > %g',qual_th(m))) ;
+%     pause
+% end
 
 
 
@@ -142,9 +142,11 @@ minormutation=(hasmutation & (ancnti_m==maNT));
 
 %% Generate table
 
-[q, annotation_all] = div_clickable_table(mutations, Calls, p, ancnti, counts,  fwindows, cwindows, mutAF, diversemutation, MutQual, RefGenome, ScafNames, SampleInfo, ChrStarts, promotersize, showlegends);
-
-
+[q, annotation_all, sorted_table_data] = div_clickable_table(mutations, Calls, p, ancnti, ...
+                                            counts,  fwindows, cwindows, ...
+                                            mutAF, diversemutation, MutQual, ...
+                                            RefGenome, ScafNames, SampleInfo, ...
+                                            ChrStarts, promotersize, showlegends);
 
 
 

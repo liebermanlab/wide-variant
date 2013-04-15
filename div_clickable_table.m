@@ -1,4 +1,4 @@
-function [annotations, allannotations] = div_clickable_table(muts, calls, allp, ancnti, cnts, fwindows, cwindows, mutAF, isdiverse, MutQual, RefGenome, ScafNames, SampleInfo, ChrStarts, promoterdistance, showlegends)
+function [annotations, allannotations, sorted_tabledata] = div_clickable_table(muts, calls, allp, ancnti, cnts, fwindows, cwindows, mutAF, isdiverse, MutQual, RefGenome, ScafNames, SampleInfo, ChrStarts, promoterdistance, showlegends)
 
 
 %p input is params
@@ -73,9 +73,9 @@ for i=1:Npositions
     annotations(i).maf=nan(Nsamples,1);
     annotations(i).mutAF=nan(Nsamples,1);
     if ancnti(i) > 0
-        annotations(i).nts=[NTs(ancnti(i))]; 
+        annotations(i).nts=[NTs(ancnti(i))];
     else
-        annotations(i).nts=[];
+        annotations(i).nts=char([]);
     end
     
     annotations(i).AAs='';
@@ -110,7 +110,7 @@ for i=1:Npositions
     if numel(annotations(i).AA)==4 && ~strcmp(annotations(i).type,'N')
         annotations(i).type='S';
     end
-    
+
     %remove duplicates
     annotations(i).nts=unique(annotations(i).nts);
     annotations(i).AAs=unique(annotations(i).AAs);
@@ -177,9 +177,9 @@ for i=1:numel(annotations)
         {locustag} {annotations(i).gene} {annotations(i).annotation} {annotations(i).AApos} {[annotations(i).nts]} ...
         {[annotations(i).AAs]}];
     else
-        tabledata(i,1:nonsamplecols)=[{[annotations(i).qual]} {annotations(i).type} {annotations(i).pos} ...
+        tabledata(i,1:nonsamplecols)=[ {[annotations(i).qual]} {annotations(i).type} {annotations(i).pos} ...
         {locustag} {annotations(i).gene} {annotations(i).annotation} {annotations(i).AApos} {[annotations(i).nts]} ...
-        {[annotations(i).AAs]}];
+        {[annotations(i).AAs]} ];
     end
     
     for j=1:Nsamples
@@ -198,18 +198,20 @@ for i=1:numel(annotations)
     end
 end
 
+% sort table by descending quality val
+sorted_tabledata = flipdim(sortrows(tabledata,1), 1); 
+
 
 %display table
 figure();clf;hold on;
 set(gcf, 'Position',[10         50        1250         550]);
 uicontrol('Style','text','Position',[400 45 120 20],'String','Vertical Exaggeration')
-t = uitable('Units','normalized','Position',[0 0 1 .97], 'Data', tabledata,...
+t = uitable('Units','normalized','Position',[0 0 1 .97], 'Data', sorted_tabledata,...
     'ColumnName', colnames,...
     'RowName',[], ...
     'CellSelectionCallback',@mut_matix_clicked, ...
     'ColumnWidth',widths);
 h.checkbox1 = uicontrol('Units','normalized','Style','checkbox','String','Show Alignment in IGV when clicked (must have IGV viewer open already)','Min',0,'Max',1, 'Value',0, 'Position',[0 .97 1 .03]);
-
 
 
     function mut_matix_clicked(src, event)
