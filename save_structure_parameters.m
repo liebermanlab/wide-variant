@@ -1,4 +1,5 @@
 function runtime = save_structure_parameters(logfolder, struc)
+
 % iterate and save each field of structure to file
 
     runtime=datestr(now, 'yyyy-mm-dd-HH-MM-SS');
