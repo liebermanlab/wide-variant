@@ -17,7 +17,7 @@ ref=str{4};
 if isempty(alt) %if no alt
     call = 'N' ;
 elseif isnan(alt)
-    if numel(ref)==1
+    if numel(ref)==1 & isempty(findstr(str{8},'INDEL')) %not indels
         call = ref;
     else
         call = 'D';

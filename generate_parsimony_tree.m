@@ -2,7 +2,7 @@ function generate_parsimony_tree(calls, names)
 
 
 if ~exist('dnapars','file')
-    !cp /Volumes/sysbio/KISHONY LAB/illumina_pipeline/Tami/exe/dnapars dnapars
+    !cp /Volumes/sysbio/KISHONY\ LAB/illumina_pipeline/Tami/exe/dnapars dnapars
 end
     
 
@@ -22,7 +22,7 @@ fprintf(fid, [timestamp '_out.tree\n\n']);
 fclose(fid);
 
 %run
-fprintf(1, 'Running phylip...')
+fprintf(1, 'Generating a tree according to maximum parsimony...')
 fid = fopen('temp.sh','w');
 fprintf(fid, ['! ./dnapars < ' timestamp '_optionfile.txt > ' timestamp '_outfile.txt\n']);
 fclose(fid);
