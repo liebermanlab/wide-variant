@@ -238,14 +238,13 @@ h.checkbox1 = uicontrol('Units','normalized','Style','checkbox','String','Show A
                 
         disp(annotations(ind))
         
+        
         if rc(2) > nonsamplecols
             sample=rc(2)-nonsamplecols;
             disp(sample)
         else
             sample=1;
         end
-        
-
         
         
         %Bar charts of counts
