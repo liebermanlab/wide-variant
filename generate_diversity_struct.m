@@ -6,7 +6,7 @@ global TEMPORARYFOLDER
 createwindows=1;
 
 fprintf(1,'Creating counts 3 dimensional matrix \n') ;
-if (1+window_size*2 * length(p)*length(SampleDirs)) > 10^9
+if (1+window_size*2 * length(p)*length(SampleDirs)) > 10^10
     fprintf(1,'Not generating FWindows and CWindows at this time -- Requires too much memory to store windows with this number of samples, window_size, and number of positions meeting loose parameters \n') ;
     createwindows=0;
     CWindows=0;
