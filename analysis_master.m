@@ -1,8 +1,6 @@
 %% Set important variables each run
 
-global SCRIPTSDIRECTORY
 global controlsample
-SCRIPTSDIRECTORY=scriptsdirectory;
 
 
 run_postfix='13_04_02'; %must match postfix in build_mutation_table_master.m
