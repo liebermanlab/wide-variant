@@ -22,7 +22,7 @@ ylabel('Number of reads')
 set(gca,'Xtick',2:3:(3*numel(names)-1))
 set(gca,'Xticklabel',names)
 xlim([0 (3*numel(names)+3)])
-xticklabel_rotate;
+% xticklabel_rotate;
 
 %Plot call quality
 subplot(4,1,2); hold on;
@@ -37,7 +37,7 @@ ylabel('Average Base Quality')
 set(gca,'Xtick',2:3:(3*numel(names)-1))
 set(gca,'Xticklabel',names)
 xlim([0 (3*numel(names)+3)])
-xticklabel_rotate;
+% xticklabel_rotate;
 
 
 %Plot mapping quality
@@ -53,7 +53,7 @@ ylabel('Average Mapping Quality')
 set(gca,'Xtick',2:3:(3*numel(names)-1))
 set(gca,'Xticklabel',names)
 xlim([0 (3*numel(names)+3)])
-xticklabel_rotate;
+% xticklabel_rotate;
 
 %Plot tail distance f
 subplot(4,1,4); hold on;
@@ -69,7 +69,7 @@ ylabel('Average Tail Distance')
 set(gca,'Xtick',2:3:(3*numel(names)-1))
 set(gca,'Xticklabel',names)
 xlim([0 (3*numel(names)+3)])
-xticklabel_rotate;
+% xticklabel_rotate;
 
 
 end

@@ -16,13 +16,12 @@ p=chrpos2index(pos',ChrStarts);
 goodmaf=zeros(size(d)); goodmaf(d>0)=dmaf(d>0);
 
 figure;
-clf ; hold on
-subplot(2,1,1);
+clf ; 
+subplot(2,1,1); hold on; 
 
 search_ind = 1:numel(good) ;
 %search_ind = find(good) ;
 %search_ind = find(~good) ;
-
 
 plot(x(~good),y(~good),'o','MarkerSize', 4, 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'k', 'ButtonDownFcn',@clicked) ;
 
@@ -106,8 +105,13 @@ set(h,'Visible','on');
         %Plot MAF in region neighboring locus
         region=(find(p>p(ind)-window_size,1):find(p<p(ind)+window_size,1,'last'));
         if numel(fwindows)>1
-           div_maf_window(annotations(ind), allp(ind)-ChrStarts(chr), window_size, [], squeeze(fwindows(:,ind,:)), allp(region)-ChrStarts(chr), goodmaf(region,:), {SampleInfo.Sample},sample,showlegends)
-           div_cov_window(annotations(ind), allp(ind)-ChrStarts(chr), window_size, squeeze(cwindows(:,ind,:)), {SampleInfo.Sample},sample, showlegends)
+           
+            div_maf_window(annotations(ind), p(ind)-ChrStarts(chr), window_size, [], ...
+               squeeze(fwindows(:,ind,:)), p(region)-ChrStarts(chr), goodmaf(region,:), ...
+               {SampleInfo.Sample},sample,1) % showlegends)
+           
+           div_cov_window(annotations(ind), p(ind)-ChrStarts(chr), window_size, ...
+               squeeze(cwindows(:,ind,:)), {SampleInfo.Sample},sample, 1) %showlegends)
         end
         
 

@@ -25,6 +25,15 @@ strict_parameters=struct('minorfreqthreshold',.03, 'maxreads_perstrand_percentil
     'max_td',93, 'max_sbp', 3,'max_percent_indels', .20, 'min_control_MAF', .98, ...
     'max_bqp', 200,'max_tdp',200, 'max_percent_ends', 1);
 
+% strict_parameters=struct('minorfreqthreshold',.9, 'maxreads_perstrand_percentile',99,...
+%     'minreads_perstrand',30, 'minreads_perstrand_per_allele',25,'min_bq',19,'min_mq', 33, ...
+%     'min_td', 7,... % average tail dist of each allele
+%     'max_td',93, 'max_sbp', 3, ... % max_sbp = p-val from fisher's exact test of strand bias 
+%     'max_percent_indels', .20, ... 
+%     'min_control_MAF', .98, ...
+%     'max_bqp', 200, ...  % t-test whether quality diff between two alleles 
+%     'max_tdp',200, ... % same as above for tail dist
+%     'max_percent_ends', 1); 
 
 % ___ create parameters log ___ %
 
@@ -42,11 +51,6 @@ end
 save_structure_parameters(logfolder, log_parameters); 
 
 % _____________________________ %
-
-
-
-
-
 
 
 
