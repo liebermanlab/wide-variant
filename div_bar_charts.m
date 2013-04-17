@@ -55,6 +55,7 @@ set(gca,'Xticklabel',names)
 xlim([0 (3*numel(names)+3)])
 xticklabel_rotate([], 45);
 
+
 %Plot tail distance f
 subplot(4,1,4); hold on;
 title(['Average tail distance  ' ]) % (each strand).... ' name ' fp = ' num2str(c(end-3,samplen))  ' rp = ' num2str(c(end-2,samplen))]);

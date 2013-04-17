@@ -201,6 +201,8 @@ end
 % sort table by descending quality val
 if QualSort==1
     [sorted_tabledata, sortedpositions] = sortrows(tabledata,1);
+    sorted_tabledata = flipdim(sorted_tabledata,1); 
+    sortedpositions = flipdim(sortedpositions,1); 
 else
     sorted_tabledata = tabledata;
     sortedpositions=1:size(tabledata,2);
@@ -210,7 +212,7 @@ end
 figure();clf;hold on;
 set(gcf, 'Position',[10         50        1250         550]);
 uicontrol('Style','text','Position',[400 45 120 20],'String','Vertical Exaggeration')
-t = uitable('Units','normalized','Position',[0 0 1 .97], 'Data', flipdim(sorted_tabledata,1),...
+t = uitable('Units','normalized','Position',[0 0 1 .97], 'Data', sorted_tabledata,...
     'ColumnName', colnames,...
     'RowName',[], ...
     'CellSelectionCallback',@mut_matix_clicked, ...
