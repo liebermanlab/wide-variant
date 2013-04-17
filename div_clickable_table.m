@@ -219,6 +219,10 @@ t = uitable('Units','normalized','Position',[0 0 1 .97], 'Data', sorted_tabledat
     'ColumnWidth',widths);
 h.checkbox1 = uicontrol('Units','normalized','Style','checkbox','String','Show Alignment in IGV when clicked (must have IGV viewer open already)','Min',0,'Max',1, 'Value',0, 'Position',[0 .97 1 .03]);
 
+%intialize divbarchartswindow
+figure(660);clf;
+set(660,'Position',[scrsz(3)*2/3 scrsz(4)/20 scrsz(3)/3 scrsz(4)/2]);clf;hold on;
+
 
     function mut_matix_clicked(src, event)
         

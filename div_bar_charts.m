@@ -9,7 +9,6 @@ name=names{samplen};
 scrsz = get(0,'ScreenSize');
 
 figure(660);clf;
-%set(660,'Position',[scrsz(3)*2/3 scrsz(4)/20 scrsz(3)/3 scrsz(4)/2]);clf;hold on;
 
 
 %Plot number of calls
@@ -22,7 +21,7 @@ ylabel('Number of reads')
 set(gca,'Xtick',2:3:(3*numel(names)-1))
 set(gca,'Xticklabel',names)
 xlim([0 (3*numel(names)+3)])
-xticklabel_rotate([], 45);
+xticklabel_rotate;
 
 %Plot call quality
 subplot(4,1,2); hold on;
@@ -37,7 +36,7 @@ ylabel('Average Base Quality')
 set(gca,'Xtick',2:3:(3*numel(names)-1))
 set(gca,'Xticklabel',names)
 xlim([0 (3*numel(names)+3)])
-xticklabel_rotate([], 45);
+xticklabel_rotate;
 
 
 %Plot mapping quality
@@ -53,7 +52,7 @@ ylabel('Average Mapping Quality')
 set(gca,'Xtick',2:3:(3*numel(names)-1))
 set(gca,'Xticklabel',names)
 xlim([0 (3*numel(names)+3)])
-xticklabel_rotate([], 45);
+xticklabel_rotate;
 
 
 %Plot tail distance f
