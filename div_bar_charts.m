@@ -12,19 +12,20 @@ figure(660);clf;
 
 
 %Plot number of calls
-subplot(4,1,1); hold on;
+num_call = subplot(4,1,1); hold on;
 title(['Number of calls ' ])%.... ' name ' p(no strand bias) = ' num2str(c(end-6,samplen))]);
 a=squeeze(c(1:8,:));
 bar(reshape([a; nan(4,size(a,2))],4,[])','stacked')
 legend('A','T','C','G', 'Location', 'BestOutside')
 ylabel('Number of reads')
-set(gca,'Xtick',2:3:(3*numel(names)-1))
-set(gca,'Xticklabel',names)
+set(num_call,'Xtick',2:3:(3*numel(names)-1))
+set(num_call,'Xticklabel',names)
 xlim([0 (3*numel(names)+3)])
 xticklabel_rotate;
+set(num_call, 'XTick', []); 
 
 %Plot call quality
-subplot(4,1,2); hold on;
+call_qual = subplot(4,1,2); hold on;
 title(['Average call quality ' ])%.... ' name ' p = ' num2str(c(end-5,samplen))]);
 a=squeeze(c(9:16,:));
 if nargin>3
@@ -33,14 +34,15 @@ end
 bar(reshape([a; nan(4,size(a,2))],4,[])','grouped', 'LineStyle', 'none')
 legend('Aq','Tq','Cq','Gq', 'Location', 'BestOutside')
 ylabel('Average Base Quality')
-set(gca,'Xtick',2:3:(3*numel(names)-1))
-set(gca,'Xticklabel',names)
+set(call_qual,'Xtick',2:3:(3*numel(names)-1))
+set(call_qual,'Xticklabel',names)
 xlim([0 (3*numel(names)+3)])
 xticklabel_rotate;
+set(call_qual, 'XTick', []);
 
 
 %Plot mapping quality
-subplot(4,1,3); hold on;
+map_qual = subplot(4,1,3); hold on;
 title(['Average mapping quality ' ])% .... ' name ' p = ' num2str(c(end-4,samplen))]);
 a=squeeze(c(17:24,:));
 if nargin>3
@@ -49,14 +51,15 @@ end
 bar(reshape([a; nan(4,size(a,2))],4,[])','grouped','LineStyle', 'none')
 legend('Am','Tm','Cm','Gm', 'Location', 'BestOutside')
 ylabel('Average Mapping Quality')
-set(gca,'Xtick',2:3:(3*numel(names)-1))
-set(gca,'Xticklabel',names)
+set(map_qual,'Xtick',2:3:(3*numel(names)-1))
+set(map_qual,'Xticklabel',names)
 xlim([0 (3*numel(names)+3)])
 xticklabel_rotate;
+set(map_qual, 'XTick', []);
 
 
 %Plot tail distance f
-subplot(4,1,4); hold on;
+tail_dist = subplot(4,1,4); hold on;
 title(['Average tail distance  ' ]) % (each strand).... ' name ' fp = ' num2str(c(end-3,samplen))  ' rp = ' num2str(c(end-2,samplen))]);
 a=squeeze(c(25:32,:));
 if nargin>3
@@ -66,10 +69,11 @@ end
 bar(reshape([a; nan(4,size(a,2))],4,[])','grouped', 'LineStyle', 'none')
 legend('Atd','Ttd','Ctd','Gtd', 'Location', 'BestOutside')
 ylabel('Average Tail Distance')
-set(gca,'Xtick',2:3:(3*numel(names)-1))
-set(gca,'Xticklabel',names)
+set(tail_dist,'Xtick',2:3:(3*numel(names)-1))
+set(tail_dist,'Xticklabel',names)
 xlim([0 (3*numel(names)+3)])
 xticklabel_rotate;
+set(tail_dist, 'XTick', []);
 
 
 end
