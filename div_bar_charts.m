@@ -69,7 +69,7 @@ ylabel('Average Tail Distance')
 set(gca,'Xtick',2:3:(3*numel(names)-1))
 set(gca,'Xticklabel',names)
 xlim([0 (3*numel(names)+3)])
-xticklabel_rotate([], 45);
+xticklabel_rotate;
 
 
 end

@@ -1,6 +1,6 @@
 %% Set important variables each run
 
-global controlsample
+global CONTROLSAMPLE
 
 
 run_postfix='13_04_02'; %must match postfix in build_mutation_table_master.m
@@ -9,17 +9,17 @@ run_postfix='13_04_02'; %must match postfix in build_mutation_table_master.m
 onlySNPs=1; 
 loadwindows=1;
 promotersize=150;
-controlsample=1;
+CONTROLSAMPLE=49; % deep isogenic contrl 
 referenceisancestor=0;
 ancestoriscontrol=1;
 ancestorismode=1; %use mode of major alleles as ancestor
 
 
 %filter parameters
-qual_0=40;
+qual_0=60; % mutqual threshold 
 
 strict_parameters=struct('minorfreqthreshold',.03, 'maxreads_perstrand_percentile',99,...
-    'minreads_perstrand',30, 'minreads_perstrand_per_allele',2,'min_bq',19,'min_mq', 33, 'min_td', 7,...
+    'minreads_perstrand',10, 'minreads_perstrand_per_allele',1,'min_bq',19,'min_mq', 33, 'min_td', 7,...
     'max_td',93, 'max_sbp', 3,'max_percent_indels', .20, 'min_control_MAF', .98, ...
     'max_bqp', 200,'max_tdp',200, 'max_percent_ends', 1);
 
@@ -133,7 +133,7 @@ end
 if ancestoriscontrol>0
     %Ancestral nucleotide at each position
     disp(['Using sample ' num2str(ancestoriscontrol) ' of major alleles as ancestor...\n']);
-    [ancnt, ancnti] = ancestorfromsample(Calls,controlsample);
+    [ancnt, ancnti] = ancestorfromsample(Calls,CONTROLSAMPLE);
 elseif ancestorismode==1
     disp('Using mode of major alleles as ancestor...\n');
     ancnti=mode(maNT,2);
@@ -150,7 +150,7 @@ ancnti_m=repmat(ancnti,1,Nsample);
 
 
 %Hasmutation
-diversemutation=div_test_thresholds(counts,strict_parameters, coveragethresholds);
+diversemutation=div_test_thresholds(counts,strict_parameters, coveragethresholds, CONTROLSAMPLE);
 fixedmutation=((Calls~=ancnt_m) & (ismember(Calls,acceptabletypes)) & repmat(MutQual,1,Nsample)>=qual_0);
 hasmutation= fixedmutation | diversemutation; %has mutation if diverse or call(from vcf file) ~= anct
 minormutation=(hasmutation & (ancnti_m==maNT));
@@ -184,9 +184,24 @@ genes=locustags2numbers({annotation_all.locustag});
 
 
 
+%% Compare deep sequencing from sample 11 to isolates from sample 11
+
+
+strict_parameters=struct('minorfreqthreshold',.03, 'maxreads_perstrand_percentile',99,...
+    'minreads_perstrand',10, 'minreads_perstrand_per_allele',0,'min_bq',19,'min_mq', 33, 'min_td', 7,...
+    'max_td',93, 'max_sbp', 3,'max_percent_indels', .20, 'min_control_MAF', .985, ...
+    'max_bqp', 200,'max_tdp',200, 'max_percent_ends', 1);
+
+
+div_clickable_scatter_sigcolor(1- sum(fixedmutation(:,1:24),2)/24, maf(:,50), ...
+    'ISOLATES -- Mutation allele frequency', 'POOLED -- Mutation allele frequency', 50, strict_parameters, coveragethresholds,...
+    counts, fwindows, cwindows, positions, mutations, RefGenome, ScafNames,  ChrStarts, SampleInfo);
+
+
+
 %% Generate input file for phylip
 
-generate_parsimony_tree(Calls(sum(mutAF>0,2)>0,:), SampleNames)
+% generate_parsimony_tree(Calls(sum(mutAF>0,2)>0,:), SampleNames)
 %the generated [timestamp]_out.tree file is best viewed in FigTree
 
 

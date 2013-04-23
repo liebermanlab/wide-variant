@@ -83,7 +83,9 @@ TDRp=d(end-2,:);
 
 %Find true/false of meeting thresholds
 Tminor = minorfreq > minorfreqthreshold;
-Treads= (readsf > minreads_perstrand) & (readsr > minreads_perstrand) & (readsf +readsr < maxreads_perstrand) & (f2' > minreads_perstrand_per_allele) & (r2' > minreads_perstrand_per_allele);
+Treads= (readsf > minreads_perstrand) & (readsr > minreads_perstrand) &...
+    ((readsf +readsr) < maxreads_perstrand) & (f2' > minreads_perstrand_per_allele) ...
+    & (r2' > minreads_perstrand_per_allele);
 Tbq= ((majorbqf > min_bq) & (minorbqf > min_bq) & (majorbqr > min_bq) & (minorbqr > min_bq))';
 Tmq = ((majormqf > min_mq) & (minormqf > min_mq) & (majormqr > min_mq) & (minormqr > min_mq))';
 Ttd = ((majortdf > min_td) & (majortdf < max_td) & (majortdr < max_td) & (majortdr > min_td)...

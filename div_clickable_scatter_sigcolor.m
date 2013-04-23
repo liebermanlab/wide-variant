@@ -1,15 +1,16 @@
 
 function div_clickable_scatter_sigcolor(x,y, xname, yname, sample, params, covthresholds, cnts, fwindows, cwindows, pos, annotations, RefGenome, ScafNames, ChrStarts, SampleInfo)
 
+global CONTROLSAMPLE
 
-
+scrsz = get(0,'ScreenSize');
 
 IsGenomeLoaded = false ;
 window_size=floor(size(fwindows,1)/2);
 
 
 %Calculate important things, used later for plotting window
-d=div_test_thresholds(cnts,params, covthresholds);
+d=div_test_thresholds(cnts,params, covthresholds, CONTROLSAMPLE);
 good=d(:,sample)>0;
 p=chrpos2index(pos',ChrStarts);
 [dmaf, ~, ~] = div_major_allele_freq(cnts);
@@ -53,6 +54,10 @@ set(h,'SelectionChangeFcn',@selcbk);
 set(h,'SelectedObject',[]);  % No selection
 set(h,'Visible','on');
 
+figure(660);clf;
+set(660,'Position',[scrsz(3)*2/3 scrsz(4)/20 scrsz(3)/3 scrsz(4)/2]);clf;hold on;
+
+
 
     function selcbk(source,eventdata)
         
@@ -66,7 +71,6 @@ set(h,'Visible','on');
     function clicked(src,event)
         
         
-        search_ind = find(~good) ;
 
         show_alignment=0
 
@@ -93,7 +97,7 @@ set(h,'Visible','on');
         
         disp(ind)
         disp(annotations(ind))
-        div_display_thresholds(cnts(:,ind,sample), params, dmaf(ind,1), covthresholds)
+        div_display_thresholds(cnts(:,ind,sample), params, dmaf(ind,CONTROLSAMPLE), covthresholds)
         disp(cnts(:,ind,sample))
 
 
@@ -104,15 +108,15 @@ set(h,'Visible','on');
         
         %Plot MAF in region neighboring locus
         region=(find(p>p(ind)-window_size,1):find(p<p(ind)+window_size,1,'last'));
-        if numel(fwindows)>1
-           
-            div_maf_window(annotations(ind), p(ind)-ChrStarts(chr), window_size, [], ...
-               squeeze(fwindows(:,ind,:)), p(region)-ChrStarts(chr), goodmaf(region,:), ...
-               {SampleInfo.Sample},sample,1) % showlegends)
-           
-           div_cov_window(annotations(ind), p(ind)-ChrStarts(chr), window_size, ...
-               squeeze(cwindows(:,ind,:)), {SampleInfo.Sample},sample, 1) %showlegends)
-        end
+%         if numel(fwindows)>1
+%            
+%             div_maf_window(annotations(ind), p(ind)-ChrStarts(chr), window_size, [], ...
+%                squeeze(fwindows(:,ind,:)), p(region)-ChrStarts(chr), goodmaf(region,:), ...
+%                {SampleInfo.Sample},sample,1) % showlegends)
+%            
+%            div_cov_window(annotations(ind), p(ind)-ChrStarts(chr), window_size, ...
+%                squeeze(cwindows(:,ind,:)), {SampleInfo.Sample},sample, 1) %showlegends)
+%         end
         
 
         
