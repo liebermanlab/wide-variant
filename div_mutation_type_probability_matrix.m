@@ -1,4 +1,4 @@
-function [m, m_coding_strand] = div_mutation_type_probability_matrix(df, glength, ChrStarts, Sequences)
+function [m, m_coding_strand, probN] = div_mutation_type_probability_matrix(df, glength, ChrStarts, Sequences)
 
 %Tami Lieberman May 2012
 %Made from annotate_mutations_auto_gb and div_find_amino_acids
@@ -127,4 +127,5 @@ for i=1:size(Positions,1)
     end
 end
 
+probN = div_matrix2_6types(m(:,:,1)./ (m(:,:,1)+m(:,:,2)))/2;
 

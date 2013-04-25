@@ -1,6 +1,6 @@
 function div_cov_window(an, center, window, cwindows, names, samplen, showlegend)
 
-global controlsample
+global CONTROLSAMPLE
 
 
 %initialize
@@ -8,7 +8,7 @@ strand=['g-','k-'];
 scrsz = get(0,'ScreenSize');
 figure(821);
 set(821,'Position',[scrsz(3)/2 scrsz(4) scrsz(3)/2.5 scrsz(4)/4]);clf;hold on;
-othersamples=1:numel(names); othersamples(controlsample)=[];
+othersamples=1:numel(names); othersamples(CONTROLSAMPLE)=[];
 
 
 
@@ -43,9 +43,9 @@ if numel(names)>10
 end
 l=(center-window):(center+window);
 o = plot(l,cwindows(:,othersamples), '-', 'LineWidth', 1); %plot other samples
-c = plot(l,cwindows(:,controlsample),'k-', 'LineWidth',2); %plot control in black
+c = plot(l,cwindows(:,CONTROLSAMPLE),'k-', 'LineWidth',2); %plot control in black
 
-legendlist=[c]; legendnames={names{controlsample}};
+legendlist=[c]; legendnames={names{CONTROLSAMPLE}};
 if samplen > 0
     s = plot(l,cwindows(:,samplen),'r-', 'LineWidth',2); %plot clicked in red
     othersamples(othersamples==samplen)=[];

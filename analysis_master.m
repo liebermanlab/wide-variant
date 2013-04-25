@@ -120,9 +120,9 @@ controlNT=maNT(:,1);
 
 samplestocompare=[2];
 
-for i=samplestocompare
-    div_clickable_scatter_sigcolor(maf(:,1), maf(:,i), 'Control MAF', ['MAF in ' SampleNames(i)], i, strict_parameters, coveragethresholds, counts, fwindows, cwindows, positions, mutations, RefGenome, ScafNames,  ChrStarts, SampleInfo);
-end
+%for i=samplestocompare
+ %   div_clickable_scatter_sigcolor(maf(:,1), maf(:,i), 'Control MAF', ['MAF in ' SampleNames(i)], i, strict_parameters, coveragethresholds, counts, fwindows, cwindows, positions, mutations, RefGenome, ScafNames,  ChrStarts, SampleInfo);
+%end
 
 
 
@@ -178,7 +178,7 @@ QualSort=1;
 %% More useful information
 
 types=[annotation_all.type];
-typesmatrix=repmat(types,1,Nsample);
+typesmatrix=repmat(types',1,Nsample);
 
 genes=locustags2numbers({annotation_all.locustag});
 
@@ -203,6 +203,12 @@ div_clickable_scatter_sigcolor(1- sum(fixedmutation(:,1:24),2)/24, maf(:,50), ..
 
 % generate_parsimony_tree(Calls(sum(mutAF>0,2)>0,:), SampleNames)
 %the generated [timestamp]_out.tree file is best viewed in FigTree
+
+
+
+%% Get probabilities of each type of mutation in a nt-specific way
+
+[m, m_coding_strand, probN] = div_mutation_type_probability_matrix(cds, GenomeLength, ChrStarts, sequences)
 
 
     

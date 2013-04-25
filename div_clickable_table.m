@@ -244,6 +244,7 @@ set(660,'Position',[scrsz(3)*2/3 scrsz(4)/20 scrsz(3)/3 scrsz(4)/2]);clf;hold on
                 
         disp(annotations(ind))
         
+        disp(ind)
         
         if rc(2) > nonsamplecols
             sample=rc(2)-nonsamplecols;
