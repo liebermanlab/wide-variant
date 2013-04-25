@@ -2,7 +2,7 @@ function div_maf_window(an, center, window, iwindow, dwindows, goodp, goodf, nam
 
 
 
-global controlsample
+global CONTROLSAMPLE
 
 
 %initialize
@@ -13,7 +13,7 @@ set(820,'Position',[scrsz(3)/20 scrsz(4) scrsz(3)/2.5 scrsz(4)/4]);clf;hold on;
 legendlist=[];
 legendnames={};
 l=(center-window):(center+window);
-othersamples=1:numel(names); othersamples(controlsample)=[];
+othersamples=1:numel(names); othersamples(CONTROLSAMPLE)=[];
 
 %display name of genes and start/stop
 if numel(an.protein)>0
@@ -66,9 +66,9 @@ if numel(names)>10
 end
 
 o = plot(l,dwindows(:,othersamples), '.', 'MarkerSize', 15); %plot other samples
-c = plot(l,dwindows(:,controlsample)','k.', 'MarkerSize', 15); %plot control in black
+c = plot(l,dwindows(:,CONTROLSAMPLE)','k.', 'MarkerSize', 15); %plot control in black
 
-legendlist(end+1)=c; legendnames{end+1}=names{controlsample};
+legendlist(end+1)=c; legendnames{end+1}=names{CONTROLSAMPLE};
 if samplen > 0
     s = plot(l,dwindows(:,samplen),'r.', 'MarkerSize', 15); %plot sample in red
     legendlist(end+1)=s;
@@ -81,7 +81,7 @@ end
 %original dot
 plot(goodp, goodf,'kd', 'MarkerSize', 10, 'MarkerFaceColor', rgb('Silver'));
 plot(goodp, goodf,'.', 'MarkerSize', 15)
-if samplen~=controlsample
+if samplen~=CONTROLSAMPLE
     plot(goodp, goodf(:,samplen),'kd', 'MarkerSize', 10,'MarkerFaceColor', rgb('Pink'));
     plot(goodp, goodf(:,samplen),'r.', 'MarkerSize', 15)
 end

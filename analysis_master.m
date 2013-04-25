@@ -9,7 +9,7 @@ run_postfix='13_04_02'; %must match postfix in build_mutation_table_master.m
 onlySNPs=1; 
 loadwindows=1;
 promotersize=150;
-CONTROLSAMPLE=49; % deep isogenic contrl 
+CONTROLSAMPLE=1; % deep isogenic control 
 referenceisancestor=0;
 ancestoriscontrol=1;
 ancestorismode=1; %use mode of major alleles as ancestor
@@ -18,20 +18,21 @@ ancestorismode=1; %use mode of major alleles as ancestor
 %filter parameters
 qual_0=60; % mutqual threshold 
 
-strict_parameters=struct('minorfreqthreshold',.03, 'maxreads_perstrand_percentile',99,...
-    'minreads_perstrand',10, 'minreads_perstrand_per_allele',1,'min_bq',19,'min_mq', 33, 'min_td', 7,...
-    'max_td',93, 'max_sbp', 3,'max_percent_indels', .20, 'min_control_MAF', .98, ...
-    'max_bqp', 200,'max_tdp',200, 'max_percent_ends', 1);
-
-% strict_parameters=struct('minorfreqthreshold',.9, 'maxreads_perstrand_percentile',99,...
-%     'minreads_perstrand',30, 'minreads_perstrand_per_allele',25,'min_bq',19,'min_mq', 33, ...
-%     'min_td', 7,... % average tail dist of each allele
-%     'max_td',93, 'max_sbp', 3, ... % max_sbp = p-val from fisher's exact test of strand bias 
-%     'max_percent_indels', .20, ... 
-%     'min_control_MAF', .98, ...
-%     'max_bqp', 200, ...  % t-test whether quality diff between two alleles 
-%     'max_tdp',200, ... % same as above for tail dist
-%     'max_percent_ends', 1); 
+strict_parameters = struct( 'minorfreqthreshold',           .03, ...
+                            'maxreads_perstrand_percentile', 99, ...
+                            'minreads_perstrand',            10, ...
+                            'minreads_perstrand_per_allele', 4,...
+                            'min_bq',                        19,...
+                            'min_mq',                        33, ...
+                            'min_td',                        7, ... % avg tail dist of each allele
+                            'max_td',                        93, ...
+                            'max_sbp',                       3,...  % p-val fisher's exact test of strand bias
+                            'max_percent_indels',           .20, ...
+                            'min_control_MAF',              .985, ...
+                            'max_bqp',                      200, ...% t-test whether qual diff between two alleles
+                            'max_tdp',                      200, ...% t-test whether tail dist diff b/t two alleles
+                            'max_percent_ends',               1 ... 
+                        );
 
 % ___ create parameters log ___ %
 
@@ -121,7 +122,12 @@ controlNT=maNT(:,1);
 samplestocompare=[2];
 
 for i=samplestocompare
-    div_clickable_scatter_sigcolor(maf(:,1), maf(:,i), 'Control MAF', ['MAF in ' SampleNames(i)], i, strict_parameters, coveragethresholds, counts, fwindows, cwindows, positions, mutations, RefGenome, ScafNames,  ChrStarts, SampleInfo);
+    div_clickable_scatter_sigcolor(maf(:,CONTROLSAMPLE), maf(:,i), ...
+                                    'Control MAF', ['MAF in ' SampleNames(i)], ...
+                                    i, strict_parameters, coveragethresholds, ...
+                                    counts, fwindows, cwindows, positions, ...
+                                    mutations, RefGenome, ScafNames,  ...
+                                    ChrStarts, SampleInfo);
 end
 
 
@@ -165,7 +171,7 @@ minormutation=(hasmutation & (ancnti_m==maNT));
 
 %% Generate table -- inspect lower MutQuals and toggle qual_0
 
-QualSort=1;
+QualSort=0;
 [q, annotation_all, sorted_table_data] = div_clickable_table(mutations, Calls, p, ancnti, ...
                                             counts,  fwindows, cwindows, ...
                                             mutAF, diversemutation, MutQual, ...
@@ -184,19 +190,17 @@ genes=locustags2numbers({annotation_all.locustag});
 
 
 
-%% Compare deep sequencing from sample 11 to isolates from sample 11
+%% Compare deep sequencing to isolates 
 
-
-strict_parameters=struct('minorfreqthreshold',.03, 'maxreads_perstrand_percentile',99,...
-    'minreads_perstrand',10, 'minreads_perstrand_per_allele',0,'min_bq',19,'min_mq', 33, 'min_td', 7,...
-    'max_td',93, 'max_sbp', 3,'max_percent_indels', .20, 'min_control_MAF', .985, ...
-    'max_bqp', 200,'max_tdp',200, 'max_percent_ends', 1);
-
-
-div_clickable_scatter_sigcolor(1- sum(fixedmutation(:,1:24),2)/24, maf(:,50), ...
-    'ISOLATES -- Mutation allele frequency', 'POOLED -- Mutation allele frequency', 50, strict_parameters, coveragethresholds,...
-    counts, fwindows, cwindows, positions, mutations, RefGenome, ScafNames,  ChrStarts, SampleInfo);
-
+% % ___ inputs ___ % 
+% isolates = 1:24; 
+% deep_sample = 50; 
+% maf_from_isolates = 1-sum(fixedmutation(:,isolates),2)/numel(isolates);
+% 
+% div_clickable_scatter_sigcolor(maf_from_isolates, maf(:,deep_sample), ...
+%     'ISOLATES -- Mutation allele frequency', 'POOLED -- Mutation allele frequency', deep_sample, strict_parameters, coveragethresholds,...
+%     counts, fwindows, cwindows, positions, mutations, RefGenome, ScafNames,  ChrStarts, SampleInfo);
+% 
 
 
 %% Generate input file for phylip
@@ -209,11 +213,6 @@ div_clickable_scatter_sigcolor(1- sum(fixedmutation(:,1:24),2)/24, maf(:,50), ..
 %% Save
 
 save(['mutation_analysis_' run_postfix], 'mutations', 'Nsample', 'mutAF', 'genes')
-
-
-
-
-
 
 
 % 
