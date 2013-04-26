@@ -66,7 +66,7 @@ if numel(names)>10
 end
 
 o = plot(l,dwindows(:,othersamples), '.', 'MarkerSize', 15); %plot other samples
-c = plot(l,dwindows(:,CONTROLSAMPLE),'k.', 'MarkerSize', 15); %plot control in black
+c = plot(l,dwindows(:,CONTROLSAMPLE)','k.', 'MarkerSize', 15); %plot control in black
 
 legendlist(end+1)=c; legendnames{end+1}=names{CONTROLSAMPLE};
 if samplen > 0

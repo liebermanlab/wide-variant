@@ -205,7 +205,7 @@ if QualSort==1
     sortedpositions = flipdim(sortedpositions,1); 
 else
     sorted_tabledata = tabledata;
-    sortedpositions=1:size(tabledata,2);
+    sortedpositions=1:size(tabledata,1);
 end
     
 %display table
