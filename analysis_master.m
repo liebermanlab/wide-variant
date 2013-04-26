@@ -209,10 +209,20 @@ genes=locustags2numbers({annotation_all.locustag});
 %the generated [timestamp]_out.tree file is best viewed in FigTree
 
 
+
+
+%% Null model for dNdS
+
+[m, m_coding_strand, probN] = div_mutation_type_probability_matrix(cds, GenomeLength, ChrStarts, sequences);
+
     
+ 
 %% Save
 
 save(['mutation_analysis_' run_postfix], 'mutations', 'Nsample', 'mutAF', 'genes')
+
+
+
 
 
 % 
