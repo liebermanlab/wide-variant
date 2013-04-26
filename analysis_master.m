@@ -184,7 +184,7 @@ QualSort=0;
 %% More useful information
 
 types=[annotation_all.type];
-typesmatrix=repmat(types,1,Nsample);
+typesmatrix=repmat(types',1,Nsample);
 
 genes=locustags2numbers({annotation_all.locustag});
 
