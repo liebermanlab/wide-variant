@@ -1,5 +1,13 @@
-function [annotations, allannotations, sorted_tabledata] = div_clickable_table(muts, calls, allp, ancnti, cnts, fwindows, cwindows, mutAF, isdiverse, MutQual, RefGenome, ScafNames, SampleInfo, ChrStarts, promoterdistance, showlegends, QualSort)
+function [annotations, allannotations, sorted_tabledata] = div_clickable_table(muts, calls, allp, ancnti, cnts, fwindows, cwindows, mutAF, isdiverse, MutQual, RefGenome, ScafNames, SampleInfo, ChrStarts, promoterdistance, showlegends, QualSort, QualCutOff, cutoff_qual)
 
+% set optional variables 
+if nargin < 17 
+    QualSort = 0; 
+end
+if nargin < 18
+    QualCutOff = 0; 
+    cutoff_qual = 0; 
+end
 
 %p input is params
 
@@ -25,8 +33,6 @@ goodmaf=zeros(size(d)); goodmaf(d>0)=maf(d>0);
 
 Npositions=numel(allp);
 Nsamples=size(maf,2);
-
-
 
 
 
@@ -67,6 +73,7 @@ end
 
 
 goodpositions=zeros(Npositions,1);
+
 %Nonsynonymous vs Syonymous, major and minor allele
 for i=1:Npositions
     
@@ -171,7 +178,9 @@ for i=1:numel(annotations)
     else
         locustag=0;
     end
-    %generate table
+    
+    % ___ generate table ___ %
+    
     if numel(ScafNames)>1
         tabledata(i,1:nonsamplecols)=[{[annotations(i).qual]} {annotations(i).type} {annotations(i).scafold} {annotations(i).pos} ...
         {locustag} {annotations(i).gene} {annotations(i).annotation} {annotations(i).AApos} {[annotations(i).nts]} ...
@@ -181,6 +190,8 @@ for i=1:numel(annotations)
         {locustag} {annotations(i).gene} {annotations(i).annotation} {annotations(i).AApos} {[annotations(i).nts]} ...
         {[annotations(i).AAs]} ];
     end
+
+    
     
     for j=1:Nsamples
         if (annotations(i).mutAF(j) > 0) && (annotations(i).mutAF(j) < 1)
@@ -206,6 +217,14 @@ if QualSort==1
 else
     sorted_tabledata = tabledata;
     sortedpositions=1:size(tabledata,1);
+end
+
+% MutQual cutoff for fixed mutations 
+if QualCutOff == 1
+    % get positions of mutations above MutQual
+    sortedpositions = find([sorted_tabledata{:,1}]>=cutoff_qual); 
+    % extract table data for these positions 
+    sorted_tabledata = sorted_tabledata(sortedpositions,:); 
 end
     
 %display table

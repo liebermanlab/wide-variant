@@ -128,4 +128,3 @@ for i=1:size(Positions,1)
 end
 
 probN = div_matrix2_6types(m(:,:,1)./ (m(:,:,1)+m(:,:,2)))/2;
-
