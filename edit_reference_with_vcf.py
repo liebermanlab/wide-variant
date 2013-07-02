@@ -1,7 +1,10 @@
 '''
 HC 4/9/2013
-Takes a VCF file and edits a reference genome (fasta or genbank) to replace SNPs. 
+Takes a VCF file and edits a reference genome (fasta or genbank - gb currently not working?) to replace SNPs. 
 Write output in new fasta or genbank file. 
+
+USAGE from terminal: 
+> python edit_reference_with_vcf.py [fasta file] [vcf file] [new fasta file name]
 '''
 
 import sys, os 

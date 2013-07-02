@@ -121,14 +121,14 @@ controlNT=maNT(:,1);
 
 samplestocompare=[2];
 
-for i=samplestocompare
-    div_clickable_scatter_sigcolor(maf(:,CONTROLSAMPLE), maf(:,i), ...
-                                    'Control MAF', ['MAF in ' SampleNames(i)], ...
-                                    i, strict_parameters, coveragethresholds, ...
-                                    counts, fwindows, cwindows, positions, ...
-                                    mutations, RefGenome, ScafNames,  ...
-                                    ChrStarts, SampleInfo);
-end
+% for i=samplestocompare
+%     div_clickable_scatter_sigcolor(maf(:,CONTROLSAMPLE), maf(:,i), ...
+%                                     'Control MAF', ['MAF in ' SampleNames(i)], ...
+%                                     i, strict_parameters, coveragethresholds, ...
+%                                     counts, fwindows, cwindows, positions, ...
+%                                     mutations, RefGenome, ScafNames,  ...
+%                                     ChrStarts, SampleInfo);
+% end
 
 
 
@@ -172,17 +172,49 @@ minormutation=(hasmutation & (ancnti_m==maNT));
 %% Generate table -- inspect lower MutQuals and toggle qual_0
 
 QualSort=0;
+QualCutOff=1;
 [q, annotation_all, sorted_table_data] = div_clickable_table(mutations, Calls, p, ancnti, ...
                                             counts,  fwindows, cwindows, ...
                                             mutAF, diversemutation, MutQual, ...
                                             RefGenome, ScafNames, SampleInfo, ...
                                             ChrStarts, promotersize, showlegends, ...
-                                            QualSort);
+                                            QualSort, QualCutOff, qual_0);
 
+%% Plot heatmap of mutations 
 
+[mut_freq, mut_pos, annotation_genes] = get_called_mutations(fixedmutation, annotation_all, mutAF, SampleNames);
+
+% plot_heatmap_diverse_frequency(mut_freq, mut_pos, annotation_genes, SampleNames); 
+% cooccurrence = plot_isolates_covariance(mut_freq, annotation_mutgenes); 
+
+%% Clustergram
+
+% mut_proteins = {annotation_genes.protein}; 
+% no_prot_name = cellfun(@isempty, mut_proteins); 
+% mut_proteins(no_prot_name) = {annotation_genes(no_prot_name).annotation}; 
+
+% stool manual gene annotations
+% annotation_clustergram = {annotation_genes.annotation}; 
+annotation_clustergram = {'dinitrification protein NorD', ...
+                        'chaperone cupB2, periplasmic pilus chaperone',...
+                        'putative transcription regulator', ...
+                        'type4 fimbrial biogenesis outer membrane protein',...
+                        'pyridoxamine kinase'}; 
+
+cobj = clustergram(mut_freq, 'RowLabels', annotation_clustergram, ...
+                        'ColumnLabels', SampleNames, ...
+                        'ColorMap', 'jet');
+                    
+set(gca, 'FontSize', 16, 'FontWeight', 'bold'); 
+                    
+
+%% dNdS
+
+% [ci_u, ci_l, dnds] = calculate_dNdS(annotation_genes, cds, GenomeLength, ChrStarts, sequences); 
 
 %% More useful information
 
+% get type of mutation (N, S, I, P, etc.) 
 types=[annotation_all.type];
 typesmatrix=repmat(types',1,Nsample);
 
@@ -200,7 +232,7 @@ genes=locustags2numbers({annotation_all.locustag});
 % div_clickable_scatter_sigcolor(maf_from_isolates, maf(:,deep_sample), ...
 %     'ISOLATES -- Mutation allele frequency', 'POOLED -- Mutation allele frequency', deep_sample, strict_parameters, coveragethresholds,...
 %     counts, fwindows, cwindows, positions, mutations, RefGenome, ScafNames,  ChrStarts, SampleInfo);
-% 
+
 
 
 %% Generate input file for phylip
@@ -209,13 +241,6 @@ genes=locustags2numbers({annotation_all.locustag});
 %the generated [timestamp]_out.tree file is best viewed in FigTree
 
 
-
-
-%% Null model for dNdS
-
-[m, m_coding_strand, probN] = div_mutation_type_probability_matrix(cds, GenomeLength, ChrStarts, sequences);
-
-    
  
 %% Save
 
