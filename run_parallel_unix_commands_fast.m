@@ -23,7 +23,8 @@ if isempty(cmds)
 end
 
 if isempty(dirs)
-    return
+    dirs={'.'};
+    fprintf(1,'WARNING: Running all scripts from present working directory (No directory list given)');
 end
 
 
