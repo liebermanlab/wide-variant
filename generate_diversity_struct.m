@@ -12,6 +12,7 @@ if (1+window_size*2 * length(p)*length(SampleDirs)) > 10^10
     CWindows=0;
     FWindows=0;
 else
+    fprintf('\nFwindow size %i, %i, %i\n', (1+window_size*2), length(p), length(SampleDirs))
     FWindows=zeros(1+window_size*2, length(p), length(SampleDirs), 'single');
     CWindows=zeros(1+window_size*2, length(p), length(SampleDirs), 'uint16');
 end
@@ -28,7 +29,7 @@ if parallel==1
         parallel_params{end+1}={SampleDirs{i}, SampleNames{i}, p, window_size, createwindows, TEMPORARYFOLDER};        
     end
     
-    
+    disp(parallel_params) 
     run_parallel_matlab_commands('generate_diversity_struct_single_sample', parallel_params, jobsubmitoptions, 1);
     
     

@@ -14,7 +14,6 @@ function [linear_avg_coverage, log_avg_coverage, zero_cov_positions] = get_all_c
     log_avg_coverage = zeros(length(all_dirs),1); 
     zero_cov_positions = zeros(length(all_dirs),1);
     
-    
     figure(300);
     
     for i = 1:length(all_dirs)    
@@ -28,7 +27,7 @@ function [linear_avg_coverage, log_avg_coverage, zero_cov_positions] = get_all_c
         
         % plot coverage 
         figure(300); 
-        subplot(6,8,i);
+        subplot(4,6,i);
         hist(log_coverage,30); hold on; 
         text(0.5, 8*10^5, sprintf('%0.2f', avg_coverage), ...
             'FontSize', 14, 'FontWeight', 'bold'); 

@@ -161,9 +161,10 @@ if analyze_diversity
     %Find diverse positions
     [dp, numfields, coveragethresholds] = find_diverse_positions(loose_parameters, SampleDirs, SampleNames, gscatters, Parallel, jobsubmitoptions1);
 
-    fprintf(1,'Found %g positions with within-sample polymorphism that meets loose parameters in at least 1 sample \n',length(dp)) ;
-    memreq=2*4*length(dp)*numel(SampleNames)*(2*window_size)/1000;
-    fprintf(1,['Ensure that enough memory was requested when starting matlab session (use -R rusage[mem=' num2str(memreq) '])\n']);
+    fprintf(1,'Found %i positions with within-sample polymorphism that meets loose parameters in at least 1 sample \n',length(dp)) ;
+    fprintf('\nNumber of samples %i\n', numel(SampleNames)); 
+    memreq=2*4*length(dp)*numel(SampleNames)*(2*window_size)/(10^6);
+    fprintf(1,['Please ensure that enough memory was requested when starting matlab session (use -R rusage[mem=' num2str(memreq) ']) (memory in MB) \n']);
     fprintf(1,'If p is large, frequency and coverage windows are not generated-- use smaller window or stricter parameters\n');
 end 
 

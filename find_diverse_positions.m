@@ -42,7 +42,6 @@ if parallel==1
         %http://www.vsoch.com/2010/11/loading-dynamic-variables-in-a-static-workspace-in-matlab/
         diverse=load([TEMPORARYFOLDER '/diverse_' SampleNames{i} '.mat']);
         p=p+diverse.p_sample;
-        fprintf('\nSize of p for sample %s is %i by %i\n', SampleNames{i}, size(p,1), size(p,2))
         coveragethresholds(:,i)=diverse.coveragethresholds_sample;
        delete([TEMPORARYFOLDER '/diverse_' SampleNames{i} '.mat'])
     end
@@ -50,7 +49,6 @@ if parallel==1
     
 
     %return some information
-    fprintf('\nSize of p in find_diverse_positions.m is %i by %i\n', size(p,1), size(p,2))
     p=find(p>0);
         
     
