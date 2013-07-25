@@ -201,12 +201,12 @@ QualCutOff=1;
 %                         'type4 fimbrial biogenesis outer membrane protein',...
 %                         'pyridoxamine kinase'}; 
 
-annotation_clustergram = {annotation_genes.protein}; 
-cobj = clustergram(mut_freq, 'RowLabels', annotation_clustergram, ...
-                        'ColumnLabels', SampleNames, ...
-                        'ColorMap', 'jet');
-                    
-set(gca, 'FontSize', 16, 'FontWeight', 'bold'); 
+% annotation_clustergram = {annotation_genes.protein}; 
+% cobj = clustergram(mut_freq, 'RowLabels', annotation_clustergram, ...
+%                         'ColumnLabels', SampleNames, ...
+%                         'ColorMap', 'jet');
+%                     
+% set(gca, 'FontSize', 16, 'FontWeight', 'bold'); 
                     
 
 %% dNdS
