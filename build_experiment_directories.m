@@ -158,7 +158,19 @@ else
     error('ERROR :: Currently only handles all files already demultiplexed or all files not demultiplexed. ... \n')
 end
 
+%% Trim adapter sequences 
 
+fprintf(1, 'Trim adapter sequences... \n') ; tic ; 
+
+tparams = {}; 
+cmds = {}; 
+dirs = {}; 
+
+for i = 1:length(SampleTable)
+    s=SampleTable(i);
+    cd(s.Sample);
+    
+end
 
 %% Filter reads
 
@@ -179,7 +191,6 @@ for i=1:length(SampleTable)
         if ~exist(FilterTable(f).Filter,'dir')
             mkdir(FilterTable(f).Filter)
         end
-        
                
         
         if paired %SK
