@@ -219,9 +219,14 @@ QualCutOff=1;
 types=[annotation_all.type];
 typesmatrix=repmat(types',1,Nsample);
 
-genes=locustags2numbers({annotation_all.locustag});
+genes=[annotation_all.gene_num];
 
+% num_genes_with_at_least_one_mut
+x = genes(sum(hasmutation,2)>0); 
 
+% number of unique genes that get mutated (if length(y) < length(x), there
+% are genes that get mutated more than once!) 
+y=unique(x);
 
 %% Compare deep sequencing to isolates 
 
@@ -238,7 +243,7 @@ genes=locustags2numbers({annotation_all.locustag});
 
 %% Generate input file for phylip
 
-generate_parsimony_tree(Calls(sum(mutAF>0,2)>0,:), SampleNames)
+generate_parsimony_tree(NTs(maNT(sum(mutAF>0,2)>0,:)), SampleNames)
 %the generated [timestamp]_out.tree file is best viewed in FigTree
 
 
