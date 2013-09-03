@@ -169,6 +169,9 @@ dirs = {};
 for i = 1:length(SampleTable)
     s=SampleTable(i);
     cd(s.Sample);
+    [~,ai] = ismember(s.Alignments,{AlignmentTable.Alignment}) ;
+    [~,fi] = ismember({AlignmentTable(ai).Filter},{FilterTable.Filter}) ;
+    fi = unique(fi) ;
     
 end
 
