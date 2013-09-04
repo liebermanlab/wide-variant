@@ -22,7 +22,7 @@ function build_experiment_directories(scriptspath)
 %running parameters
 paired = true; % could be acquired from files
 Parallel = true ;
-global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 1;
+global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 0;
 
 %orchestra parameters
 fast_q='sysbio_15m';
@@ -61,9 +61,9 @@ fprintf(['Usings scripts directory: ' SCRIPTSPATH  '\n']);
 
 %% Set main folder
 if RUN_ON_CLUSTER == 1
-    mainfolder='/files/SysBio/KISHONY LAB/illumina_pipeline';
+    ref_folder='/home/hc168'; % server no longer accessible on cluster 
 else
-    mainfolder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
+    ref_folder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
 end
 
 
@@ -104,41 +104,36 @@ RefGenomes=unique(RefGenomes);
 for i=1:numel(RefGenomes)
     
     %check if fasta file is there and named correctly
-    if ~exist([mainfolder '/Reference_Genomes/' RefGenomes{i}],'dir')
+    if ~exist([ref_folder '/Reference_Genomes/' RefGenomes{i}],'dir')
         error(['Could not find a Reference Genome folder called: ' RefGenomes{i}])
     end
-    if ~exist([mainfolder '/Reference_Genomes/' RefGenomes{i} '/genome.fasta'],'file')
+    if ~exist([ref_folder '/Reference_Genomes/' RefGenomes{i} '/genome.fasta'],'file')
         error(['Could not find a genome.fasta file for' RefGenomes{i}])
     end
     
     %Check for presence of genebank files
     %Do not throw error-- a user may want to try many genomes
     %     before choosing a closest reference, this will save them time.
-    fr = fastaread([mainfolder '/Reference_Genomes/' RefGenomes{i} '/genome.fasta']) ;
+    fr = fastaread([ref_folder '/Reference_Genomes/' RefGenomes{i} '/genome.fasta']) ;
     Scafs = {fr.Header} ;
     for s=1:length(Scafs)
         a=Scafs{s};
         f=find(a=='|',2,'last');fn = a(f(1)+1:f(2)-1) ;
-        if ~exist([mainfolder '/Reference_Genomes/' RefGenomes{i} '/' fn '.gb'],'file')
+        if ~exist([ref_folder '/Reference_Genomes/' RefGenomes{i} '/' fn '.gb'],'file')
             fprintf(1, ['Warning!!! could not find a genebank file called ' fn '.gb  for ' RefGenomes{i} ' \n'])
         end
     end
     
     
     %Check to see if reference genome is formatted properly for bowtie2
-    if ~exist([mainfolder '/Reference_Genomes/' RefGenomes{i} '/genome_bowtie2.1.bt2'],'file')
+    if ~exist([ref_folder '/Reference_Genomes/' RefGenomes{i} '/genome_bowtie2.1.bt2'],'file')
         fprintf(1,'Format reference genome for bowtie... \n') ; tic ;
         c={}; c{end+1}=['/opt/bowtie2/bowtie2-build -q genome.fasta genome_bowtie2'];
-        d=[]; d{end+1}=[mainfolder '/Reference_Genomes/' RefGenomes{i}];
+        d=[]; d{end+1}=[ref_folder '/Reference_Genomes/' RefGenomes{i}];
         run_parallel_unix_commands_fast(c,'empty',0,d);
     end
-    
-
 
 end
-
-
-
 
 
 %% Set up folders
@@ -161,26 +156,47 @@ end
 %% Trim adapter sequences 
 
 fprintf(1, 'Trim adapter sequences... \n') ; tic ; 
+adapter_dir = 'cutadapted'; 
 
-tparams = {}; 
-cmds = {}; 
-dirs = {}; 
+trim_cmds = {}; 
+trim_dirs = {}; 
 
+% generate cmds for all samples
 for i = 1:length(SampleTable)
     s=SampleTable(i);
-    cd(s.Sample);
-    [~,ai] = ismember(s.Alignments,{AlignmentTable.Alignment}) ;
-    [~,fi] = ismember({AlignmentTable(ai).Filter},{FilterTable.Filter}) ;
-    fi = unique(fi) ;
+    cd(s.Sample); 
+    
+    % create folder for adapater trimmed 
+    if ~exist(adapter_dir, 'dir')
+        mkdir(adapter_dir) 
+    end
+    
+    % curate cmds for adapter trimming
+    tname_in1 = [pwd '/' s.Sample '_1.fastq'];
+    tname_in2 = [pwd '/' s.Sample '_2.fastq']; 
+    tname_out1 = [pwd '/' adapter_dir '/cutadapt_reads_1.fastq']; 
+    tname_out2 = [pwd '/' adapter_dir '/cutadapt_reads_2.fastq']; 
+    
+    if ~(exist(tname_out1,'file') && exist(tname_out2,'file')) || overwrite
+        trim_cmds{end+1} = ['cutadapt -a CTGTCTCTTAT ' tname_in1 ' > ' tname_out1];
+        trim_dirs{end+1} = [s.Sample '/' adapter_dir]; 
+        trim_cmds{end+1} = ['cutadapt -a CTGTCTCTTAT ' tname_in2 ' > ' tname_out2];
+        trim_dirs{end+1} = [s.Sample '/' adapter_dir];
+    end
+    
+    cd ..
     
 end
+
+% run cutadapt with unix command
+run_parallel_unix_commands_fast(trim_cmds, filter_a, Parallel, trim_dirs);
 
 %% Filter reads
 
 fprintf(1,'Filter reads... \n') ; tic ;
 
 fparams = {};
-cmds = {} ;
+cmds = {};
 dirs ={};
 for i=1:length(SampleTable)
     s=SampleTable(i) ;
@@ -189,27 +205,32 @@ for i=1:length(SampleTable)
     [~,fi] = ismember({AlignmentTable(ai).Filter},{FilterTable.Filter}) ;
     fi = unique(fi) ;
     
-    
     for f=fi(:)'
         if ~exist(FilterTable(f).Filter,'dir')
             mkdir(FilterTable(f).Filter)
         end
-               
         
         if paired %SK
-            fname_in1=[pwd '/' s.Sample '_1.fastq'];
-            fname_in2=[pwd '/' s.Sample '_2.fastq'];
-            fname_out1=[pwd '/' FilterTable(f).Filter '/filter_reads_1.fastq'];
-            fname_out2=[pwd '/' FilterTable(f).Filter '/filter_reads_2.fastq'];
+            fname_in1=[pwd '/' adapter_dir '/cutadapt_reads_1.fastq'];
+            fname_in2=[pwd '/' adapter_dir '/cutadapt_reads_2.fastq'];
+            fname_out1=[pwd '/' adapter_dir '/' FilterTable(f).Filter '/filter_reads_1.fastq'];
+            fname_out2=[pwd '/' adapter_dir '/' FilterTable(f).Filter '/filter_reads_2.fastq'];
+            
             if ~(exist(fname_out1,'file') && exist(fname_out2,'file')) || overwrite
+                % no filtering
                 if strfind(FilterTable(f).Method,'nofilter') %if no filter, copy file into subdirectory-- not the best way to do this
                     cmds{end+1}=['cp ../' s.Sample '_1.fastq filter_reads_1.fastq'];
                     cmds{end+1}=['cp ../' s.Sample '_2.fastq filter_reads_2.fastq'];
                     dirs{end+1}=[s.Sample '/nofilter'];
                     dirs{end+1}=[s.Sample '/nofilter'];
+                
+                % sickle filter
                 elseif strfind(FilterTable(f).Method,'sickle')
-                    cmds{end+1}=['"' SCRIPTSPATH '/sickle-master/sickle" pe -f ../' s.Sample '_1.fastq -r ../' s.Sample '_2.fastq -t sanger -o filter_reads_1.fastq -p filter_reads_2.fastq -s singles.fastq -q ' num2str(FilterTable(f).Params(1)) ' -l ' num2str(FilterTable(f).Params(2)) '-x -n'];
+                    % modify input file to sickle 
+                    cmds{end+1}=['"' SCRIPTSPATH '/sickle-master/sickle" pe -f ' fname_in1 ' -r ' fname_in2 ' -t sanger -o filter_reads_1.fastq -p filter_reads_2.fastq -s singles.fastq -q ' num2str(FilterTable(f).Params(1)) ' -l ' num2str(FilterTable(f).Params(2)) '-x -n'];
                     dirs{end+1}=[s.Sample '/' FilterTable(f).Filter];
+                
+                % some other filter method 
                 else
                     fparams{end+1} =  {fname_in1, fname_in2, fname_out1, fname_out2, Phred_offset, FilterTable(f).Method, FilterTable(f).Params};
                 end
@@ -285,7 +306,7 @@ for i=1:length(SampleTable)
         if ~exist([dr '/aligned.sorted.bam'])
             
             dirs{end+1} = [pwd '/' dr] ;
-            bowtiedirs{end+1} = [mainfolder '/Reference_Genomes/' ae.Genome] ;
+            bowtiedirs{end+1} = [ref_folder '/Reference_Genomes/' ae.Genome] ;
             
             switch ae.Method
                 case 'bowtie'
@@ -370,9 +391,9 @@ for i=1:length(all_dirs)
         %-B disables BAQ computation
         %-d sets maximum read depth
         if Phred_offset==64
-            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -6 -O -s -B -d3000 -f  "' mainfolder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain.pileup'] ;
+            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -6 -O -s -B -d3000 -f  "' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain.pileup'] ;
         else
-            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -s -O -B -d3000 -f "' mainfolder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain.pileup'] ;
+            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -s -O -B -d3000 -f "' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain.pileup'] ;
         end
         dirs{end+1} = all_dirs{i} ;
     end
@@ -391,9 +412,9 @@ cmds = {} ;
 for i=1:length(all_dirs)
     if ~exist([all_dirs{i} '/variant.vcf'],'file') ;
         if Phred_offset==64
-            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -6 -S -ugf "' mainfolder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
+            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -6 -S -ugf "' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
         else
-            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -S -ugf "' mainfolder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
+            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -S -ugf "' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
         end
         
         dirs{end+1} = all_dirs{i} ;

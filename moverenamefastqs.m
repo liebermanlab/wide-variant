@@ -2,16 +2,18 @@ function cmds = moverenamefastqs(IsolateTable)
 
 global RUN_ON_CLUSTER; 
 if RUN_ON_CLUSTER == 1
-    mainfolder='/files/SysBio/KISHONY LAB/illumina_pipeline';
+    % modified 09/03/2013 by HC
+%     datafolder='/files/SysBio/KISHONY LAB/illumina_pipeline';
+    datafolder = '/hms/scratch1/hattie'; 
 else
-    mainfolder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
+    datafolder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
 end
 
 cmds = {} ;
 
 for i=1:length(IsolateTable)
     s = IsolateTable(i) ;
-    sourcefolder = [mainfolder '/raw_data/' s.Batch '/' s.ProviderName] ; 
+    sourcefolder = [datafolder '/raw_data/' s.Batch '/' s.ProviderName] ; 
     %fprintf(1,sourcefolder)
     if ~exist(s.Sample,'dir')
         mkdir(s.Sample)
