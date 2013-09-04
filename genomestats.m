@@ -1,7 +1,7 @@
 function [CStarts, GLength, CIndicator]= genomestats(genome, RUN_ON_CLUSTER)
 
 if RUN_ON_CLUSTER==1
-   fr = fastaread(['/files/SysBio/KISHONY LAB/illumina_pipeline/Reference_Genomes/' genome '/genome.fasta']) ;
+   fr = fastaread(['/home/hc168/Reference_Genomes/' genome '/genome.fasta']) ;
 else  
     fr = fastaread(['/Volumes/sysbio/KISHONY LAB/illumina_pipeline/Reference_Genomes/' genome '/genome.fasta']) ;
 end

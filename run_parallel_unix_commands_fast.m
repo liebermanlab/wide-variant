@@ -28,9 +28,6 @@ if isempty(dirs)
 end
 
 
-
-
-
 if Parallel==1
     dr = 'run_parallel_unix_commands_fast_tmp' ;
     outs={}; %list of orchestra output files to expect.

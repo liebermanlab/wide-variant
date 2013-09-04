@@ -410,8 +410,6 @@ run_parallel_unix_commands_fast(cmds,processing_q,Parallel,dirs);
 
 %% Make vcf files for consensus calling
 
-
-
 dirs = {} ;
 cmds = {} ;
 for i=1:length(all_dirs)
@@ -439,7 +437,7 @@ run_parallel_unix_commands_fast({'/opt/samtools/bin/bcftools view -vS strain.vcf
 
 %% Create diversity.mat (from pileup files) for diversity calling
 
-fprintf(1,'Create diversity.mat... \n') ; tic ;
+fprintf(1,'Create diversity.mat... \n') ; 
 
 
 params = {} ;
@@ -451,9 +449,7 @@ end
 
 run_parallel_matlab_commands('pileup_to_diversity_matrix', params, processing_q, 1);
 
-
-
-fprintf(1,'Building .bai files for viewing alignment... \n') ; tic ;
+fprintf(1,'\nBuilding .bai files for viewing alignment... \n') ; tic ;
 
 
 %% Rename bam first, then make bai files, then delete temporary files
