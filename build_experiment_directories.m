@@ -3,6 +3,7 @@ function build_experiment_directories(scriptspath)
 %February 2012 - March 2013
 %
 %Roy Kishony, Tami Lieberman, Seungsoo Kim, and Idan Yelin
+% Hattie Chung: added cutadapt pre-filtering 
 
 
 %Takes unaligned fastq files from Illumina sequencing and produces a
@@ -189,7 +190,7 @@ for i = 1:length(SampleTable)
 end
 
 % run cutadapt with unix command
-run_parallel_unix_commands_fast(trim_cmds, filter_a, Parallel, trim_dirs);
+run_parallel_unix_commands_fast(trim_cmds, filter_q, Parallel, trim_dirs);
 
 %% Filter reads
 
