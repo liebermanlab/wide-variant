@@ -22,7 +22,7 @@ function build_experiment_directories(scriptspath)
 %running parameters
 paired = true; % could be acquired from files
 Parallel = true ;
-global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 0;
+global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 1;
 
 %orchestra parameters
 fast_q='sysbio_15m';
