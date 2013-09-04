@@ -220,6 +220,7 @@ for i=1:length(SampleTable)
             if ~(exist(fname_out1,'file') && exist(fname_out2,'file')) || overwrite
                 % no filtering
                 if strfind(FilterTable(f).Method,'nofilter') %if no filter, copy file into subdirectory-- not the best way to do this
+                    fprintf(1, 'No filtering... \n'); tic; 
                     cmds{end+1}=['cp ../' s.Sample '_1.fastq filter_reads_1.fastq'];
                     cmds{end+1}=['cp ../' s.Sample '_2.fastq filter_reads_2.fastq'];
                     dirs{end+1}=[s.Sample '/nofilter'];
@@ -228,15 +229,18 @@ for i=1:length(SampleTable)
                 % sickle filter
                 elseif strfind(FilterTable(f).Method,'sickle')
                     % modify input file to sickle 
+                    fprintf(1, 'Using sickle to filter reads processed by cutadapt... \n'); tic; 
                     cmds{end+1}=['"' SCRIPTSPATH '/sickle-master/sickle" pe -f ' fname_in1 ' -r ' fname_in2 ' -t sanger -o filter_reads_1.fastq -p filter_reads_2.fastq -s singles.fastq -q ' num2str(FilterTable(f).Params(1)) ' -l ' num2str(FilterTable(f).Params(2)) '-x -n'];
                     dirs{end+1}=[s.Sample '/' FilterTable(f).Filter];
                 
                 % some other filter method 
                 else
+                    fprintf(1, 'Some other thing in "filter"...\n'); tic; 
                     fparams{end+1} =  {fname_in1, fname_in2, fname_out1, fname_out2, Phred_offset, FilterTable(f).Method, FilterTable(f).Params};
                 end
             end
         else
+            fprintf(1, 'Not paired! \n'); tic; 
             fname_in=[pwd '/' s.Sample '.fastq'];
             fname_out=[pwd '/' FilterTable(f).Filter '/filter_reads.fastq'];
             if ~exist(fname_out,'file') || overwrite
