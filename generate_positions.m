@@ -26,7 +26,7 @@ if parallel==1
     for i=1:length(SampleDirs)  
         %http://www.vsoch.com/2010/11/loading-dynamic-variables-in-a-static-workspace-in-matlab/
         pos=load([TEMPORARYFOLDER '/vcf_' SampleNames{i} '.mat']);
-        if numel(pos.Positions>4) % HC 9/13/2013
+        if numel(pos.Positions)>2 % HC 9/13/2013
             x=chrpos2index(pos.Positions,ChrStarts);
             timesvariant(x)=timesvariant(x)+1;           
         end
