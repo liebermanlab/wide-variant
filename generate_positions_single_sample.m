@@ -35,7 +35,7 @@ if isstruct(vcf)
     end
     Positions=Positions(include>0,:);
 else
-    Positions=Positions(1,1); % HC 9/13/2013 changed from (1,:) 
+    Positions=Positions(1,:); 
 end
 
 save([tempfolder '/vcf_' char(SampleName)], 'Positions')
