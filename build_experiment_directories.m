@@ -214,8 +214,8 @@ for i=1:length(SampleTable)
         if paired %SK
             fname_in1=[pwd '/' adapter_dir '/cutadapt_reads_1.fastq'];
             fname_in2=[pwd '/' adapter_dir '/cutadapt_reads_2.fastq'];
-            fname_out1=[pwd '/' adapter_dir '/' FilterTable(f).Filter '/filter_reads_1.fastq'];
-            fname_out2=[pwd '/' adapter_dir '/' FilterTable(f).Filter '/filter_reads_2.fastq'];
+            fname_out1=[pwd '/' FilterTable(f).Filter '/filter_reads_1.fastq'];
+            fname_out2=[pwd '/' FilterTable(f).Filter '/filter_reads_2.fastq'];
             
             if ~(exist(fname_out1,'file') && exist(fname_out2,'file')) || overwrite
                 % no filtering
@@ -229,7 +229,7 @@ for i=1:length(SampleTable)
                 % sickle filter
                 elseif strfind(FilterTable(f).Method,'sickle')
                     % modify input file to sickle 
-                    fprintf(1, 'Using sickle to filter reads processed by cutadapt... \n'); tic; 
+                    %fprintf(1, 'Using sickle to filter reads processed by cutadapt... \n'); tic; 
                     cmds{end+1}=['"' SCRIPTSPATH '/sickle-master/sickle" pe -f ' fname_in1 ' -r ' fname_in2 ' -t sanger -o filter_reads_1.fastq -p filter_reads_2.fastq -s singles.fastq -q ' num2str(FilterTable(f).Params(1)) ' -l ' num2str(FilterTable(f).Params(2)) '-x -n'];
                     dirs{end+1}=[s.Sample '/' FilterTable(f).Filter];
                 
