@@ -23,8 +23,8 @@ def get_alignment_filter_map():
     return align_to_filter
 
 def append_sample_unaligned_reads(sname, salign, afmap, fh1, fh2): 
-    fastq1_name = sname+'/'+afmap[salign]+'/unaligned.1.fastq'
-    fastq2_name = sname+'/'+afmap[salign]+'/unaligned.2.fastq' 
+    fastq1_name = sname+'/'+afmap[salign]+'/'+salign+'/unaligned.1.fastq'
+    fastq2_name = sname+'/'+afmap[salign]+'/'+salign+'/unaligned.2.fastq' 
     
     print 'Adding unaligned reads from %s and %s' %(fastq1_name, fastq2_name) 
     fastq_iter1 = SeqIO.parse(open(fastq1_name), 'fastq') 
