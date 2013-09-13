@@ -55,7 +55,7 @@ end
 
 global TEMPORARYFOLDER;
 timestamp=save_structure_parameters(logfolder, log_parameters);
-TEMPORARYFOLDER=['/scratch/' timestamp];
+TEMPORARYFOLDER=['/hms/scratch1/hattie/' timestamp];
 
 mkdir(TEMPORARYFOLDER)
 
@@ -86,7 +86,7 @@ fprintf(['Usings scripts directory: ' SCRIPTSPATH  '\n']);
 
 %% Set main folder
 if RUN_ON_CLUSTER == 1
-    mainfolder='/files/SysBio/KISHONY LAB/illumina_pipeline';
+    mainfolder='/home/hc168';
 else
     mainfolder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
 end
