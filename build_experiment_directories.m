@@ -229,7 +229,6 @@ for i=1:length(SampleTable)
                 % sickle filter
                 elseif strfind(FilterTable(f).Method,'sickle')
                     % modify input file to sickle 
-                    %fprintf(1, 'Using sickle to filter reads processed by cutadapt... \n'); tic; 
                     cmds{end+1}=['"' SCRIPTSPATH '/sickle-master/sickle" pe -f ' fname_in1 ' -r ' fname_in2 ' -t sanger -o filter_reads_1.fastq -p filter_reads_2.fastq -s singles.fastq -q ' num2str(FilterTable(f).Params(1)) ' -l ' num2str(FilterTable(f).Params(2)) '-x -n'];
                     dirs{end+1}=[s.Sample '/' FilterTable(f).Filter];
                 
