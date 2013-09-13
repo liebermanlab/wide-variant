@@ -5,19 +5,17 @@ def get_sample_names():
     # Read in samples.csv file 
     sn = []
     align_types = [] 
-    with open('samples.csv') as s: 
+    with open('samples.csv', 'rU') as s: 
         next(s)
-        for line in s: 
-            print line
-	    entry = line.strip().split(',')
+        for line in s:
+            entry = line.strip().split(',')
             sn.append(entry[3]) 
             align_types.append(entry[4])
     return sn, align_types 
 
 def get_alignment_filter_map(): 
     align_to_filter = {}
-    with open('alignment_params.csv', 'rU') as a: 
-        next(a) 
+    with open('alignment_params.csv', 'rU') as a:  
         for line in a: 
             entry = line.strip().split(',') 
             align_name, filter_name = entry[0], entry[1]
@@ -57,8 +55,7 @@ def main():
 
     # iterate through all files 
     for i in range(len(sample_names)): 
-        print i
-	append_sample_unaligned_reads(sample_names[i], sample_align[i], align_filter_map, fh1, fh2) 
+	    append_sample_unaligned_reads(sample_names[i], sample_align[i], align_filter_map, fh1, fh2) 
     print '\nFinished appending all unaligned reads' 
     fh1.close()
     fh2.close()
