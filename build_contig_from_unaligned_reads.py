@@ -1,4 +1,4 @@
-import os, sys, itertools, 
+import os, sys, itertools 
 from Bio import SeqIO
 
 def get_sample_names(): 
@@ -8,10 +8,11 @@ def get_sample_names():
     with open('samples.csv') as s: 
         next(s)
         for line in s: 
-            entry = line.strip().split(',')
+            print line
+	    entry = line.strip().split(',')
             sn.append(entry[3]) 
             align_types.append(entry[4])
-    return sn, align_type 
+    return sn, align_types 
 
 def get_alignment_filter_map(): 
     align_to_filter = {}
@@ -33,11 +34,12 @@ def append_sample_unaligned_reads(sname, salign, afmap, fh1, fh2):
     for rec1, rec2 in itertools.izip(fastq_iter1, fastq_iter2):
         SeqIO.write(rec1, fh1, 'fastq')
         SeqIO.write(rec2, fh2, 'fastq') 
-        
 
 def main(): 
     # get all sample names
     sample_names, sample_align = get_sample_names()
+    print sample_names 
+
     # get alignment params and corresponding filter
     align_filter_map = get_alignment_filter_map() 
 
@@ -54,8 +56,9 @@ def main():
     fh2 = open(unaligned_2, 'a') 
 
     # iterate through all files 
-    for i in range(len(samplenames)): 
-        append_sample_unaligned_reads(sample_names[i], sample_align[i], align_filter_map, fh1, fh2) 
+    for i in range(len(sample_names)): 
+        print i
+	append_sample_unaligned_reads(sample_names[i], sample_align[i], align_filter_map, fh1, fh2) 
     print '\nFinished appending all unaligned reads' 
     fh1.close()
     fh2.close()
