@@ -1,5 +1,5 @@
-function build_mutation_table_master(scriptsdirectory)
-
+%function build_mutation_table_master(scriptsdirectory)
+scriptsdirectory='/home/hc168/illumina_pipeline'; 
 
 
 %% Important variables to set each time
@@ -214,5 +214,5 @@ save(['mutation_table_' run_postfix], 'RefGenome', 'ScafNames', 'ChrStarts', 'Ge
 save(['windows_' run_postfix], 'fwindows', 'cwindows', '-v7.3')
 % save(['MutGenVCF_' run_postfix], 'MutGenVCF', '-v7.3')
 
-end
+%end
 
