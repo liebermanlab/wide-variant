@@ -3,7 +3,7 @@ function [an, df, mut, sequences] = annotate_mutations_auto_gb(Positions,Scaf,Re
 global RUN_ON_CLUSTER
 
 if RUN_ON_CLUSTER == 1
-    mainfolder='/files/SysBio/KISHONY LAB/illumina_pipeline';
+    mainfolder='/home/hc168';
 else
     mainfolder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
 end

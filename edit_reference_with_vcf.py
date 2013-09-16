@@ -38,7 +38,8 @@ def edit_genome_sequence( mutable_seq, var_file ):
                     fasta_nucleotide = mutable_seq[int(pos)-1] 
                     # check that ref in VCF and FASTA are the same 
                     if ref == fasta_nucleotide: 
-                        mutable_seq[int(pos)-1] = var 
+                        print 'Replaced %s with %s' %(ref, var)
+			mutable_seq[int(pos)-1] = var 
                         counter +=1 
     var_filehandle.close()
 
