@@ -119,7 +119,13 @@ for i=1:numel(RefGenomes)
     Scafs = {fr.Header} ;
     for s=1:length(Scafs)
         a=Scafs{s};
-        f=find(a=='|',2,'last');fn = a(f(1)+1:f(2)-1) ;
+        if find(a=='|') % HC 9/16/13: proper fasta header
+            f=find(a=='|',2,'last');
+            fn = a(f(1)+1:f(2)-1) ;
+        else % HC 9/16/13: contig node
+            fn = a; 
+        end
+        
         if ~exist([ref_folder '/Reference_Genomes/' RefGenomes{i} '/' fn '.gb'],'file')
             fprintf(1, ['Warning!!! could not find a genebank file called ' fn '.gb  for ' RefGenomes{i} ' \n'])
         end
