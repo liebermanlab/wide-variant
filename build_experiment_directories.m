@@ -297,6 +297,7 @@ all_genomes = {} ;
 for i=1:length(SampleTable)
     s=SampleTable(i) ;
     cd(s.Sample) ;
+    fprintf('\nSample is %s\n', s); 
     for a = s.Alignments'
         
         ai = find(strcmp({AlignmentTable.Alignment},a)) ;
@@ -314,7 +315,6 @@ for i=1:length(SampleTable)
         dra=[pwd '/' ae.Filter '/' ae.Alignment];
         
         if ~exist([dr '/aligned.sorted.bam'])
-            fprintf('\nSample is %s\n', s); 
             dirs{end+1} = [pwd '/' dr] ;
             bowtiedirs{end+1} = [ref_folder '/Reference_Genomes/' ae.Genome] ;
             
