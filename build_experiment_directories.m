@@ -297,7 +297,7 @@ all_genomes = {} ;
 for i=1:length(SampleTable)
     s=SampleTable(i) ;
     cd(s.Sample) ;
-    fprintf('\nSample is %s\n', s); 
+    fprintf('\nSample is %s\n', s.Sample); 
     for a = s.Alignments'
         
         ai = find(strcmp({AlignmentTable.Alignment},a)) ;
