@@ -314,7 +314,7 @@ for i=1:length(SampleTable)
         dra=[pwd '/' ae.Filter '/' ae.Alignment];
         
         if ~exist([dr '/aligned.sorted.bam'])
-            
+            fprintf('\nSample is %s\n', s); 
             dirs{end+1} = [pwd '/' dr] ;
             bowtiedirs{end+1} = [ref_folder '/Reference_Genomes/' ae.Genome] ;
             
