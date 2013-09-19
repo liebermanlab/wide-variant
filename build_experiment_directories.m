@@ -297,13 +297,14 @@ all_genomes = {} ;
 for i=1:length(SampleTable)
     s=SampleTable(i) ;
     cd(s.Sample) ;
-    fprintf('\nSample is %s\n', s.Sample); 
+    fprintf('\nSample is %s\n', s.Sample);
     for a = s.Alignments'
         
         ai = find(strcmp({AlignmentTable.Alignment},a)) ;
         ae = AlignmentTable(ai) ;
         fi = find(strcmp({FilterTable.Filter},ae.Filter)) ;
         dr = [FilterTable(fi).Filter '/' ae.Alignment] ;
+        fprintf('Directory is %s', dr)
         if ~exist(dr,'dir')
             mkdir(dr)
         end
