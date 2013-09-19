@@ -304,7 +304,6 @@ for i=1:length(SampleTable)
         ae = AlignmentTable(ai) ;
         fi = find(strcmp({FilterTable.Filter},ae.Filter)) ;
         dr = [FilterTable(fi).Filter '/' ae.Alignment] ;
-        fprintf('Directory is %s', dr)
         if ~exist(dr,'dir')
             mkdir(dr)
         end
@@ -354,6 +353,7 @@ for i=1:length(SampleTable)
                             ' -1 ' drf '/filter_reads_1.fastq -2  ' drf '/filter_reads_2.fastq -S ' dra '/aligned.sam '];
                     end
                 case 'bowtie2pairedxt' % allows no ambiguous characters
+                    fprintf('\nAligning with bowtie2pairedxt!\n'); 
                     if Phred_offset == 64
                         cmds{end+1} = ['/opt/bowtie2/bowtie2 -X 2000 --no-mixed --dovetail --very-sensitive --n-ceil 0,0.01 --un-conc ' dra '/unaligned.fastq --phred64 -x  genome_bowtie2' ...
                             '-1 ' drf '/filter_reads_1.fastq -2 ' drf '/filter_reads_2.fastq -S ' dra '/aligned.sam'];
