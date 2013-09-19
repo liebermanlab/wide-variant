@@ -371,9 +371,9 @@ for i=1:length(SampleTable)
     cd ..
 end
 
-
+run_parallel_unix_commands_fast(cmds, alignment_q, Parallel, bowtiedirs);
 if ~exist('alignment_stats','dir')
-    run_parallel_unix_commands_fast(cmds,alignment_q,Parallel,bowtiedirs);
+    %run_parallel_unix_commands_fast(cmds,alignment_q,Parallel,bowtiedirs);
     mkdir('alignment_stats')
     !mv run_parallel_unix_commands_fast_tmp/*  alignment_stats/
 end
