@@ -171,18 +171,18 @@ minormutation=(hasmutation & (ancnti_m==maNT));
 
 %% Generate table -- inspect lower MutQuals and toggle qual_0
 
-QualSort=0;
-QualCutOff=1;
-[q, annotation_all, sorted_table_data] = div_clickable_table(mutations, Calls, p, ancnti, ...
-                                            counts,  fwindows, cwindows, ...
-                                            mutAF, diversemutation, MutQual, ...
-                                            RefGenome, ScafNames, SampleInfo, ...
-                                            ChrStarts, promotersize, showlegends, ...
-                                            QualSort, QualCutOff, qual_0);
+% QualSort=0;
+% QualCutOff=1;
+% [q, annotation_all, sorted_table_data] = div_clickable_table(mutations, Calls, p, ancnti, ...
+%                                             counts,  fwindows, cwindows, ...
+%                                             mutAF, diversemutation, MutQual, ...
+%                                             RefGenome, ScafNames, SampleInfo, ...
+%                                             ChrStarts, promotersize, showlegends, ...
+%                                             QualSort, QualCutOff, qual_0);
 
 %% Plot heatmap of mutations 
 
-[mut_freq, mut_pos, annotation_genes] = get_called_mutations(fixedmutation, annotation_all, mutAF, SampleNames);
+% [mut_freq, mut_pos, annotation_genes] = get_called_mutations(fixedmutation, annotation_all, mutAF, SampleNames);
 
 % plot_heatmap_diverse_frequency(mut_freq, mut_pos, annotation_genes, SampleNames); 
 % cooccurrence = plot_isolates_covariance(mut_freq, annotation_mutgenes); 
@@ -215,18 +215,18 @@ QualCutOff=1;
 
 %% More useful information
 
-% get type of mutation (N, S, I, P, etc.) 
-types=[annotation_all.type];
-typesmatrix=repmat(types',1,Nsample);
-
-genes=[annotation_all.gene_num];
-
-% num_genes_with_at_least_one_mut
-x = genes(sum(hasmutation,2)>0); 
-
-% number of unique genes that get mutated (if length(y) < length(x), there
-% are genes that get mutated more than once!) 
-y=unique(x);
+% % get type of mutation (N, S, I, P, etc.) 
+% types=[annotation_all.type];
+% typesmatrix=repmat(types',1,Nsample);
+% 
+% genes=[annotation_all.gene_num];
+% 
+% % num_genes_with_at_least_one_mut
+% x = genes(sum(hasmutation,2)>0); 
+% 
+% % number of unique genes that get mutated (if length(y) < length(x), there
+% % are genes that get mutated more than once!) 
+% y=unique(x);
 
 %% Compare deep sequencing to isolates 
 
@@ -243,8 +243,9 @@ y=unique(x);
 
 %% Generate input file for phylip
 
-generate_parsimony_tree(NTs(maNT(sum(mutAF>0,2)>0,:)), SampleNames)
+generate_parsimony_tree(NTs(maNT(sum(mutAF>0,2)>0,:)), SampleNames); 
 %the generated [timestamp]_out.tree file is best viewed in FigTree
+fprintf('\nDone with tree'); 
 
 
  
