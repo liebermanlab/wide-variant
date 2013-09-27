@@ -19,7 +19,7 @@ for i=1:NStrain
         name=name(1:10);
     else
         for j=1:(10-numel(name))
-            name=[name '  '];
+            name=[name ' '];
         end
     end
     fprintf(fid, [name '   ' calls(:,i)' '\n']);

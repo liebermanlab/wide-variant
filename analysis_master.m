@@ -7,7 +7,7 @@ run_postfix='13_04_02'; %must match postfix in build_mutation_table_master.m
 
 %run options
 onlySNPs=1; 
-loadwindows=1;
+loadwindows=0; % f and c windows 
 promotersize=150;
 CONTROLSAMPLE=1; % deep isogenic control 
 referenceisancestor=0;
@@ -171,17 +171,18 @@ minormutation=(hasmutation & (ancnti_m==maNT));
 
 %% Generate table -- inspect lower MutQuals and toggle qual_0
 
-% QualSort=0;
-% QualCutOff=1;
-% [q, annotation_all, sorted_table_data] = div_clickable_table(mutations, Calls, p, ancnti, ...
-%                                             counts,  fwindows, cwindows, ...
-%                                             mutAF, diversemutation, MutQual, ...
-%                                             RefGenome, ScafNames, SampleInfo, ...
-%                                             ChrStarts, promotersize, showlegends, ...
-%                                             QualSort, QualCutOff, qual_0);
+QualSort=0;
+QualCutOff=1;
+[q, annotation_all, sorted_table_data] = div_clickable_table(mutations, Calls, p, ancnti, ...
+                                            counts,  fwindows, cwindows, ...
+                                            mutAF, diversemutation, MutQual, ...
+                                            RefGenome, ScafNames, SampleInfo, ...
+                                            ChrStarts, promotersize, showlegends, ...
+                                            QualSort, QualCutOff, qual_0);
 
 %% Plot heatmap of mutations 
 
+[mut_freq, mut_pos] = get_called_mutations(fixedmutation, mutAF); 
 % [mut_freq, mut_pos, annotation_genes] = get_called_mutations(fixedmutation, annotation_all, mutAF, SampleNames);
 
 % plot_heatmap_diverse_frequency(mut_freq, mut_pos, annotation_genes, SampleNames); 

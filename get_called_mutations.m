@@ -1,4 +1,5 @@
-function [mut_freq, mut_pos, annotation_genes] = get_called_mutations(samplemutations, annotation_all, mutAF, samplenames) 
+function [mut_freq, mut_pos] = get_called_mutations(samplemutations, mutAF)
+% function [mut_freq, mut_pos, annotation_genes] = get_called_mutations(samplemutations, annotation_all, mutAF, samplenames) 
     
     Nsample = size(samplemutations,2); 
     
@@ -12,7 +13,7 @@ function [mut_freq, mut_pos, annotation_genes] = get_called_mutations(samplemuta
     % get diverse freq
     mut_freq = mutAF(mut_pos,:); 
     
-    % get gene names
-    annotation_genes = annotation_all(mut_pos); 
+%     % get gene names
+%     annotation_genes = annotation_all(mut_pos); 
     
 end

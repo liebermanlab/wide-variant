@@ -2,7 +2,7 @@ function generate_parsimony_tree(calls, names)
 
 
 if ~exist('dnapars','file')
-    !cp /Volumes/sysbio/KISHONY\ LAB/illumina_pipeline/Tami/scripts/phylip-3.69/exe/dnapars dnapars
+    !cp /Volumes/sysbio/KISHONY\ LAB/illumina_pipeline/scripts-hattie/dnapars dnapars
 end
     
 
