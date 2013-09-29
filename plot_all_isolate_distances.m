@@ -41,8 +41,25 @@ for j = 1:size(site_pairs,1)
     
 end
 
-figure, imagesc(dist_matrix) 
+figure; 
+imagesc(dist_matrix);            %# Create a colored plot of the matrix values
+colormap(flipud(gray));  %# Change the colormap to gray (so higher values are
+                         %#   black and lower values are white)
+
+textStrings = num2str(dist_matrix(:),'%0.1f');  %# Create strings from the matrix values
+textStrings = strtrim(cellstr(textStrings));  %# Remove any space padding
+[x,y] = meshgrid(1:14);   %# Create x and y coordinates for the strings
+hStrings = text(x(:),y(:),textStrings(:),...      %# Plot the strings
+                'HorizontalAlignment','center', ...
+                'FontSize', 16);
+midValue = mean(get(gca,'CLim'));  %# Get the middle value of the color range
+textColors = repmat(dist_matrix(:) > midValue,1,3);  %# Choose white or black for the
+                                             %#   text color of the strings so
+                                             %#   they can be easily seen over
+                                             %#   the background color
+set(hStrings,{'Color'},num2cell(textColors,2));
 set(gca, 'XTick', 1:length(all_site_names), ...
         'YTick', 1:length(all_site_names), ...
         'XTickLabel', all_site_names, ...
-        'YTickLabel', all_site_names)
+        'YTickLabel', all_site_names, ...
+        'FontSize', 20)
