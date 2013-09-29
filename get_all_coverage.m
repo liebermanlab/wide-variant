@@ -9,6 +9,7 @@ function [linear_avg_coverage, log_avg_coverage, zero_cov_positions] = get_all_c
     if nargin == 2
         assert(length(all_dirs)==num_expected, 'Incorrect number of samples retrieved'); 
     end
+    all_dirs_sorted = sort_nat({all_dirs.name}); 
     
     linear_avg_coverage = zeros(length(all_dirs),1);
     log_avg_coverage = zeros(length(all_dirs),1); 
@@ -16,8 +17,8 @@ function [linear_avg_coverage, log_avg_coverage, zero_cov_positions] = get_all_c
     
     figure(300);
     
-    for i = 1:length(all_dirs)    
-        sname = all_dirs(i).name; 
+    for i = 1:length(all_dirs_sorted)    
+        sname = all_dirs_sorted{i}; 
         
         % get coverage stats 
         [log_coverage, zero_coverage, log_non_zero, avg_coverage] = get_coverage(sname, threshold); 
@@ -29,13 +30,16 @@ function [linear_avg_coverage, log_avg_coverage, zero_cov_positions] = get_all_c
         figure(300); 
         subplot(4,6,i);
         hist(log_coverage,30); hold on; 
-        text(0.5, 8*10^5, sprintf('%0.2f', avg_coverage), ...
-            'FontSize', 14, 'FontWeight', 'bold'); 
-        text(0.5, 7*10^5, sprintf('%0.2f = %0.2f', mean(log_non_zero), 10^(mean(log_non_zero)) ),...
-            'FontSize', 14, 'FontWeight', 'bold'); hold off; 
-        title(sname, 'FontSize', 14, 'FontWeight', 'bold'); 
+        text(0.3, 8*10^5, sprintf('%0.2f', avg_coverage), ...
+            'FontSize', 10, 'FontWeight', 'bold'); 
+        text(0.3, 7*10^5, sprintf('%0.2f = %0.2f', mean(log_non_zero), 10^(mean(log_non_zero)) ),...
+            'FontSize', 10, 'FontWeight', 'bold'); hold off; 
+        title(sname, 'FontSize', 12, 'FontWeight', 'bold'); 
         xlim([0 2.5]); 
         ylim([0 10^6]); 
+        set(gca, 'FontSize', 7, ...
+                'XTick', 0:2); 
+        set(gcf, 'PaperSize', [12 8], 'PaperPosition', [0 0 12 8]);  
         
         % print missing coverage
         fprintf('\n\tMissing %0.2f of reference\n', length(zero_coverage)./genome_size); 
