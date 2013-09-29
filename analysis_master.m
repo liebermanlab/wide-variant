@@ -16,6 +16,7 @@ ancestorismode=1; %use mode of major alleles as ancestor
 
 
 %filter parameters
+% want to use FQ and not qual from VCF 
 qual_0=60; % mutqual threshold 
 
 strict_parameters = struct( 'minorfreqthreshold',           .03, ...
@@ -135,6 +136,8 @@ samplestocompare=[2];
 %% Create useful matrices and vectors
 
 
+% ancnti = ancestral nucleotide in 0/1/2/3/4
+% ancnt = ancestral nucleotide in N/A/T/C/G
 
 if ancestoriscontrol>0
     %Ancestral nucleotide at each position
@@ -150,15 +153,20 @@ else
     stop
 end
     
-    
-ancnt_m=repmat(ancnt,1,Nsample);
+% expand to match # isolates    
+ancnt_m=repmat(ancnt,1,Nsample); 
 ancnti_m=repmat(ancnti,1,Nsample);
 
 
-%Hasmutation
+% Hasmutation
+
+% for deep sequencing
 diversemutation=div_test_thresholds(counts,strict_parameters, coveragethresholds, CONTROLSAMPLE);
+% for isolates
 fixedmutation=((Calls~=ancnt_m) & (ismember(Calls,acceptabletypes)) & repmat(MutQual,1,Nsample)>=qual_0);
+% either type of mutation (fixed or diverse) 
 hasmutation= fixedmutation | diversemutation; %has mutation if diverse or call(from vcf file) ~= anct
+% ??
 minormutation=(hasmutation & (ancnti_m==maNT));
 
 %Mutant allele frequency
@@ -173,9 +181,9 @@ minormutation=(hasmutation & (ancnti_m==maNT));
 
 QualSort=0;
 QualCutOff=1;
-[q, annotation_all, sorted_table_data] = div_clickable_table(mutations, Calls, p, ancnti, ...
+[annotation_all, sorted_table_data] = div_clickable_table_isolate_calls(mutations, Calls, p, ancnti, ...
                                             counts,  fwindows, cwindows, ...
-                                            mutAF, diversemutation, MutQual, ...
+                                            hasmutation, MutQual, ...
                                             RefGenome, ScafNames, SampleInfo, ...
                                             ChrStarts, promotersize, showlegends, ...
                                             QualSort, QualCutOff, qual_0);
@@ -193,20 +201,7 @@ QualCutOff=1;
 % mut_proteins = {annotation_genes.protein}; 
 % no_prot_name = cellfun(@isempty, mut_proteins); 
 % mut_proteins(no_prot_name) = {annotation_genes(no_prot_name).annotation}; 
-
-% stool manual gene annotations
-
-% annotation_clustergram = {'dinitrification protein NorD', ...
-%                         'chaperone cupB2, periplasmic pilus chaperone',...
-%                         'putative transcription regulator', ...
-%                         'type4 fimbrial biogenesis outer membrane protein',...
-%                         'pyridoxamine kinase'}; 
-
-% annotation_clustergram = {annotation_genes.protein}; 
-% cobj = clustergram(mut_freq, 'RowLabels', annotation_clustergram, ...
-%                         'ColumnLabels', SampleNames, ...
-%                         'ColorMap', 'jet');
-%                     
+        
 % set(gca, 'FontSize', 16, 'FontWeight', 'bold'); 
                     
 
@@ -216,38 +211,43 @@ QualCutOff=1;
 
 %% More useful information
 
-% % get type of mutation (N, S, I, P, etc.) 
-% types=[annotation_all.type];
-% typesmatrix=repmat(types',1,Nsample);
-% 
-% genes=[annotation_all.gene_num];
-% 
-% % num_genes_with_at_least_one_mut
-% x = genes(sum(hasmutation,2)>0); 
-% 
-% % number of unique genes that get mutated (if length(y) < length(x), there
-% % are genes that get mutated more than once!) 
-% y=unique(x);
+% get type of mutation (N, S, I, P, etc.) 
+types=[annotation_all.type];
+typesmatrix=repmat(types',1,Nsample);
 
-%% Compare deep sequencing to isolates 
+genes=[annotation_all.gene_num];
 
-% % ___ inputs ___ % 
-% isolates = 1:24; 
-% deep_sample = 50; 
-% maf_from_isolates = 1-sum(fixedmutation(:,isolates),2)/numel(isolates);
-% 
-% div_clickable_scatter_sigcolor(maf_from_isolates, maf(:,deep_sample), ...
-%     'ISOLATES -- Mutation allele frequency', 'POOLED -- Mutation allele frequency', deep_sample, strict_parameters, coveragethresholds,...
-%     counts, fwindows, cwindows, positions, mutations, RefGenome, ScafNames,  ChrStarts, SampleInfo);
+% num_genes_with_at_least_one_mut
+x = genes(sum(hasmutation,2)>0); 
 
-
+% number of unique genes that get mutated (if length(y) < length(x), there
+% are genes that get mutated more than once!) 
+y=unique(x);
 
 %% Generate input file for phylip
 
-generate_parsimony_tree(NTs(maNT(sum(mutAF>0,2)>0,:)), SampleNames); 
-%the generated [timestamp]_out.tree file is best viewed in FigTree
-fprintf('\nDone with tree'); 
+outgroup = 1; 
+mainfolder = '/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
+RefGenomeNameUnedited = 'Smaltophilia_K279';
+TreeSampleNames = SampleNames; 
+all_positions = 1:size(Calls,1); 
+quality_positions = all_positions(MutQual>qual_0);
+quality_positions_chromosomal = p(quality_positions); 
+    calls_for_tree = Calls(quality_positions,:); 
 
+if outgroup == 1
+    % ADD REFERENCE AT THESE POSITIONS
+    outgroup_nts = extract_outgroup_mutation_positions(mainfolder, RefGenomeNameUnedited, quality_positions_chromosomal); 
+    calls_for_tree = [calls_for_tree, outgroup_nts']; 
+    TreeSampleNames{end+1} = 'Outgroup'; 
+end
+
+generate_parsimony_tree(calls_for_tree, TreeSampleNames); 
+
+
+% generate_parsimony_tree(NTs(maNT(sum(mutAF>0,2)>0,:)), SampleNames); 
+% %the generated [timestamp]_out.tree file is best viewed in FigTree
+% fprintf('\nDone with tree\n'); 
 
  
 %% Save
