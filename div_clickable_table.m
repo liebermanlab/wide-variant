@@ -11,7 +11,7 @@ end
 
 %p input is params
 
-fprintf(1,'Generating table...\n')
+fprintf(1,'\nGenerating table...\n')
 
 % 2012 Feb, Tami Lieberman, Idan Yelin & Roy Kishony
 scrsz = get(0,'ScreenSize');
@@ -27,17 +27,22 @@ show_alignment=1;
 d=mutAF>0;
 [maf, majorNT, minorNT] = div_major_allele_freq(cnts);
 
-goodmaf=zeros(size(d)); goodmaf(d>0)=maf(d>0);
+goodmaf=zeros(size(d)); 
+goodmaf(d>0)=maf(d>0);
 
+% HC 09/27/2103
+% Impose quality cutoff BEFOREHAND! 
+if QualCutOff == 1
+    muts_qualcutoff = muts(MutQual>cutoff_qual); 
+    muts = muts_qualcutoff; 
+end
 
-
-Npositions=numel(allp);
+Npositions=numel(muts);
 Nsamples=size(maf,2);
-
-
 
 %Modify annotations such that it is a stand-alone record
 annotations=muts;
+fprintf('\nParsing %i annotations\n', Npositions); 
 for i=1:Npositions
     
     annotations(i).qual=MutQual(i);
@@ -173,6 +178,7 @@ end
 tabledata=cell(sum(goodpositions),numel(colnames));
 
 for i=1:numel(annotations)
+    fprintf('\nIterating through %i elements!!!!\n', numel(annotations)); 
     if numel(annotations(i).locustag)>0
         locustag=annotations(i).locustag(end-4:end);
     else
