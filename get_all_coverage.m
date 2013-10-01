@@ -1,14 +1,10 @@
-function [linear_avg_coverage, log_avg_coverage, zero_cov_positions] = get_all_coverage(dirname, num_expected) 
+function [linear_avg_coverage, log_avg_coverage, zero_cov_positions] = get_all_coverage(dirname, genome_size) 
     % USAGE: get_all_coverage('SA*')
     
     % params 
     threshold = 1; 
-    genome_size = 4851126; 
     
     all_dirs = dir(dirname);
-    if nargin == 2
-        assert(length(all_dirs)==num_expected, 'Incorrect number of samples retrieved'); 
-    end
     all_dirs_sorted = sort_nat({all_dirs.name}); 
     
     linear_avg_coverage = zeros(length(all_dirs),1);

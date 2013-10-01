@@ -1,10 +1,10 @@
-function call_get_all_coverage_lung(samplenames) 
-    savedir = '~/Dropbox/projects/kishony-lung/figures/BATCH_1/coverage/';
+function call_get_all_coverage_lung(samplenames, genome_size, savedir) 
+%     savedir = '~/Dropbox/projects/kishony-lung/figures/BATCH_1/coverage/';
     groupkey = '-'; 
     gnames = get_unique_sample_groups(samplenames); 
     for i = 1:length(gnames)
         gn = gnames{i}; 
-        get_all_coverage([gn '-*']); 
+        get_all_coverage([gn '-*'], genome_size); 
         h = gcf; 
         saveas(h, [savedir '20130929_' gn], 'png'); 
         clf(h); 
