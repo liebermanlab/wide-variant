@@ -42,8 +42,8 @@ def main():
     align_filter_map = get_alignment_filter_map() 
 
     # initialize master file
-    unaligned_1 = 'unaligned.all.1.fastq'
-    unaligned_2 = 'unaligned.all.2.fastq' 
+    unaligned_1 = '/home/hc168/unaligned.all.1.fastq'
+    unaligned_2 = '/home/hc168/unaligned.all.2.fastq' 
     if os.path.isfile(unaligned_1): 
         os.remove(unaligned_1)
         print '\nRemoved existing file %s' %unaligned_1
