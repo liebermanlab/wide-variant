@@ -81,15 +81,17 @@ function [annotations, tabledata] = div_clickable_table_isolate_calls(muts, call
         end
         
         % Fill in annotations with whether NS or Syn mutation
+        annotations(i).AAs=''; % actual different AA's found across all samples
         
         % record ancestral 
         if ancnti(i) > 0
-            annotations(i).nts=[NTs(ancnti(i))]; 
+            annotations(i).nts=[NTs(ancnti(i))];
+            if numel(annotations(i).AA)==4
+                annotations(i).AAs(end+1) = annotations(i).AA(ancnti(i)); 
+            end
         else
             annotations(i).nts=char([]); 
         end
-        
-        annotations(i).AAs=''; % actual different AA's found across all samples
         
         % Iterate through all samples
         for j = 1:Nsamples
