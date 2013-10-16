@@ -32,9 +32,10 @@ function complete_annotations = fill_in_annotation(annotations)
         
         % add to complete annotations
         if isempty(annotations(i).muts)
-            complete_annotations{i} = [annotations(i).type ' | ' gene]; 
+            complete_annotations{i} = [annotations(i).type ' | ' annotations(i).locustag ' | ' gene]; 
         else
-            complete_annotations{i} = [annotations(i).type ' | ' annotations(i).muts{1} ' | ' gene]; 
+            complete_annotations{i} = [annotations(i).type ' | ' annotations(i).muts{1} ' | ' ...
+                                        annotations(i).locustag ' | ' gene]; 
         end
     end
 end

@@ -23,7 +23,10 @@ function observed_muts = div_count_observed_mut_types(annot_mutgenes, type)
             mut_nts = annot_mutgenes(i).nts;
             ref = mut_nts(1);   
             mut = mut_nts(2);  
-
+            % HC hack 10/2/2013
+            if strcmp(mut, 'N')
+                mut = ref; 
+            end
             % add observed count
             observed_muts(nt_pos(ref), nt_pos(mut)) = observed_muts(nt_pos(ref), nt_pos(mut)) + 1; 
         end
