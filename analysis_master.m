@@ -8,7 +8,7 @@ QualSort=0;
 QualCutOff=1;
 [annotation_all, sorted_table_data] = div_clickable_table_isolate_calls(mutations, Calls, p, ancnti, ...
                                             counts,  fwindows, cwindows, ...
-                                            hasmutation, MutQual, ...
+                                            hasmutation, MutQual, MutQualIsolates, ...
                                             RefGenome, ScafNames, SampleInfo, ...
                                             ChrStarts, promotersize, showlegends, ...
                                             QualSort, QualCutOff, qual_0);                                        
@@ -17,12 +17,10 @@ QualCutOff=1;
 
 % filled_annotation = fill_in_annotation(annotation_all); 
 
-filled_annotation = cell(numel(annotation_all),1); 
+filled_annotation = cell(numel(annotation_all),1);
 for i = 1:numel(filled_annotation)
     filled_annotation{i} = [annotation_all(i).type ' | ' annotation_all(i).annotation];
 end
-
-
 
 %% Clustergram
 mut_freq = get_fixed_mut_freq(Calls, MutQual, qual_0, ancnti);
@@ -32,18 +30,22 @@ set(co,'ColumnLabels', SampleNames, 'RowLabels', filled_annotation, ...
 
 %% Lung Specific Analysis
 
-% plot pairwise distance within site 
-lung_pairwise_distances(mut_freq, SampleNames); 
+lung_analysis = 0; 
 
-% plot number of unique isolates within and between sites 
-lung_get_all_clonality(mut_freq, SampleNames); 
+if lung_analysis == 1
+    % plot pairwise distance within site 
+    lung_pairwise_distances(mut_freq, SampleNames); 
 
-% plot distribution of pairwise distances
-plot_all_isolate_pairwise_distances(mut_freq, SampleNames); 
+    % plot number of unique isolates within and between sites 
+    lung_get_all_clonality(mut_freq, SampleNames); 
+
+    % plot distribution of pairwise distances
+    [within, between, distance_matrix] = plot_all_isolate_pairwise_distances(mut_freq, SampleNames); 
+end
 
 %% dNdS
 
-% [ci_u, ci_l, dnds] = calculate_dNdS(annotation_genes, cds, GenomeLength, ChrStarts, sequences); 
+% [ci_u, ci_l, dnds] = calculate_dNdS(annotation_all, cds, GenomeLength, ChrStarts, sequences); 
 
 
 %% Find genes not unaligned to
