@@ -1,9 +1,10 @@
-function [coverage, average_coverage] = get_covered_genes_sample(sample_name, threshold)
+function [coverage, coverage_mode] = get_covered_genes_sample(sample_name, threshold)
     % USAGE: get_coverage('SA11-1') 
 
     if nargin < 2
         threshold = 1; 
     end
+    
     
     % load diversity.mat for each file 
     clear diversity_file diversity 
@@ -11,13 +12,16 @@ function [coverage, average_coverage] = get_covered_genes_sample(sample_name, th
     fprintf('\nLoading file for %s\n', sample_name); 
     diversity_file = strcat(sample_name, '/diversity.mat'); 
     diversity = load(diversity_file);
-    counts = diversity.data;
+    countsdata = diversity.data;
     
     % calculate coverage
-    linear_coverage = sum(counts(1:8,:));
+    coverage = sum(countsdata(1:8,:));
     
-    % average coverage
-    coverage = linear_coverage>threshold;
+    average_coverage = mean(coverage); 
     
-    average_coverage = mean(linear_coverage(linear_coverage>threshold)); 
+    % get mode
+    modebins = [0:1:max(coverage)]; 
+    [n,bins] = hist(coverage,modebins);
+    coverage_mode = bins(n==max(n(5:end))); 
+   
 end
