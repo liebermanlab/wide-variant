@@ -13,11 +13,10 @@ CONTROLSAMPLE=1; % deep isogenic control
 referenceisancestor=0;
 ancestoriscontrol=1;
 ancestorismode=1; %use mode of major alleles as ancestor
+qual_0=60; % want to use FQ and not qual from VCF 
 
-
-%filter parameters
-% want to use FQ and not qual from VCF 
-qual_0=60; % mutqual threshold 
+MutQualFig=0; 
+lung_analysis=0; 
 
 strict_parameters = struct( 'minorfreqthreshold',           .03, ...
                             'maxreads_perstrand_percentile', 99, ...
@@ -93,7 +92,7 @@ end
 %% Fixed mutations:  Quality threshold anaysis (set value for qual_0)
 
 %Number of mutations
-MutQual = ana_mutation_quality(Calls,Quals,1) ;
+[MutQual, MutQualIsolates] = ana_mutation_quality(Calls,Quals,MutQualFig) ;
 % plot(qual_0,sum(MutQual>=qual_0),'dr', 'MarkerFaceColor', 'r', 'MarkerSize', 10)
 
 %Pairwise distance between strains

@@ -1,4 +1,4 @@
-function [annotations, tabledata] = div_clickable_table_isolate_calls(muts, calls, allp, ancnti, cnts, fwindows, cwindows, hasmutation, MutQual, RefGenome, ScafNames, SampleInfo, ChrStarts, promoterdistance, showlegends, QualSort, QualCutOff, cutoff_qual)
+function [annotations, tabledata] = div_clickable_table_isolate_calls(muts, calls, allp, ancnti, cnts, fwindows, cwindows, hasmutation, MutQual, MutQualIsolates, RefGenome, ScafNames, SampleInfo, ChrStarts, promoterdistance, showlegends, QualSort, QualCutOff, cutoff_qual)
     % for isolates!! 
 
     % set optional variables 
@@ -43,6 +43,7 @@ function [annotations, tabledata] = div_clickable_table_isolate_calls(muts, call
 %         
         goodpositions=MutQual>cutoff_qual; 
         positions_to_iterate = positions_to_iterate(goodpositions);
+        
     end
     
     fprintf('\nGood positions length %i\n', length(goodpositions)); 
@@ -144,6 +145,7 @@ function [annotations, tabledata] = div_clickable_table_isolate_calls(muts, call
 
     %actual table
     annotations=annotations(goodpositions>0);
+    MutQualIsolates = MutQualIsolates(goodpositions>0,:); 
     allp=allp(goodpositions>0);
     cnts(:,~goodpositions,:)=[];
 
@@ -167,8 +169,7 @@ function [annotations, tabledata] = div_clickable_table_isolate_calls(muts, call
         colnames{end+1}=SampleInfo(i).Sample;
     end
 
-    tabledata=cell(sum(goodpositions),numel(colnames));
-    
+    tabledata=cell(sum(goodpositions),numel(colnames));    
     
     for i=1:numel(annotations)
         if numel(annotations(i).locustag)>0
@@ -233,7 +234,7 @@ function [annotations, tabledata] = div_clickable_table_isolate_calls(muts, call
 
 
     function mut_matix_clicked(src, event)
-        
+        % ___ MODIFY TO SHOW ONLY ISOLATES IN MUTQUALISOLATES!!!! ___ %
 
         scrsz = get(0,'ScreenSize');
         strand=['g-','k-'];
@@ -243,17 +244,19 @@ function [annotations, tabledata] = div_clickable_table_isolate_calls(muts, call
         dt = get(src,'data') ;
         
         ind=positions(rc(1));
-        
                
         chr=annotations(ind).scafold;
         position= annotations(ind).pos;
-                
-        disp(annotations(ind))
         
-        disp(ind)
+        disp(ind);         
+        disp(annotations(ind)); 
+        
+        % get the two isolates used for MutQual in this position 
+        calledisolates = MutQualIsolates(ind,:);
+        fprintf('\nIsolates used to make call is %i and %i\n', calledisolates(1), calledisolates(2));
         
         if rc(2) > nonsamplecols
-            sample=rc(2)-nonsamplecols;
+            sample=rc(2)-nonsamplecols; 
             disp(sample)
         else
             sample=1;
@@ -261,19 +264,16 @@ function [annotations, tabledata] = div_clickable_table_isolate_calls(muts, call
         
         
         %Bar charts of counts
-        div_bar_charts(squeeze(cnts(:,ind,:)), sample, {SampleInfo.Sample})
-        
-        
+        div_bar_charts(squeeze(cnts(:,ind,calledisolates)), sample, {SampleInfo(calledisolates).Sample})
         
         %Plot MAF in region neighboring locus
-%         region=(find(allp>allp(ind)-window_size,1):find(allp<allp(ind)+window_size,1,'last'));
+        region=(find(allp>allp(ind)-window_size,1):find(allp<allp(ind)+window_size,1,'last'));
 
-%         if numel(fwindows)>1
-%            div_maf_window(annotations(ind), allp(ind)-ChrStarts(chr), window_size, [], squeeze(fwindows(:,ind,:)), allp(region)-ChrStarts(chr), goodmaf(region,:), {SampleInfo.Sample},sample,showlegends)
-%            div_cov_window(annotations(ind), allp(ind)-ChrStarts(chr), window_size, squeeze(cwindows(:,ind,:)), {SampleInfo.Sample},sample, showlegends)
-%         end
+        if numel(fwindows)>1
+           div_maf_window(annotations(ind), allp(ind)-ChrStarts(chr), window_size, [], squeeze(fwindows(:,ind,:)), allp(region)-ChrStarts(chr), goodmaf(region,:), {SampleInfo.Sample},sample,showlegends)
+           div_cov_window(annotations(ind), allp(ind)-ChrStarts(chr), window_size, squeeze(cwindows(:,ind,:)), {SampleInfo.Sample},sample, showlegends)
+        end
         
-
         
         show_alignment=get(h.checkbox1, 'Value');
         if show_alignment==1

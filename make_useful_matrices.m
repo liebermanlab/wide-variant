@@ -1,4 +1,4 @@
-%% Create useful matrices and vectors
+% Create useful matrices and vectors
 
 [~, maNT, minorNT] = div_major_allele_freq(counts);
 
@@ -22,7 +22,6 @@ end
 % expand to match # isolates    
 ancnt_m=repmat(ancnt,1,Nsample); 
 ancnti_m=repmat(ancnti,1,Nsample);
-
 
 % Hasmutation
 
