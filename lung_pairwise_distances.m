@@ -1,5 +1,6 @@
 function lung_pairwise_distances(mut_freq, SampleNames, isolates_per_site)
-    
+    % USES PDIST 
+
     if nargin < 3
         isolates_per_site = 24; 
     end
@@ -15,11 +16,11 @@ function lung_pairwise_distances(mut_freq, SampleNames, isolates_per_site)
         Sites{n} = (isolates_per_site*(n-1)+1):(isolates_per_site*n);
     end
 
-    % plot pairwise distance heatmap within each site 
+    % plot pairwise distance heatmap within each site (lower triangle!) 
     D = {}; 
     figure; 
     for i=1:length(SiteNames)
-        dist = tril(squareform(pdist(mut_freq(:,Sites{i})', 'cityblock'))); 
+        dist = tril(squareform(pdist(mut_freq(:,Sites{i})', 'cityblock')));
         D{end+1} = dist;
         ax(i) = subplot(3,5,i); 
         imagesc(dist, [0 max_dist]); 
@@ -40,7 +41,7 @@ function lung_pairwise_distances(mut_freq, SampleNames, isolates_per_site)
         for u = 1:length(snames)
             sn = snames{u}; 
             keyloc = strfind(sn,strbit);
-            skey = sn(1:keyloc-1); 
+            skey = sn(1:keyloc-1);
             allkeys{end+1} = skey;
         end
         uniquekeys = unique(allkeys, 'stable');
