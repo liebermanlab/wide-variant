@@ -4,7 +4,7 @@ function div_bar_charts(c, samplen, names, params)
 
 %params is an optional argument to display current threshold settings
 
-name=names{samplen};
+% name=names{samplen};
 
 scrsz = get(0,'ScreenSize');
 
@@ -19,10 +19,10 @@ bar(reshape([a; nan(4,size(a,2))],4,[])','stacked')
 legend('A','T','C','G', 'Location', 'BestOutside')
 ylabel('Number of reads')
 set(num_call,'Xtick',2:3:(3*numel(names)-1))
-set(num_call,'Xticklabel',names)
+set(num_call,'Xticklabel',names, 'FontSize', 16, 'FontWeight', 'bold')
 xlim([0 (3*numel(names)+3)])
 xticklabel_rotate;
-set(num_call, 'XTick', []); 
+set(num_call, 'XTick', []);
 
 %Plot call quality
 call_qual = subplot(4,1,2); hold on;
@@ -35,7 +35,7 @@ bar(reshape([a; nan(4,size(a,2))],4,[])','grouped', 'LineStyle', 'none')
 legend('Aq','Tq','Cq','Gq', 'Location', 'BestOutside')
 ylabel('Average Base Quality')
 set(call_qual,'Xtick',2:3:(3*numel(names)-1))
-set(call_qual,'Xticklabel',names)
+set(call_qual,'Xticklabel',names, 'FontSize', 16, 'FontWeight', 'bold')
 xlim([0 (3*numel(names)+3)])
 xticklabel_rotate;
 set(call_qual, 'XTick', []);
@@ -52,7 +52,7 @@ bar(reshape([a; nan(4,size(a,2))],4,[])','grouped','LineStyle', 'none')
 legend('Am','Tm','Cm','Gm', 'Location', 'BestOutside')
 ylabel('Average Mapping Quality')
 set(map_qual,'Xtick',2:3:(3*numel(names)-1))
-set(map_qual,'Xticklabel',names)
+set(map_qual,'Xticklabel',names, 'FontSize', 16, 'FontWeight', 'bold')
 xlim([0 (3*numel(names)+3)])
 xticklabel_rotate;
 set(map_qual, 'XTick', []);
@@ -70,7 +70,7 @@ bar(reshape([a; nan(4,size(a,2))],4,[])','grouped', 'LineStyle', 'none')
 legend('Atd','Ttd','Ctd','Gtd', 'Location', 'BestOutside')
 ylabel('Average Tail Distance')
 set(tail_dist,'Xtick',2:3:(3*numel(names)-1))
-set(tail_dist,'Xticklabel',names)
+set(tail_dist,'Xticklabel',names, 'FontSize', 16, 'FontWeight', 'bold')
 xlim([0 (3*numel(names)+3)])
 xticklabel_rotate;
 set(tail_dist, 'XTick', []);
