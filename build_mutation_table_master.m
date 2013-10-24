@@ -1,13 +1,19 @@
-function build_mutation_table_master(scriptsdirectory)
+function build_mutation_table_master(scriptsdirectory, CLUSTERDIR)
+
 if nargin < 1 
      scriptsdirectory='/home/hc168/illumina_pipeline'; 
+end
+
+if nargin < 2
+    CLUSTERDIR = '/home/hc168';
 end
 
 
 %% Important variables to set each time
 
 run_postfix='13_04_02';
-
+TEMPFOLDER = '/hms/scratch1/hattie'; 
+ 
 
 %Run in cluster?
 Parallel=1;
@@ -57,7 +63,7 @@ end
 
 global TEMPORARYFOLDER;
 timestamp=save_structure_parameters(logfolder, log_parameters);
-TEMPORARYFOLDER=['/hms/scratch1/hattie/' timestamp];
+TEMPORARYFOLDER=[TEMPFOLDER timestamp];
 
 mkdir(TEMPORARYFOLDER)
 
@@ -88,7 +94,7 @@ fprintf(['Usings scripts directory: ' SCRIPTSPATH  '\n']);
 
 %% Set main folder
 if RUN_ON_CLUSTER == 1
-    mainfolder='/home/hc168';
+    mainfolder=CLUSTERDIR;
 else
     mainfolder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
 end

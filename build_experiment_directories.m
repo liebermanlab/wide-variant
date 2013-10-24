@@ -1,4 +1,4 @@
-function build_experiment_directories(scriptspath)
+function build_experiment_directories(scriptspath, CLUSTERDIR)
 
 %February 2012 - March 2013
 %
@@ -18,7 +18,9 @@ function build_experiment_directories(scriptspath)
 
 
 %%  Important parameters that shouldn't be hardcoded in ideal version
-
+if nargin < 2
+    CLUSTERDIR = '/home/hc168'; 
+end
 
 %running parameters
 paired = true; % could be acquired from files
@@ -62,7 +64,7 @@ fprintf(['Usings scripts directory: ' SCRIPTSPATH  '\n']);
 
 %% Set main folder
 if RUN_ON_CLUSTER == 1
-    ref_folder='/home/hc168'; % server no longer accessible on cluster 
+    ref_folder=CLUSTERDIR; % server no longer accessible on cluster 
 else
     ref_folder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
 end
