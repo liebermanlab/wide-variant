@@ -1,6 +1,8 @@
 function compare_all_missing_genes(gene_coverage, gene_error, genes_nr, ...
                                     allcoverage, SampleNames, allmodes)
 
+    % 2013 by Hattie Chung
+    
     scrsz = get(0,'ScreenSize'); 
     
     % make table headers 
@@ -77,7 +79,7 @@ function compare_all_missing_genes(gene_coverage, gene_error, genes_nr, ...
         dt = get(src,'data'); 
         rc = event.Indices ;
         rc(1)
-        genenum_i = sortedpos(rc(1)) 
+        genenum_i = sortedpos(rc(1)); 
         
         sig_isolates = significant_isolates(genenum_i,:); 
         isol_i = sig_isolates(1); 

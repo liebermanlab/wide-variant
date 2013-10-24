@@ -1,4 +1,6 @@
 function [all_coverage_per_bp, cov_modes] = get_all_covered_genes(samplenames, genome_size) 
+    % 2013 by Hattie Chung 
+
     % USAGE: get_all_covered_genes('SA*')
     
     % RETURNS: 

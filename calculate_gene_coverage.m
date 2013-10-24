@@ -1,5 +1,6 @@
 function [gene_cov_all_isolates, gene_err_all_isolates, cov_modes, cds_nonredundant, coverage_per_bp] = calculate_gene_coverage(samplenames, cds, genomesize)
-    
+    % 2013 by Hattie Chung
+
     % params
     readlen = 100; 
 
