@@ -28,21 +28,6 @@ co = clustergram(mut_freq);
 set(co,'ColumnLabels', SampleNames, 'RowLabels', filled_annotation, ...
         'Colormap', redbluecmap);
 
-%% Lung Specific Analysis
-
-lung_analysis = 0; 
-
-if lung_analysis == 1
-    % plot pairwise distance within site 
-    lung_pairwise_distances(mut_freq, SampleNames); 
-
-    % plot number of unique isolates within and between sites 
-    lung_get_all_clonality(mut_freq, SampleNames); 
-
-    % plot distribution of pairwise distances
-    [within, between, distance_matrix] = plot_all_isolate_pairwise_distances(mut_freq, SampleNames); 
-end
-
 %% dNdS
 
 % [ci_u, ci_l, dnds] = calculate_dNdS(annotation_all, cds, GenomeLength, ChrStarts, sequences); 

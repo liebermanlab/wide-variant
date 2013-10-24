@@ -20,8 +20,6 @@ end
 
 % generate_parsimony_tree(calls_for_tree, TreeSampleNames); 
 
-% generate_parsimony_tree(NTs(maNT(sum(mutAF>0,2)>0,:)), SampleNames); 
-% %the generated [timestamp]_out.tree file is best viewed in FigTree
 % fprintf('\nDone with tree\n'); 
 
 %% write [chromosome name, quality_positions_chromosomal, calls for all isolates 
