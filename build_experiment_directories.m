@@ -38,7 +38,7 @@ plotting_q='short -W 30';
 %Variables that usually will not have to be changed
 overwrite=0;  %overwrite
 Phred_offset = 33 ; %Generally 33, was 64 in older versions. Phred_score= ascii value - Phred_offset.
-
+adapter='CTGTCTCTTAT';
 
 %% Set path
 
@@ -187,9 +187,9 @@ for i = 1:length(SampleTable)
     tname_out2 = [pwd '/' adapter_dir '/cutadapt_reads_2.fastq']; 
     
     if ~(exist(tname_out1,'file') && exist(tname_out2,'file')) || overwrite
-        trim_cmds{end+1} = ['cutadapt -a CTGTCTCTTAT ' tname_in1 ' > ' tname_out1];
+        trim_cmds{end+1} = ['cutadapt -a ' adapter ' ' tname_in1 ' > ' tname_out1];
         trim_dirs{end+1} = [s.Sample '/' adapter_dir]; 
-        trim_cmds{end+1} = ['cutadapt -a CTGTCTCTTAT ' tname_in2 ' > ' tname_out2];
+        trim_cmds{end+1} = ['cutadapt -a ' adapter ' ' tname_in2 ' > ' tname_out2];
         trim_dirs{end+1} = [s.Sample '/' adapter_dir];
     end
     
