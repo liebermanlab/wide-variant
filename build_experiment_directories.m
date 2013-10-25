@@ -29,11 +29,11 @@ global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 1;
 
 %orchestra parameters
 fast_q='sysbio_15m';
-demultiplex_q='sysbio_2h';
-filter_q='sysbio_2h';
-alignment_q='sysbio_12h';
-processing_q='sysbio_12h';
-plotting_q='sysbio_int_2h';
+demultiplex_q='short -W 30';
+filter_q='short -W 60';
+alignment_q='short -W 2:00';
+processing_q='short -W 30';
+plotting_q='short -W 30';
 
 %Variables that usually will not have to be changed
 overwrite=0;  %overwrite
