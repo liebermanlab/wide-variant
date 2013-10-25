@@ -10,7 +10,7 @@ The purpose of separating the experiment and case steps is, for each sample, to 
 
 ----- (A) Setup ----------------------------------------
 1. Set up reference genome folder in Reference_Genomes. Add fasta and genebank files. Name the fasta file genome.fasta. There may be multiple genebank files-- name each genebank file the name of the corresponding chromosome/scaffold in the fasta file (e.g. NC_002695.1.gb).
-2. Set up an experiment folder with samples.csv, read_filter_params.csv, alignment_params.csv. This is best in "/scratch" folder in orchestra AND CANNOT HAVE A SPACE IN THE PATH. See other folder for examples. In samples.csv, use spaces to indicate multiple alignment parameters for a given sample. Line delimiter must be written by excel (I think this is '\r' . Textwrangler doesn't seem to work).
+2. Set up an experiment folder with samples.csv, read_filter_params.csv, alignment_params.csv. This is best in "/scratch" folder in orchestra AND CANNOT HAVE A SPACE IN THE PATH. See example_csv_files folder for examples. In samples.csv, use spaces to indicate multiple alignment parameters for a given sample. Line delimiter must be written by excel (I think this is '\r' . Textwrangler doesn't seem to work).
 3. Set up a case folder with sample_names.csv . If calling polymorphic positions, the isogenic control must be the first sample in sample_names.csv (Case folder). The last column of this folder may need to be adjusted after running part B. 
 
 
