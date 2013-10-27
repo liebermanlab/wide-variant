@@ -301,8 +301,8 @@ if ~exist('non-matlab_filter_stats','dir') & numel(cmds) > 0
 end
 
 for i=1:numel(cmds)
-        copyfile(['non-matlab_filter_stats/out' i '.txt'],['non-matlab_filter_stats/out' i '.txt']);
-        copyfile(['non-matlab_filter_stats/sh' i '.sh'],['non-matlab_filter_stats/tmp' i '.sh']);
+        copyfile(['run_parallel_unix_commands_fast_tmp/out' i '.txt'],['non-matlab_filter_stats/out' i '.txt']);
+        copyfile(['run_parallel_unix_commands_fast_tmp/tmp' i '.sh'],['non-matlab_filter_stats/tmp' i '.sh']);
 end
 
 
