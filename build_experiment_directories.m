@@ -19,7 +19,7 @@ function build_experiment_directories(scriptspath, CLUSTERDIR)
 
 %%  Important parameters that shouldn't be hardcoded in ideal version
 if nargin < 2
-    CLUSTERDIR = '/home/hc168'; 
+    CLUSTERDIR = '/groups/kishony/'; 
 end
 
 %running parameters
@@ -28,17 +28,17 @@ Parallel = true ;
 global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 1;
 
 %orchestra parameters
-fast_q='sysbio_15m';
-demultiplex_q='sysbio_2h';
-filter_q='sysbio_2h';
-alignment_q='sysbio_12h';
-processing_q='sysbio_12h';
-plotting_q='sysbio_int_2h';
+fast_q='short -W 30';
+demultiplex_q='short -W 2:00';
+filter_q='short -W 2:00';
+alignment_q='short -W 4:00';
+processing_q='short -W 60';
+plotting_q='short -W 60';
 
 %Variables that usually will not have to be changed
 overwrite=0;  %overwrite
 Phred_offset = 33 ; %Generally 33, was 64 in older versions. Phred_score= ascii value - Phred_offset.
-
+adapter='CTGTCTCTTAT';
 
 %% Set path
 
@@ -101,6 +101,14 @@ for i=1:length(SampleTable)
         RefGenomes{end+1}=sRefGenomes{j};
     end
 end
+
+%Make sure sickle is built
+if ~exist([SCRIPTSPATH '/sickle-master/sickle'])
+	h=pwd;
+	cd([SCRIPTSPATH '/sickle-master'])
+	!make
+	cd(h)
+end	
 
 %Check that reference genome files are present
 RefGenomes=unique(RefGenomes);
@@ -187,9 +195,9 @@ for i = 1:length(SampleTable)
     tname_out2 = [pwd '/' adapter_dir '/cutadapt_reads_2.fastq']; 
     
     if ~(exist(tname_out1,'file') && exist(tname_out2,'file')) || overwrite
-        trim_cmds{end+1} = ['cutadapt -a CTGTCTCTTAT ' tname_in1 ' > ' tname_out1];
+        trim_cmds{end+1} = ['cutadapt -a ' adapter ' ' tname_in1 ' > ' tname_out1];
         trim_dirs{end+1} = [s.Sample '/' adapter_dir]; 
-        trim_cmds{end+1} = ['cutadapt -a CTGTCTCTTAT ' tname_in2 ' > ' tname_out2];
+        trim_cmds{end+1} = ['cutadapt -a ' adapter ' ' tname_in2 ' > ' tname_out2];
         trim_dirs{end+1} = [s.Sample '/' adapter_dir];
     end
     
@@ -199,6 +207,17 @@ end
 
 % run cutadapt with unix command
 run_parallel_unix_commands_fast(trim_cmds, filter_q, Parallel, trim_dirs);
+if ~exist('adapter_trimming_results','dir')
+	mkdir('adapter_trimming_results')
+end
+for i=1:numel(trim_cmds)
+	copyfile(['run_parallel_unix_commands_fast_tmp/out' i '.txt'],['adapter_trimming_results/out' i '.txt']);
+        copyfile(['run_parallel_unix_commands_fast_tmp/sh' i '.sh'],['adapter_trimming_results/tmp' i '.sh']);
+end
+
+
+
+
 
 %% Filter reads
 
@@ -278,9 +297,16 @@ end
 run_parallel_unix_commands_fast(cmds,filter_q,Parallel, dirs);
 
 if ~exist('non-matlab_filter_stats','dir') & numel(cmds) > 0
-    mkdir('non-matlab_filter_stats')
-    !mv run_parallel_unix_commands_fast_tmp/*  non-matlab_filter_stats/
+    mkdir('non-matlab_filter_stats');
 end
+
+for i=1:numel(cmds)
+        copyfile(['run_parallel_unix_commands_fast_tmp/out' i '.txt'],['non-matlab_filter_stats/out' i '.txt']);
+        copyfile(['run_parallel_unix_commands_fast_tmp/tmp' i '.sh'],['non-matlab_filter_stats/tmp' i '.sh']);
+end
+
+
+
 
 
 
@@ -320,7 +346,11 @@ for i=1:length(SampleTable)
             dirs{end+1} = [pwd '/' dr] ;
             bowtiedirs{end+1} = [ref_folder '/Reference_Genomes/' ae.Genome] ;
             
+            fprintf(['\nAligning with ' ae.Method '!\n']);
+            
             switch ae.Method
+               
+                
                 case 'bowtie'
                     if Phred_offset == 64
                         cmds{end+1} = ['/opt/bowtie/bowtie ' ae.Param1 '--phred64-quals --max ' dra '/multialigned.fastq --un ' dra '/unaligned.fastq ' ...
@@ -355,7 +385,6 @@ for i=1:length(SampleTable)
                             ' -1 ' drf '/filter_reads_1.fastq -2  ' drf '/filter_reads_2.fastq -S ' dra '/aligned.sam '];
                     end
                 case 'bowtie2pairedxt' % allows no ambiguous characters
-                    fprintf('\nAligning with bowtie2pairedxt!\n'); 
                     if Phred_offset == 64
                         cmds{end+1} = ['/opt/bowtie2/bowtie2 -X 2000 --no-mixed --dovetail --very-sensitive --n-ceil 0,0.01 --un-conc ' dra '/unaligned.fastq --phred64 -x  genome_bowtie2' ...
                             '-1 ' drf '/filter_reads_1.fastq -2 ' drf '/filter_reads_2.fastq -S ' dra '/aligned.sam'];
