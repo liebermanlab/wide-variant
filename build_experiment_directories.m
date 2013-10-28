@@ -340,7 +340,7 @@ for i=1:length(SampleTable)
         drf=[pwd '/' ae.Filter];
         dra=[pwd '/' ae.Filter '/' ae.Alignment];
         
-        if ~exist([dr '/aligned.sam'])
+        if ~exist([dr '/aligned.sam']) & ~exist([dr '/aligned.sorted.bam'])
             bowtiedirs{end+1} = [ref_folder '/Reference_Genomes/' ae.Genome] ;
             fprintf(['\nAligning ' s.Sample ' with ' ae.Method '!\n']);
             

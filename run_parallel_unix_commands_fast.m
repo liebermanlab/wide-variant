@@ -14,18 +14,12 @@ function run_parallel_unix_commands_fast(cmds, qname, Parallel, dirs)
 %Parallel = 2 -> run on cluster, do not wait for output
 %Otherwise-- run sequentially, wait for output
 
-if nargin < 4
-    dirs = {'.'} ;
-end
 
-if isempty(cmds)
+
+if isempty(cmds) | isempty(dirs)
     return
 end
 
-if isempty(dirs)
-    dirs={'.'};
-    fprintf(1,'WARNING: Running all scripts from present working directory (No directory list given)');
-end
 
 
 if Parallel==1
