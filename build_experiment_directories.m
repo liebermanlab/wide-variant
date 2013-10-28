@@ -29,11 +29,9 @@ global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 1;
 
 %orchestra parameters
 fast_q='short -W 30';
-demultiplex_q='short -W 2:00';
-filter_q='short -W 2:00';
-alignment_q='short -W 4:00';
-processing_q='short -W 60';
-plotting_q='short -W 60';
+medium_q='short -W 2:00';
+long_q='short -W 4:00';
+
 
 %Variables that usually will not have to be changed
 overwrite=0;  %overwrite
@@ -144,7 +142,7 @@ for i=1:numel(RefGenomes)
     
     %Check to see if reference genome is formatted properly for bowtie2
     if ~exist([ref_folder '/Reference_Genomes/' RefGenomes{i} '/genome_bowtie2.1.bt2'],'file')
-        fprintf(1,'Format reference genome for bowtie... \n') ; tic ;
+        fprintf(1,'Format reference genome for bowtie... \n') ;
         c={}; c{end+1}=['/opt/bowtie2/bowtie2-build -q genome.fasta genome_bowtie2'];
         d=[]; d{end+1}=[ref_folder '/Reference_Genomes/' RefGenomes{i}];
         run_parallel_unix_commands_fast(c,'empty',0,d);
@@ -158,14 +156,14 @@ end
 
 if all([SampleTable.Lane]>0)
     %Case all lanes are not demultiplexed
-    fprintf(1,'Demultiplex... \n') ; tic ;
+    fprintf(1,'Demultiplex... \n') ;
     cmds = demultiplex(SampleTable);
-    run_parallel_unix_commands_fast(cmds,demultiplex_q,Parallel, {[pwd]});
+    run_parallel_unix_commands_fast(cmds,medium_q,Parallel, {[pwd]});
 elseif all([SampleTable.Lane]<0)
     %Case all demultiplexed already
-    fprintf(1,'Copying files locally... \n') ; tic ;
+    fprintf(1,'Copying files locally... \n') ;
     cmds = moverenamefastqs(SampleTable);
-    run_parallel_unix_commands_fast(cmds,demultiplex_q,Parallel, {[pwd]});
+    run_parallel_unix_commands_fast(cmds,medium_q,Parallel, {[pwd]});
 else
     error('ERROR :: Currently only handles all files already demultiplexed or all files not demultiplexed. ... \n')
 end
@@ -206,13 +204,14 @@ for i = 1:length(SampleTable)
 end
 
 % run cutadapt with unix command
-run_parallel_unix_commands_fast(trim_cmds, filter_q, Parallel, trim_dirs);
+run_parallel_unix_commands_fast(trim_cmds, medium_q, Parallel, trim_dirs);
 if ~exist('adapter_trimming_results','dir')
 	mkdir('adapter_trimming_results')
 end
+prevfiles=numel(dir('adapter_trimming_results/*.sh'));
 for i=1:numel(trim_cmds)
-	copyfile(['run_parallel_unix_commands_fast_tmp/out' i '.txt'],['adapter_trimming_results/out' i '.txt']);
-        copyfile(['run_parallel_unix_commands_fast_tmp/sh' i '.sh'],['adapter_trimming_results/tmp' i '.sh']);
+    copyfile(['run_parallel_unix_commands_fast_tmp/out' int2str(prevfiles+i) '.txt'],['adapter_trimming_results/out' int2str(prevfiles+i) '.txt']);
+    copyfile(['run_parallel_unix_commands_fast_tmp/sh' int2str(prevfiles+i) '.sh'],['adapter_trimming_results/tmp' int2str(prevfiles+i) '.sh']);
 end
 
 
@@ -247,7 +246,7 @@ for i=1:length(SampleTable)
             if ~(exist(fname_out1,'file') && exist(fname_out2,'file')) || overwrite
                 % no filtering
                 if strfind(FilterTable(f).Method,'nofilter') %if no filter, copy file into subdirectory-- not the best way to do this
-                    fprintf(1, 'No filtering... \n'); tic; 
+                    fprintf(1, 'No filtering... \n');  
                     cmds{end+1}=['cp ../' s.Sample '_1.fastq filter_reads_1.fastq'];
                     cmds{end+1}=['cp ../' s.Sample '_2.fastq filter_reads_2.fastq'];
                     dirs{end+1}=[s.Sample '/nofilter'];
@@ -261,12 +260,12 @@ for i=1:length(SampleTable)
                 
                 % some other filter method 
                 else
-                    fprintf(1, 'Some other thing in "filter"...\n'); tic; 
+                    fprintf(1, 'Some other thing in "filter"...\n');  
                     fparams{end+1} =  {fname_in1, fname_in2, fname_out1, fname_out2, Phred_offset, FilterTable(f).Method, FilterTable(f).Params};
                 end
             end
         else
-            fprintf(1, 'Not paired! \n'); tic; 
+            fprintf(1, 'Not paired! \n');  
             fname_in=[pwd '/' s.Sample '.fastq'];
             fname_out=[pwd '/' FilterTable(f).Filter '/filter_reads.fastq'];
             if ~exist(fname_out,'file') || overwrite
@@ -288,21 +287,22 @@ end
 
 %run all filters that use matlab commands
 if paired
-    run_parallel_matlab_commands('filter_reads_paired',fparams,filter_q,Parallel);
+    run_parallel_matlab_commands('filter_reads_paired',fparams,medium_q,Parallel);
 else
-    run_parallel_matlab_commands('filter_reads', fparams, filter_q, Parallel);
+    run_parallel_matlab_commands('filter_reads', fparams, medium_q, Parallel);
 end
 
 %run all filters that use unix commands
-run_parallel_unix_commands_fast(cmds,filter_q,Parallel, dirs);
+run_parallel_unix_commands_fast(cmds,medium_q,Parallel, dirs);
 
 if ~exist('non-matlab_filter_stats','dir') & numel(cmds) > 0
     mkdir('non-matlab_filter_stats');
 end
 
+prevfiles=numel(dir('non-matlab_filter_stats/*.sh'));
 for i=1:numel(cmds)
-        copyfile(['run_parallel_unix_commands_fast_tmp/out' i '.txt'],['non-matlab_filter_stats/out' i '.txt']);
-        copyfile(['run_parallel_unix_commands_fast_tmp/tmp' i '.sh'],['non-matlab_filter_stats/tmp' i '.sh']);
+    copyfile(['run_parallel_unix_commands_fast_tmp/out' int2str(prevfiles+i) '.txt'],['non-matlab_filter_stats/out' int2str(prevfiles+i) '.txt']);
+    copyfile(['run_parallel_unix_commands_fast_tmp/tmp' int2str(prevfiles+i) '.sh'],['non-matlab_filter_stats/tmp' int2str(prevfiles+i) '.sh']);
 end
 
 
@@ -313,11 +313,10 @@ end
 %% Align
 
 
-fprintf(1,'Align... \n') ; tic ;
+fprintf(1,'Align... \n') ;
 
 cmds = {} ;
 bowtiedirs= {} ; 
-dirs = {} ;
 all_dirs = {} ;
 all_genomes = {} ;
 
@@ -325,7 +324,6 @@ all_genomes = {} ;
 for i=1:length(SampleTable)
     s=SampleTable(i) ;
     cd(s.Sample) ;
-    fprintf('\nSample is %s\n', s.Sample);
     for a = s.Alignments'
         
         ai = find(strcmp({AlignmentTable.Alignment},a)) ;
@@ -342,15 +340,11 @@ for i=1:length(SampleTable)
         drf=[pwd '/' ae.Filter];
         dra=[pwd '/' ae.Filter '/' ae.Alignment];
         
-        if ~exist([dr '/aligned.sorted.bam'])
-            dirs{end+1} = [pwd '/' dr] ;
+        if ~exist([dr '/aligned.sam'])
             bowtiedirs{end+1} = [ref_folder '/Reference_Genomes/' ae.Genome] ;
-            
-            fprintf(['\nAligning with ' ae.Method '!\n']);
+            fprintf(['\nAligning ' s.Sample ' with ' ae.Method '!\n']);
             
             switch ae.Method
-               
-                
                 case 'bowtie'
                     if Phred_offset == 64
                         cmds{end+1} = ['/opt/bowtie/bowtie ' ae.Param1 '--phred64-quals --max ' dra '/multialigned.fastq --un ' dra '/unaligned.fastq ' ...
@@ -402,27 +396,50 @@ for i=1:length(SampleTable)
     cd ..
 end
 
-run_parallel_unix_commands_fast(cmds, alignment_q, Parallel, bowtiedirs);
-if ~exist('alignment_stats','dir')
-    %run_parallel_unix_commands_fast(cmds,alignment_q,Parallel,bowtiedirs);
-    mkdir('alignment_stats')
-    !mv run_parallel_unix_commands_fast_tmp/*  alignment_stats/
+run_parallel_unix_commands_fast(cmds, long_q, Parallel, bowtiedirs);
+
+%save results
+if ~exist('alignment_stats','dir') & numel(cmds) > 0
+    mkdir('alignment_stats');
 end
 
-%this will only work if bowtie two was used. creates a data strucutre for
+prevfiles=numel(dir('alignment_stats/*.sh'));
+for i=1:numel(cmds)
+    copyfile(['run_parallel_unix_commands_fast_tmp/out' int2str(prevfiles+i) '.txt'],['alignment_stats/out' int2str(prevfiles+i) '.txt']);
+    copyfile(['run_parallel_unix_commands_fast_tmp/tmp' int2str(prevfiles+i) '.sh'],['alignment_stats/tmp' int2str(prevfiles+i) '.sh']);
+end
+
+
+
+%this will only work if bowtie2 was used. creates a data strucutre for
 %later visualization of alignments
 %summarize_alignments 
 
-fprintf(1,'Create .bam and sort... \n') ;
-run_parallel_unix_commands_fast({'/opt/samtools/bin/samtools view -bS -o aligned.bam aligned.sam'},alignment_q,Parallel,dirs);
-run_parallel_unix_commands_fast({'/opt/samtools/bin/samtools sort aligned.bam aligned.sorted'},alignment_q,Parallel,dirs);
-run_parallel_unix_commands_fast({'rm aligned.sam'},alignment_q,0,dirs);
-run_parallel_unix_commands_fast({'rm aligned.bam'},alignment_q,0,dirs);
+
+
+%% compress and sort
+
+fprintf(1,'Compress to .bam and sort ... \n') ; 
+
+dirs = {} ;
+cmds = {} ;
+for i=1:length(all_dirs)
+    if ~exist([all_dirs{i} '/aligned.sorted.bam'],'file') ; 
+        dirs{end+1} = all_dirs{i} ;
+    end
+end
+
+run_parallel_unix_commands_fast({'/opt/samtools/bin/samtools view -bS -o aligned.bam aligned.sam'},long_q,Parallel,dirs);
+run_parallel_unix_commands_fast({'/opt/samtools/bin/samtools sort aligned.bam aligned.sorted'},long_q,Parallel,dirs);
+run_parallel_unix_commands_fast({'rm aligned.sam'},long_q,0,dirs);
+run_parallel_unix_commands_fast({'rm aligned.bam'},long_q,0,dirs);
+
+
 
 
 %% Make pileup files for position-specific statistics 
 
-fprintf(1,'Pileup... \n') ; tic ;
+fprintf(1,'Pileup... \n') ;
 
 dirs = {} ;
 cmds = {} ;
@@ -441,7 +458,7 @@ for i=1:length(all_dirs)
     end
 end
 
-run_parallel_unix_commands_fast(cmds,processing_q,Parallel,dirs);
+run_parallel_unix_commands_fast(cmds,medium_q,Parallel,dirs);
 
 
 
@@ -461,13 +478,13 @@ for i=1:length(all_dirs)
     end
 end
 
-run_parallel_unix_commands_fast(cmds,processing_q,Parallel,dirs);
+run_parallel_unix_commands_fast(cmds,medium_q,Parallel,dirs);
 
 
 %vcf files are called for the purpose of making calls of difference from
 %reference
-run_parallel_unix_commands_fast({'/opt/samtools/bin/bcftools view -g strain > strain.vcf'},alignment_q,Parallel,dirs);
-run_parallel_unix_commands_fast({'/opt/samtools/bin/bcftools view -vS strain.vcf > variant.vcf'},alignment_q,Parallel,dirs);
+run_parallel_unix_commands_fast({'/opt/samtools/bin/bcftools view -g strain > strain.vcf'},long_q,Parallel,dirs);
+run_parallel_unix_commands_fast({'/opt/samtools/bin/bcftools view -vS strain.vcf > variant.vcf'},long_q,Parallel,dirs);
 
 
 
@@ -484,9 +501,9 @@ for i=1:length(all_dirs)
     end
 end
 
-run_parallel_matlab_commands('pileup_to_diversity_matrix', params, processing_q, 1);
+run_parallel_matlab_commands('pileup_to_diversity_matrix', params, long_q, 1);
 
-fprintf(1,'\nBuilding .bai files for viewing alignment... \n') ; tic ;
+fprintf(1,'\nBuilding .bai files for viewing alignment... \n') ; 
 
 
 %% Rename bam first, then make bai files, then delete temporary files
@@ -508,7 +525,7 @@ for i=1:length(SampleTable)
     end
 end
 
-run_parallel_unix_commands_fast({'/opt/samtools/bin/samtools index aligned.sorted.bam'},alignment_q,Parallel,dirs);
+run_parallel_unix_commands_fast({'/opt/samtools/bin/samtools index aligned.sorted.bam'},long_q,Parallel,dirs);
 
 
 
