@@ -13,20 +13,22 @@ QualCutOff=1;
                                             ChrStarts, promotersize, showlegends, ...
                                             QualSort, QualCutOff, qual_0);                                        
 
-%% Fill in missing annotation
+%% Clustergram
 
+% OPTION 1. 
 % filled_annotation = fill_in_annotation(annotation_all); 
 
-filled_annotation = cell(numel(annotation_all),1);
-for i = 1:numel(filled_annotation)
-    filled_annotation{i} = [annotation_all(i).type ' | ' annotation_all(i).annotation];
-end
+% OPTION 2. 
+% for specifying whether NS, Syn, P, I mutation in clustergram 
+% filled_annotation = cell(numel(annotation_all),1);
+% for i = 1:numel(filled_annotation)
+%     filled_annotation{i} = [annotation_all(i).type ' | ' annotation_all(i).annotation];
+% end
 
-%% Clustergram
-mut_freq = get_fixed_mut_freq(Calls, MutQual, qual_0, ancnti);
-co = clustergram(mut_freq);
-set(co,'ColumnLabels', SampleNames, 'RowLabels', filled_annotation, ...
-        'Colormap', redbluecmap);
+% MAKE CLUSTERGRAM.
+% co = clustergram(mut_freq);
+% set(co,'ColumnLabels', SampleNames, 'RowLabels', filled_annotation, ...
+%         'Colormap', redbluecmap);
 
 %% dNdS
 

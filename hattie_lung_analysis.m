@@ -1,6 +1,6 @@
 % Lung Specific Analysis
 
-lung_analysis = 0; 
+lung_analysis = 1; 
 
 if lung_analysis == 1
     % plot pairwise distance within site 

@@ -15,6 +15,7 @@ fprintf(fid, ['   ' num2str(NStrain) '   ' num2str(size(calls,1)) '\n']);
 
 for i=1:NStrain
     name=names{i}; 
+    
     if numel(name) >= 10
         name=name(1:10);
     else

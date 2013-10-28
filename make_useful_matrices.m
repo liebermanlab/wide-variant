@@ -34,3 +34,5 @@ hasmutation= fixedmutation | diversemutation; %has mutation if diverse or call(f
 
 %Mutant allele frequency
 [~, mutantNT]=mutant_frequency(counts, hasmutation, ancnti, Calls);
+
+mut_freq = get_fixed_mut_freq(Calls, MutQual, qual_0, ancnti);
