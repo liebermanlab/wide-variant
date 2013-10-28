@@ -5,7 +5,7 @@ if nargin < 1
 end
 
 if nargin < 2
-    CLUSTERDIR = '/home/hc168';
+    CLUSTERDIR = '/groups/kishony';
 end
 
 
