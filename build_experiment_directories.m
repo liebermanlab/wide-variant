@@ -210,8 +210,8 @@ if ~exist('adapter_trimming_results','dir')
 end
 prevfiles=numel(dir('adapter_trimming_results/*.sh'));
 for i=1:numel(trim_cmds)
-    copyfile(['run_parallel_unix_commands_fast_tmp/out' int2str(prevfiles+i) '.txt'],['adapter_trimming_results/out' int2str(prevfiles+i) '.txt']);
-    copyfile(['run_parallel_unix_commands_fast_tmp/sh' int2str(prevfiles+i) '.sh'],['adapter_trimming_results/tmp' int2str(prevfiles+i) '.sh']);
+    copyfile(['run_parallel_unix_commands_fast_tmp/out' int2str(i) '.txt'],['adapter_trimming_results/out' int2str(prevfiles+i) '.txt']);
+    copyfile(['run_parallel_unix_commands_fast_tmp/sh' int2str(i) '.sh'],['adapter_trimming_results/tmp' int2str(prevfiles+i) '.sh']);
 end
 
 
@@ -301,8 +301,8 @@ end
 
 prevfiles=numel(dir('non-matlab_filter_stats/*.sh'));
 for i=1:numel(cmds)
-    copyfile(['run_parallel_unix_commands_fast_tmp/out' int2str(prevfiles+i) '.txt'],['non-matlab_filter_stats/out' int2str(prevfiles+i) '.txt']);
-    copyfile(['run_parallel_unix_commands_fast_tmp/tmp' int2str(prevfiles+i) '.sh'],['non-matlab_filter_stats/tmp' int2str(prevfiles+i) '.sh']);
+    copyfile(['run_parallel_unix_commands_fast_tmp/out' int2str(i) '.txt'],['non-matlab_filter_stats/out' int2str(prevfiles+i) '.txt']);
+    copyfile(['run_parallel_unix_commands_fast_tmp/tmp' int2str(i) '.sh'],['non-matlab_filter_stats/tmp' int2str(prevfiles+i) '.sh']);
 end
 
 
@@ -405,8 +405,8 @@ end
 
 prevfiles=numel(dir('alignment_stats/*.sh'));
 for i=1:numel(cmds)
-    copyfile(['run_parallel_unix_commands_fast_tmp/out' int2str(prevfiles+i) '.txt'],['alignment_stats/out' int2str(prevfiles+i) '.txt']);
-    copyfile(['run_parallel_unix_commands_fast_tmp/tmp' int2str(prevfiles+i) '.sh'],['alignment_stats/tmp' int2str(prevfiles+i) '.sh']);
+    copyfile(['run_parallel_unix_commands_fast_tmp/out' int2str(i) '.txt'],['alignment_stats/out' int2str(prevfiles+i) '.txt']);
+    copyfile(['run_parallel_unix_commands_fast_tmp/tmp' int2str(i) '.sh'],['alignment_stats/tmp' int2str(prevfiles+i) '.sh']);
 end
 
 
