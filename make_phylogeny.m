@@ -23,6 +23,7 @@ end
 % fprintf('\nDone with tree\n'); 
 
 %% write [chromosome name, quality_positions_chromosomal, calls for all isolates 
+
 treecounting_csv_fn = 'test_treecounting/treecounting_chart.csv';
 fid = fopen(treecounting_csv_fn, 'w'); 
 num_muts = size(calls_for_tree,1); 

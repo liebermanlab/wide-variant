@@ -1,5 +1,5 @@
 function compare_all_missing_genes(gene_coverage, gene_error, genes_nr, ...
-                                    allcoverage, SampleNames, allmodes)
+                                    allcoverage, SampleNames, allmodes, SortByStd)
 
     % 2013 by Hattie Chung
     
@@ -43,8 +43,7 @@ function compare_all_missing_genes(gene_coverage, gene_error, genes_nr, ...
         tabledata( genenum, nonsamplecols+1:nonsamplecols+length(SampleNames) ) = num2cell(gene_coverage( genenum,: )); 
     end
                                 
-    % any sorting? 
-    SortByStd = 1; 
+    % sort 
     if SortByStd == 1
         tabledata(isnan(significant_isolates(:,3)),1) = {0}; 
         [sorted_tabledata, sortedpos] = sortrows(tabledata,1); 

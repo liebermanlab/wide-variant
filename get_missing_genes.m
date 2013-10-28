@@ -16,13 +16,13 @@ gene_coverage_threshold = gene_coverage(:,coverage_modes>coverage_threshold);
 gene_error_threshold = gene_coverage_error(:,coverage_modes>coverage_threshold); 
 
 coverageSampleNames = SampleNames(coverage_modes>coverage_threshold); 
-min_cov_per_gene = min(gene_coverage_threshold,[],2); % need to fix for when min = 0 
+% min_cov_per_gene = min(gene_coverage_threshold,[],2); % need to fix for when min = 0 
 % integerize_gene_coverage = gene_coverage_threshold./repmat(min_cov_per_gene, [1 length(coverageSampleNames)]);
 
 %% make clickable table for missing genes 
-
+sort_std = 0; 
 compare_all_missing_genes(gene_coverage_threshold, gene_error_threshold, ...
-                            genes_nr, ALLCOVERAGE, coverageSampleNames, coverage_modes); 
+                            genes_nr, ALLCOVERAGE, coverageSampleNames, coverage_modes, sort_std); 
 
 %% plot distribution of gene coverage across isolates
 figure, imagesc(gene_coverage_threshold, [0 4]);
