@@ -1,8 +1,5 @@
 function build_mutation_table_master(scriptsdirectory, CLUSTERDIR)
 
-if nargin < 1 
-     scriptsdirectory='/home/hc168/illumina_pipeline'; 
-end
 
 if nargin < 2
     CLUSTERDIR = '/groups/kishony';
@@ -137,7 +134,9 @@ ChrStarts=[];
 ScafNames = {fr.Header} ;
 for i=1:length(ScafNames)
     f=find(ScafNames{i}==' ',1) ;
-    ScafNames{i} = ScafNames{i}(1:f-1) ;
+    if f>0
+	ScafNames{i} = ScafNames{i}(1:f-1) ;
+    end
     ChrStarts(end+1)=GenomeLength;
     GenomeLength=GenomeLength+numel(fr(i).Sequence);
 end
@@ -174,6 +173,8 @@ if analyze_diversity
     memreq=2*4*length(dp)*numel(SampleNames)*(2*window_size)/(10^6);
     fprintf(1,['Please ensure that enough memory was requested when starting matlab session (use -R rusage[mem=' num2str(memreq) ']) (memory in MB) \n']);
     fprintf(1,'If p is large, frequency and coverage windows are not generated-- use smaller window or stricter parameters\n');
+else
+	numfields=39;
 end 
 
 
