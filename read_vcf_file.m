@@ -19,7 +19,7 @@ while ~feof(fid)
 end
 
 if ~exist('lins', 'var')
-    lins=0;
+      lins=0;
 end
     
 fclose(fid) ;
