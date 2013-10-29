@@ -208,7 +208,7 @@ for i=1:NSample
     end
     cmds{end+1}=['cp ' SampleDirs{i} '/* ' SampleNames{i} '/'];
 end
-run_parallel_unix_commands_fast(cmds,jobsubmitoptions1,2);
+run_parallel_unix_commands_fast(cmds,jobsubmitoptions1,2,{'.'});
 
 
 
