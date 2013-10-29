@@ -219,7 +219,10 @@ run_parallel_unix_commands_fast(cmds,jobsubmitoptions1,2,{'.'});
 [geneloc,  cds, mutations, sequences] = annotate_mutations_auto_gb(positions,ScafNames,RefGenome) ;
 
 
-save(['mutation_table_' run_postfix], 'RefGenome', 'ScafNames', 'ChrStarts', 'GenomeLength', 'p', 'positions', 'coveragethresholds', 'counts',  'geneloc', 'cds', 'mutations', 'Calls', 'Quals', 'sequences', '-v7.3')
+save(['mutation_table_' run_postfix], 'RefGenome', 'ScafNames', 'ChrStarts', 'GenomeLength', 'p', 'positions', 'counts',  'geneloc', 'cds', 'mutations', 'Calls', 'Quals', 'sequences', '-v7.3')
+if analyze_diversity==1
+	save(['cov_' run_postfix],'coveragethresholds','-v7.3')
+end
 save(['windows_' run_postfix], 'fwindows', 'cwindows', '-v7.3')
 % save(['MutGenVCF_' run_postfix], 'MutGenVCF', '-v7.3')
 
