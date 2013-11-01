@@ -1,24 +1,25 @@
 outgroup = 1; 
 mainfolder = '/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
-RefGenomeNameUnedited = 'Smaltophilia_K279';
+RefGenomeNameUnedited = 'Mtuberculosis';
 % RefGenomeNameUnedited = 'Paeruginosa_DK2'; 
 % TreeSampleNames = SampleNames; 
 all_positions = 1:size(Calls,1); 
 quality_positions = all_positions(MutQual>qual_0);
 quality_positions_chromosomal = p(quality_positions); 
-calls_for_tree = Calls(quality_positions,:); 
+%calls_for_tree = Calls(quality_positions,:); 
+calls_for_tree = NTs(maNT(quality_positions,:)); 
 
 if outgroup == 1
     % ADD REFERENCE AT THESE POSITIONS
     [outgroup_nts, chromosome_name] = extract_outgroup_mutation_positions(mainfolder, RefGenomeNameUnedited, quality_positions_chromosomal); 
     calls_for_tree = [outgroup_nts', calls_for_tree]; 
     TreeSampleNames{1} = 'Outgroup'; 
-    TreeSampleNames(2:length(SampleNames)+1) = SampleNames; 
+    TreeSampleNames(2:length(mynames)+1) = mynames; 
 else
-    TreeSampleNames = SampleNames; 
+    TreeSampleNames = mynames; 
 end
 
-% generate_parsimony_tree(calls_for_tree, TreeSampleNames); 
+generate_parsimony_tree(calls_for_tree, TreeSampleNames); 
 
 % fprintf('\nDone with tree\n'); 
 

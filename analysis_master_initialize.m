@@ -1,21 +1,8 @@
 %% Set important variables each run
 
-global CONTROLSAMPLE
 
 
-run_postfix='13_04_02'; %must match postfix in build_mutation_table_master.m
-
-%run options
-onlySNPs=1; 
-loadwindows=0; % f and c windows 
-promotersize=150;
-CONTROLSAMPLE=1; % deep isogenic control 
-referenceisancestor=0;
-ancestoriscontrol=1;
-ancestorismode=1; %use mode of major alleles as ancestor
-qual_0=60; % want to use FQ and not qual from VCF 
-
-MutQualFig=0; 
+MutQualFig=1; 
 lung_analysis=0; 
 
 strict_parameters = struct( 'minorfreqthreshold',           .03, ...
@@ -61,6 +48,16 @@ load(['mutation_table_' run_postfix])
 % load(['MutGenVCF_' run_postfix])
 
 
+%% Remove unwanted samples
+
+Calls=Calls(:,goodsamples);
+Quals=Quals(:,goodsamples);
+SampleInfo=SampleInfo(goodsamples);
+SampleNames=SampleNames(goodsamples);
+counts=counts(:,:,goodsamples);
+
+mynames=newnames(goodsamples);
+
 
 
 %% Set useful useful variables
@@ -93,7 +90,7 @@ end
 
 %Number of mutations
 [MutQual, MutQualIsolates] = ana_mutation_quality(Calls,Quals,MutQualFig) ;
-% plot(qual_0,sum(MutQual>=qual_0),'dr', 'MarkerFaceColor', 'r', 'MarkerSize', 10)
+ plot(qual_0,sum(MutQual>=qual_0),'dr', 'MarkerFaceColor', 'r', 'MarkerSize', 10)
 
 %Pairwise distance between strains
 step=floor(qual_0/10);
