@@ -16,8 +16,7 @@ function [dist_within_site, dist_between_sites, dist_matrix] = plot_all_isolate_
     
     % Create figure with N subplots for N samples 
 %     figure(101); hold on; 
-    cc = distinguishable_colors(length(all_sites)); 
-    
+    cc = distinguishable_colors(length(all_sites));
     
     for i = 1:length(all_sites)
         fh = figure; 
