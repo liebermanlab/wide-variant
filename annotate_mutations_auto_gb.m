@@ -3,7 +3,7 @@ function [an, df, mut, sequences] = annotate_mutations_auto_gb(Positions,Scaf,Re
 global RUN_ON_CLUSTER
 
 if RUN_ON_CLUSTER == 1
-    mainfolder='/home/hc168';
+    mainfolder='/groups/kishony';
 else
     mainfolder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
 end
@@ -16,7 +16,13 @@ an = zeros(size(Positions,1),1) ;
 sequences={};
 for i=1:length(Scaf)
     
-    a=Scaf{i};f=find(a=='|',2,'last');fn = a(f(1)+1:f(2)-1) ;
+    a=Scaf{i};f=find(a=='|',2,'last');
+    if f > 1
+        fn = a(f(1)+1:f(2)-1) ;
+    else
+        fn=a;
+    end
+       
     fr = genbankread([mainfolder '/Reference_Genomes/' RefGenome '/' fn '.gb']) ;
     %SK: if no Sequence in gb file, use fasta
     if isempty(fr.Sequence)

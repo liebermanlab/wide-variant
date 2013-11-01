@@ -1,17 +1,69 @@
-% Initialize 
+%% Variables you might want to change 
+
+%path('/Users/tdl7/Dropbox/illumina_pipeline',path)
+
+
+
+global ANALYZE_DIVERSITY; global qual_0; global CONTROLSAMPLE; global LABEL_SIZE;
+SampleInfo = read_sample_names ;
+
+
+
+%important options
+qual_0=130; % want to use FQ and not qual from VCF 
+goodsamples=1:numel(SampleInfo);
+
+%run options
+run_postfix='13_04_02'; %must match postfix in build_mutation_table_master.m
+
+%diversity
+ANALYZE_DIVERSITY= 0;
+CONTROLSAMPLE=1; % deep isogenic control 
+
+%other options
+onlySNPs=1; 
+promotersize=150;
+
+%choose ancestor setting
+referenceisancestor=1;
+ancestoriscontrol=0;
+ancestorismode=0; %use mode of major alleles as ancestor
+
+
+%Display options
+LABEL_SIZE=2;
+loadwindows=1; % f and c windows 
+barcharttype=3; %1 means shows all strains; 2 means show 2 used for MutQual, 3 means is same #2, but also one that was clicked
+
+
+
+
+%% Initialize
 analysis_master_initialize; 
+
+
+
+
 make_useful_matrices; 
+
+
+
+
+
+
 
 %% Generate table -- inspect lower MutQuals and toggle qual_0
 
-QualSort=0;
+QualSort=1;
 QualCutOff=1;
 [annotation_all, sorted_table_data] = div_clickable_table_isolate_calls(mutations, Calls, p, ancnti, ...
                                             counts,  fwindows, cwindows, ...
                                             hasmutation, MutQual, MutQualIsolates, ...
                                             RefGenome, ScafNames, SampleInfo, ...
                                             ChrStarts, promotersize, showlegends, ...
-                                            QualSort, QualCutOff, qual_0);                                        
+                                            QualSort, QualCutOff, qual_0);   
+
+
 
 %% Clustergram
 
@@ -32,7 +84,7 @@ QualCutOff=1;
 
 %% dNdS
 
-% [ci_u, ci_l, dnds] = calculate_dNdS(annotation_all, cds, GenomeLength, ChrStarts, sequences); 
+%[ci_u, ci_l, dnds] = calculate_dNdS(annotation_all, cds, GenomeLength, ChrStarts, sequences); 
 
 
 %% Find genes not unaligned to
@@ -47,7 +99,7 @@ QualCutOff=1;
 
 %% Generate phylogeny 
 
-% make_phylogeny; 
+make_phylogeny; 
  
 %% Save
 

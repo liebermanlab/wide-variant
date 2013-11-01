@@ -17,7 +17,7 @@ include=zeros(L,1);
 
 %fprintf(1,'Strain: %g  ',i) ;
 vcf = read_vcf_file([StrainDir '/variant.vcf']) ;
-if isstruct(vcf)
+if isstruct(vcf) & length(vcf)>0
     for j=1:length(vcf) ;
         ScfN = find(strcmp(vcf(j).scaf,ScafNames)) ;
         pos = vcf(j).pos ;

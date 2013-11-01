@@ -1,11 +1,8 @@
 function build_mutation_table_master(scriptsdirectory, CLUSTERDIR)
 
-if nargin < 1 
-     scriptsdirectory='/home/hc168/illumina_pipeline'; 
-end
 
 if nargin < 2
-    CLUSTERDIR = '/home/hc168';
+    CLUSTERDIR = '/groups/kishony';
 end
 
 
@@ -137,7 +134,9 @@ ChrStarts=[];
 ScafNames = {fr.Header} ;
 for i=1:length(ScafNames)
     f=find(ScafNames{i}==' ',1) ;
-    ScafNames{i} = ScafNames{i}(1:f-1) ;
+    if f>0
+	ScafNames{i} = ScafNames{i}(1:f-1) ;
+    end
     ChrStarts(end+1)=GenomeLength;
     GenomeLength=GenomeLength+numel(fr(i).Sequence);
 end
@@ -174,6 +173,8 @@ if analyze_diversity
     memreq=2*4*length(dp)*numel(SampleNames)*(2*window_size)/(10^6);
     fprintf(1,['Please ensure that enough memory was requested when starting matlab session (use -R rusage[mem=' num2str(memreq) ']) (memory in MB) \n']);
     fprintf(1,'If p is large, frequency and coverage windows are not generated-- use smaller window or stricter parameters\n');
+else
+	numfields=39;
 end 
 
 
@@ -207,7 +208,7 @@ for i=1:NSample
     end
     cmds{end+1}=['cp ' SampleDirs{i} '/* ' SampleNames{i} '/'];
 end
-run_parallel_unix_commands_fast(cmds,jobsubmitoptions1,2);
+run_parallel_unix_commands_fast(cmds,jobsubmitoptions1,2,{'.'});
 
 
 
@@ -218,7 +219,10 @@ run_parallel_unix_commands_fast(cmds,jobsubmitoptions1,2);
 [geneloc,  cds, mutations, sequences] = annotate_mutations_auto_gb(positions,ScafNames,RefGenome) ;
 
 
-save(['mutation_table_' run_postfix], 'RefGenome', 'ScafNames', 'ChrStarts', 'GenomeLength', 'p', 'positions', 'coveragethresholds', 'counts',  'geneloc', 'cds', 'mutations', 'Calls', 'Quals', 'sequences', '-v7.3')
+save(['mutation_table_' run_postfix], 'RefGenome', 'ScafNames', 'ChrStarts', 'GenomeLength', 'p', 'positions', 'counts',  'geneloc', 'cds', 'mutations', 'Calls', 'Quals', 'sequences', '-v7.3')
+if analyze_diversity==1
+	save(['cov_' run_postfix],'coveragethresholds','-v7.3')
+end
 save(['windows_' run_postfix], 'fwindows', 'cwindows', '-v7.3')
 % save(['MutGenVCF_' run_postfix], 'MutGenVCF', '-v7.3')
 
