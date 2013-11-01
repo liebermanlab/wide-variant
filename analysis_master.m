@@ -4,7 +4,7 @@ make_useful_matrices;
 
 %% Generate table -- inspect lower MutQuals and toggle qual_0
 
-QualSort=0;
+QualSort=1;
 QualCutOff=1;
 [annotation_all, sorted_table_data] = div_clickable_table_isolate_calls(mutations, Calls, p, ancnti, ...
                                             counts,  fwindows, cwindows, ...
