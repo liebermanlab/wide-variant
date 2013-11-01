@@ -278,26 +278,24 @@ function [annotations, tabledata] = div_clickable_table_isolate_calls(muts, call
         show_alignment=get(h.checkbox1, 'Value');
         if show_alignment==1
             
-            t = tcpip('localhost', 60152) ;
+            t = tcpip('localhost', 60151) ;
             fopen(t) ;
             if rc(2) > nonsamplecols
-                bai_name = ['/Volumes/sysbio/KISHONY LAB/illumina_pipeline/' SampleInfo(sample).ExperimentFolder '/' SampleInfo(sample).Sample '/' SampleInfo(sample).AlignmentFolder '/aligned.sorted.bam.bai' ];
+%                 bai_name = ['/Volumes/sysbio/KISHONY LAB/illumina_pipeline/' SampleInfo(sample).ExperimentFolder '/' SampleInfo(sample).Sample '/' SampleInfo(sample).AlignmentFolder '/aligned.sorted.bam.bai' ]
+                bai_name = [pwd '/' SampleInfo(sample).Sample '/aligned.sorted.bam.bai' ]; 
 
-                
                 if ~exist(bai_name,'file')
                     error('Create bai files for viewing alignment')
                 end
                 
-                
                 if ~IsGenomeLoaded
-                    run_cmd(['genome  Reference_Genomes/' RefGenome '/genome.fasta' ])
+                    run_cmd(['genome  /Volumes/sysbio/kishonylab/illumina_pipeline/Reference_Genomes/' RefGenome '/genome.fasta' ])
                     IsGenomeLoaded = true ;
                 end
                 
                 run_cmd(['load "' bai_name(1:end-4) '"']) ;
                 
                 run_cmd(['goto "' ScafNames{chr} ':' num2str(position) '"'])
-                
             end
             
             
