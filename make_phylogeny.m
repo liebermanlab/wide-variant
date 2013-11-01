@@ -11,6 +11,7 @@ calls_for_tree = Calls(quality_positions,:);
 if outgroup == 1
     % ADD REFERENCE AT THESE POSITIONS
     [outgroup_nts, chromosome_name] = extract_outgroup_mutation_positions(mainfolder, RefGenomeNameUnedited, quality_positions_chromosomal); 
+    
     calls_for_tree = [outgroup_nts', calls_for_tree]; 
     TreeSampleNames{1} = 'Outgroup'; 
     TreeSampleNames(2:length(SampleNames)+1) = SampleNames; 
@@ -18,9 +19,9 @@ else
     TreeSampleNames = SampleNames; 
 end
 
-% generate_parsimony_tree(calls_for_tree, TreeSampleNames); 
+generate_parsimony_tree(calls_for_tree, TreeSampleNames); 
 
-% fprintf('\nDone with tree\n'); 
+fprintf('\nDone with tree\n'); 
 
 %% write [chromosome name, quality_positions_chromosomal, calls for all isolates 
 
