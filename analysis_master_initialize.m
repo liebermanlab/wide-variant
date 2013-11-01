@@ -42,7 +42,6 @@ save_structure_parameters(logfolder, log_parameters);
 
 %% Load output from build_mutation_table_master
 
-SampleInfo = read_sample_names ;
 SampleNames={SampleInfo(:).Sample}';
 load(['mutation_table_' run_postfix])
 % load(['MutGenVCF_' run_postfix])

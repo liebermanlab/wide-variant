@@ -1,15 +1,17 @@
 %% Variables you might want to change 
 
+%path('/Users/tdl7/Dropbox/illumina_pipeline',path)
+
+
+
 global ANALYZE_DIVERSITY; global qual_0; global CONTROLSAMPLE; global LABEL_SIZE;
+SampleInfo = read_sample_names ;
 
 
 
-path('/Users/tdl7/Dropbox/illumina_pipeline',path)
-
-
-%important option
+%important options
 qual_0=130; % want to use FQ and not qual from VCF 
-
+goodsamples=1:numel(SampleInfo);
 
 %run options
 run_postfix='13_04_02'; %must match postfix in build_mutation_table_master.m
