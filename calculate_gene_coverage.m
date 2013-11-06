@@ -6,7 +6,7 @@ function [gene_cov_all_isolates, gene_err_all_isolates, cov_modes, cds_nonredund
 
     % initialize 
     cds_nonredundant_names = cell(0,1); 
-    gene_cov_all_isolates = zeros(0,length(samplenames));
+    gene_cov_all_isolates = uint16(zeros(0,length(samplenames)));
     gene_err_all_isolates = zeros(0,length(samplenames)); 
     
     % load coverage for isolates
@@ -21,7 +21,7 @@ function [gene_cov_all_isolates, gene_err_all_isolates, cov_modes, cds_nonredund
     for c = 1:length(coding_sequences) 
         pos = coding_sequences(c).indices; 
         locustag = coding_sequences(c).locustag; 
-        gene_begin = min(pos); 
+        gene_begin = min(pos);
         gene_end = max(pos); 
         gene_len = gene_end - gene_begin; 
         gene_name = coding_sequences(c).gene;
