@@ -4,7 +4,7 @@
 
 
 
-global ANALYZE_DIVERSITY; global qual_0; global CONTROLSAMPLE; global LABEL_SIZE;
+global ANALYZE_DIVERSITY qual_0 CONTROLSAMPLE LABEL_SIZE barcharttype; 
 SampleInfo = read_sample_names ;
 
 
