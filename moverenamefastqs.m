@@ -24,7 +24,7 @@ for i=1:length(IsolateTable)
         fastqs=dir([sourcefolder '/' s.ProviderName '/*.fastq']); % HC fixed bug
         sourcefolder=[sourcefolder '/' s.ProviderName];
     else
-        fastqs=dir([sourcefolder '/' s.ProviderName '/*.fastq']); % HC fixed bug
+        fastqs=dir([sourcefolder '/' s.ProviderName '*.fastq']); % TL fixed back
     end
     %copys
     if numel(fastqs) < 1
