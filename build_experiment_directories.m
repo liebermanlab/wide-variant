@@ -211,7 +211,7 @@ end
 prevfiles=numel(dir('adapter_trimming_results/*.sh'));
 for i=1:numel(trim_cmds)
     copyfile(['run_parallel_unix_commands_fast_tmp/out' int2str(i) '.txt'],['adapter_trimming_results/out' int2str(prevfiles+i) '.txt']);
-    copyfile(['run_parallel_unix_commands_fast_tmp/sh' int2str(i) '.sh'],['adapter_trimming_results/tmp' int2str(prevfiles+i) '.sh']);
+    copyfile(['run_parallel_unix_commands_fast_tmp/tmp' int2str(i) '.sh'],['adapter_trimming_results/tmp' int2str(prevfiles+i) '.sh']);
 end
 
 

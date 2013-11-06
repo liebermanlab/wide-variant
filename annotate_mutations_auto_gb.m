@@ -1,9 +1,9 @@
 function [an, df, mut, sequences] = annotate_mutations_auto_gb(Positions,Scaf,RefGenome)
 
-global RUN_ON_CLUSTER
+global RUN_ON_CLUSTER CLUSTERDIR 
 
 if RUN_ON_CLUSTER == 1
-    mainfolder='/groups/kishony';
+    mainfolder=CLUSTERDIR;
 else
     mainfolder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
 end
