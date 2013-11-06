@@ -1,5 +1,6 @@
 function build_mutation_table_master(scriptsdirectory, CLUSTERDIR)
 
+global CLUSTERDIR
 
 if nargin < 2
     CLUSTERDIR = '/groups/kishony';
