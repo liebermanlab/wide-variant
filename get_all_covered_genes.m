@@ -8,7 +8,7 @@ function [all_coverage_per_bp, cov_modes] = get_all_covered_genes(samplenames, g
     
     % params 
     threshold = 1; 
-    all_coverage_per_bp = zeros(length(samplenames), genome_size);
+    all_coverage_per_bp = uint16(zeros(length(samplenames), genome_size));
     cov_modes = zeros(length(samplenames),1); 
     % logical strucuture
     % 1 if position is found, 0 if missing

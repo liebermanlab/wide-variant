@@ -1,9 +1,6 @@
 %% Set important variables each run
 
-
-
 MutQualFig=1; 
-lung_analysis=0; 
 
 strict_parameters = struct( 'minorfreqthreshold',           .03, ...
                             'maxreads_perstrand_percentile', 99, ...
@@ -47,18 +44,6 @@ load(['mutation_table_' run_postfix])
 % load(['MutGenVCF_' run_postfix])
 
 
-%% Remove unwanted samples
-
-Calls=Calls(:,goodsamples);
-Quals=Quals(:,goodsamples);
-SampleInfo=SampleInfo(goodsamples);
-SampleNames=SampleNames(goodsamples);
-counts=counts(:,:,goodsamples);
-
-mynames=newnames(goodsamples);
-
-
-
 %% Set useful useful variables
 
 
@@ -71,9 +56,7 @@ else
      acceptabletypes='ATCGDI';
 end
 
-
 Nsample=numel(SampleNames);
-
 
 cwindows=[]; fwindows=[];
 if loadwindows==1
@@ -89,7 +72,7 @@ end
 
 %Number of mutations
 [MutQual, MutQualIsolates] = ana_mutation_quality(Calls,Quals,MutQualFig) ;
- plot(qual_0,sum(MutQual>=qual_0),'dr', 'MarkerFaceColor', 'r', 'MarkerSize', 10)
+%  plot(qual_0,sum(MutQual>=qual_0),'dr', 'MarkerFaceColor', 'r', 'MarkerSize', 10)
 
 %Pairwise distance between strains
 step=floor(qual_0/10);

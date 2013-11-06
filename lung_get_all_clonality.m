@@ -58,7 +58,7 @@ function lung_get_all_clonality(mut_freq, SampleNames, isolates_per_site)
     end
     
     % PLOT # OF CLONAL ISOLATES PER SITE
-    plot_clonality_matrix(tril(clonality_matrix), 'Number of Clonal Isolates'); 
+    plot_clonality_matrix(tril(clonality_matrix), 'Number of Clonal Groups'); 
     
     % KMEANS CLUSTERING
     cluster_size = 3; 

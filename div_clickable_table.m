@@ -306,7 +306,6 @@ set(660,'Position',[scrsz(3)*2/3 scrsz(4)/20 scrsz(3)/3 scrsz(4)/2]);clf;hold on
                 %bai_name = ['../../Tami/Diversity_Illumina_pipeline/' StrainNames(z(rc(2))).ExperimentFolder '/' StrainNames(z(rc(2))).Sample '/' StrainNames(z(rc(2))).AlignmentFolder '/aligned.sorted.bam.bai' ]
                 %StrainNames(z(rc(2))).Sample '.bam.bai' ] ;
                 
-                
                 if ~exist(bai_name,'file')
                     error('Create bai files for viewing alignment')
 %                    eval(['!/opt/bin/samtools index ' bai_name([1:end-4])])

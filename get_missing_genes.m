@@ -1,15 +1,12 @@
-% get gene coverage for all samples 
-% if exist('gene_coverage_data.mat')
-%     fprintf('\nLoading existing gene coverage data...\n'); 
-%     load('gene_coverage_data');
-% else
-%     [gene_coverage, gene_coverage_error, coverage_modes, genes_nr] = calculate_gene_coverage(SampleNames, cds, GenomeLength); 
-%     save('gene_coverage_data', 'gene_coverage', 'gene_coverage_error', 'coverage_modes', 'genes_nr'); 
-% end
-
+missing_genes_reload = 0; 
+if missing_genes_reload == 1
+    [gene_coverage, gene_coverage_error, coverage_modes, genes_nr, ALLCOVERAGE] = calculate_gene_coverage(SampleNames, cds, GenomeLength); 
+else
+    fprintf('\nLoading existing gene coverage data...\n'); 
+    load('missing_genes_mat');
+end
 
 % only take isolate subset that meet coverage threshold
-[gene_coverage, gene_coverage_error, coverage_modes, genes_nr, ALLCOVERAGE] = calculate_gene_coverage(SampleNames, cds, GenomeLength); 
 coverage_threshold = 10;
 
 gene_coverage_threshold = gene_coverage(:,coverage_modes>coverage_threshold); 
@@ -20,7 +17,7 @@ coverageSampleNames = SampleNames(coverage_modes>coverage_threshold);
 % integerize_gene_coverage = gene_coverage_threshold./repmat(min_cov_per_gene, [1 length(coverageSampleNames)]);
 
 %% make clickable table for missing genes 
-sort_std = 0; 
+sort_std = 1; 
 compare_all_missing_genes(gene_coverage_threshold, gene_error_threshold, ...
                             genes_nr, ALLCOVERAGE, coverageSampleNames, coverage_modes, sort_std); 
 

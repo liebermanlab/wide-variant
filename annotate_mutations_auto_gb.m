@@ -1,9 +1,9 @@
 function [an, df, mut, sequences] = annotate_mutations_auto_gb(Positions,Scaf,RefGenome)
 
-global RUN_ON_CLUSTER
+global RUN_ON_CLUSTER CLUSTERDIR 
 
 if RUN_ON_CLUSTER == 1
-    mainfolder='/groups/kishony';
+    mainfolder=CLUSTERDIR;
 else
     mainfolder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
 end
@@ -16,7 +16,10 @@ an = zeros(size(Positions,1),1) ;
 sequences={};
 for i=1:length(Scaf)
     
-    a=Scaf{i};f=find(a=='|',2,'last');
+    a=Scaf{i};
+    % only works for NCBI formatted header names
+    f=find(a=='|',2,'last');
+    
     if f > 1
         fn = a(f(1)+1:f(2)-1) ;
     else

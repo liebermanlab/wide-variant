@@ -12,3 +12,4 @@ if lung_analysis == 1
     % plot distribution of pairwise distances
     [within, between, distance_matrix] = plot_all_isolate_pairwise_distances(mut_freq, SampleNames); 
 end
+

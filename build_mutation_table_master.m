@@ -1,15 +1,18 @@
-function build_mutation_table_master(scriptsdirectory, CLUSTERDIR)
+% function build_mutation_table_master(scriptsdirectory, CLUSTERDIRECTORY)
 
+global CLUSTERDIR
 
-if nargin < 2
-    CLUSTERDIR = '/groups/kishony';
-end
+% if nargin < 2
+%     CLUSTERDIR = '/groups/kishony';
+% else
+%     CLUSTERDIR = CLUSTERDIRECTORY; 
+% end
 
 
 %% Important variables to set each time
 
 run_postfix='13_04_02';
-TEMPFOLDER = '/hms/scratch1/hattie'; 
+TEMPFOLDER = '/hms/scratch1/hattie/'; 
  
 
 %Run in cluster?
@@ -118,8 +121,6 @@ for i=1:NSample
 end
 
 
-
-
 RefGenome = unique(RefGenome) ;
 if length(RefGenome)>1
     error('Must compare samples aligned to the same reference genome')
@@ -135,13 +136,13 @@ ScafNames = {fr.Header} ;
 for i=1:length(ScafNames)
     f=find(ScafNames{i}==' ',1) ;
     if f>0
-	ScafNames{i} = ScafNames{i}(1:f-1) ;
+        ScafNames{i} = ScafNames{i}(1:f-1) ;
     end
     ChrStarts(end+1)=GenomeLength;
     GenomeLength=GenomeLength+numel(fr(i).Sequence);
 end
 
-
+fprintf('\nFinished reading reference genome...\n'); 
 
 
 
@@ -226,5 +227,5 @@ end
 save(['windows_' run_postfix], 'fwindows', 'cwindows', '-v7.3')
 % save(['MutGenVCF_' run_postfix], 'MutGenVCF', '-v7.3')
 
-end
+% end
 

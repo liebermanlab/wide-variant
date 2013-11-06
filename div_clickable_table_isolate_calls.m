@@ -1,6 +1,8 @@
 function [annotations, tabledata] = div_clickable_table_isolate_calls(muts, calls, allp, ancnti, cnts, fwindows, cwindows, hasmutation, MutQual, MutQualIsolates, RefGenome, ScafNames, SampleInfo, ChrStarts, promoterdistance, showlegends, QualSort, QualCutOff, cutoff_qual)
 % for isolates!!
 
+global barcharttype
+
 % set optional variables
 if nargin < 17
     QualSort = 0;
@@ -8,6 +10,9 @@ end
 if nargin < 18
     QualCutOff = 0;
     cutoff_qual = 0;
+end
+if nargin < 19
+    barcharttype = 2; 
 end
 
 fprintf(1,'\nGenerating table...\n')
@@ -36,15 +41,6 @@ goodmaf(d>0)=maf(d>0);
 
 % Impose quality cut off
 if QualCutOff == 1
-    %         % truncate annotations structure
-    %         muts = muts(quality_positions);
-    %         % truncate quality matrix
-    %         MutQual = MutQual(quality_positions);
-    %         % truncate other matrices
-    %         majorNT = majorNT(quality_positions,:);
-    %         minorNT = minorNT(quality_positions,:);
-    %         ancnti = ancnti(quality_positions,:);
-    %
     goodpositions=MutQual>cutoff_qual;
     positions_to_iterate = positions_to_iterate(goodpositions);
     
@@ -228,11 +224,6 @@ if QualSort==1
     [tabledata, positions] = sortrows(oldtable,1);
 end
 
-
-
-
-
-
 %display table
 figure();clf;hold on;
 set(gcf, 'Position',[10         50        1250         550]);
@@ -250,7 +241,7 @@ set(660,'Position',[scrsz(3)*2/3 scrsz(4)/20 scrsz(3)/3 scrsz(4)/2]);clf;hold on
 
 
     function mut_matix_clicked(src, event)
-        % ___ MODIFY TO SHOW ONLY ISOLATES IN MUTQUALISOLATES!!!! ___ %
+        % ___ MODIFY TO SHOW ONLY ISOLATES IN MUTQUALISOLATES!! ___ %
         
         scrsz = get(0,'ScreenSize');
         strand=['g-','k-'];
@@ -278,7 +269,6 @@ set(660,'Position',[scrsz(3)*2/3 scrsz(4)/20 scrsz(3)/3 scrsz(4)/2]);clf;hold on
             sample=1;
         end
         
-        
         %Bar charts of counts
         if barcharttype==1
             div_bar_charts(squeeze(cnts(:,ind,:)), sample, {SampleInfo.Sample})
@@ -303,7 +293,7 @@ set(660,'Position',[scrsz(3)*2/3 scrsz(4)/20 scrsz(3)/3 scrsz(4)/2]);clf;hold on
             t = tcpip('localhost', 60152) ;
             fopen(t) ;
             if rc(2) > nonsamplecols
-                bai_name = ['/Volumes/sysbio/KISHONY LAB/illumina_pipeline/' SampleInfo(sample).ExperimentFolder '/' SampleInfo(sample).Sample '/' SampleInfo(sample).AlignmentFolder '/aligned.sorted.bam.bai' ];
+                bai_name = ['/Volumes/sysbio/KISHONY LAB/illumina_pipeline/' SampleInfo(sample).ExperimentFolder '/' SampleInfo(sample).Sample '/' SampleInfo(sample).AlignmentFolder '/aligned.sorted.bam.bai' ]
                 
                 
                 if ~exist(bai_name,'file')
@@ -312,7 +302,7 @@ set(660,'Position',[scrsz(3)*2/3 scrsz(4)/20 scrsz(3)/3 scrsz(4)/2]);clf;hold on
                 
                 
                 if ~IsGenomeLoaded
-                    run_cmd(['genome  Reference_Genomes/' RefGenome '/genome.fasta' ])
+                    run_cmd(['genome  /Volumes/sysbio/kishonylab/illumina_pipeline/Reference_Genomes/' RefGenome '/genome.fasta' ])
                     IsGenomeLoaded = true ;
                 end
                 

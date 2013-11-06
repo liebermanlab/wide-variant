@@ -1,17 +1,11 @@
-%% Variables you might want to change 
-
-%path('/Users/tdl7/Dropbox/illumina_pipeline',path)
-
-
-
+% Initialize 
 global ANALYZE_DIVERSITY qual_0 CONTROLSAMPLE LABEL_SIZE barcharttype; 
+
 SampleInfo = read_sample_names ;
 
 
-
 %important options
-qual_0=130; % want to use FQ and not qual from VCF 
-goodsamples=1:numel(SampleInfo);
+qual_0=60; % want to use FQ and not qual from VCF 
 
 %run options
 run_postfix='13_04_02'; %must match postfix in build_mutation_table_master.m
@@ -31,39 +25,30 @@ ancestorismode=0; %use mode of major alleles as ancestor
 
 
 %Display options
-LABEL_SIZE=2;
-loadwindows=1; % f and c windows 
+LABEL_SIZE=10;
+loadwindows=0; % f and c windows 
 barcharttype=3; %1 means shows all strains; 2 means show 2 used for MutQual, 3 means is same #2, but also one that was clicked
 
 
 
-
-%% Initialize
+%%
 analysis_master_initialize; 
-
-
-
-
 make_useful_matrices; 
 
-
-
-
-
-
+% get unique site names
+global SiteNames 
+SiteNames = get_lung_site_names(SampleNames); 
 
 %% Generate table -- inspect lower MutQuals and toggle qual_0
 
-QualSort=1;
+QualSort=0;
 QualCutOff=1;
 [annotation_all, sorted_table_data] = div_clickable_table_isolate_calls(mutations, Calls, p, ancnti, ...
                                             counts,  fwindows, cwindows, ...
                                             hasmutation, MutQual, MutQualIsolates, ...
                                             RefGenome, ScafNames, SampleInfo, ...
                                             ChrStarts, promotersize, showlegends, ...
-                                            QualSort, QualCutOff, qual_0);   
-
-
+                                            QualSort, QualCutOff, qual_0);                                        
 
 %% Clustergram
 
@@ -84,14 +69,11 @@ QualCutOff=1;
 
 %% dNdS
 
-%[ci_u, ci_l, dnds] = calculate_dNdS(annotation_all, cds, GenomeLength, ChrStarts, sequences); 
-
+% [ci_u, ci_l, dnds] = calculate_dNdS(annotation_all, cds, GenomeLength, ChrStarts, sequences);
 
 %% Find genes not unaligned to
 
 % get_missing_genes; 
-
-%% cooccurrence = plot_isolates_covariance(mut_freq, annotation_mutgenes); 
 
 %% Get number of genes mutated more than once
 
@@ -99,7 +81,7 @@ QualCutOff=1;
 
 %% Generate phylogeny 
 
-make_phylogeny; 
+% make_phylogeny; 
  
 %% Save
 

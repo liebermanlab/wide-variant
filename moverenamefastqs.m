@@ -21,12 +21,11 @@ for i=1:length(IsolateTable)
     
     %find fastqs
     if exist([sourcefolder '/' s.ProviderName],'dir')
-        fastqs=dir([sourcefolder '/' s.ProviderName '*.fastq']);
+        fastqs=dir([sourcefolder '/' s.ProviderName '/*.fastq']); % HC fixed bug
         sourcefolder=[sourcefolder '/' s.ProviderName];
     else
-        fastqs=dir([sourcefolder '/' s.ProviderName '*.fastq']);
+        fastqs=dir([sourcefolder '/' s.ProviderName '/*.fastq']); % HC fixed bug
     end
-    
     %copys
     if numel(fastqs) < 1
         error(['Could not find fastq file(s) for: ' s.ProviderName]);
