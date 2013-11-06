@@ -218,8 +218,8 @@ end
 % sort table by descending quality val
 if QualSort==1
     [sorted_tabledata, sortedpositions] = sortrows(tabledata,1);
-    sorted_tabledata = flipdim(sorted_tabledata,1); 
-    sortedpositions = flipdim(sortedpositions,1); 
+  %  sorted_tabledata = flipdim(sorted_tabledata,1); 
+   % sortedpositions = flipdim(sortedpositions,1); 
 else
     sorted_tabledata = tabledata;
     sortedpositions=1:size(tabledata,1);
