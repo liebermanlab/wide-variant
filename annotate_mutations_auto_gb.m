@@ -1,4 +1,4 @@
-% function [mut_genenum, CDS, mut_annotations, ref_sequences] = annotate_mutations_auto_gb(Positions,Scaf,RefGenome)
+function [mut_genenum, CDS, mut_annotations, ref_sequences] = annotate_mutations_auto_gb(Positions,Scaf,RefGenome)
 
 % Revised 2013/11/06 by HC to handle reference sequence concatenated with
 % contigs 
@@ -212,4 +212,4 @@ for i=1:size(Positions,1)
 end
 fprintf(1,'%6.1f min\n',toc/60) ;
 
-% return
+return
