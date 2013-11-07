@@ -34,7 +34,7 @@ global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 1;
 
 %orchestra parameters
 fast_q='short -W 30';
-medium_q='short -W 2:00';
+medium_q='short -W 3:00';
 long_q='short -W 4:00';
 
 
@@ -302,7 +302,7 @@ else
 end
 
 %run all filters that use unix commands
-run_parallel_unix_commands_fast(cmds,medium_q,Parallel, dirs);
+run_parallel_unix_commands_fast(cmds,long_q,Parallel, dirs);
 
 if ~exist('non-matlab_filter_stats','dir') & numel(cmds) > 0
     mkdir('non-matlab_filter_stats');
