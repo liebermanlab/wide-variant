@@ -83,7 +83,7 @@ for i=1:length(Scaf)
         z = Positions(:,1)==i; % pulls positions that are on this SCAFFOLD
         mut_genenum(z) = genomic_position(CDS{i},Positions(z,2));
     else
-        genesPlaceholder = make_annotation_placeholder(scaf_i); 
+        genesPlaceholder = make_annotation_placeholder(scaf_i, scafSeq); 
         CDS{i}=genesPlaceholder; 
         z = Positions(:,1)==i; 
         mut_genenum(z) = 0; 
@@ -209,7 +209,7 @@ for i=1:size(Positions,1)
         mut_annotations(i).NonSyn = nan;
     end
     
-% end
+end
 fprintf(1,'%6.1f min\n',toc/60) ;
 
 % return
