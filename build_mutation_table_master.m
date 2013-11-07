@@ -1,4 +1,4 @@
-% function build_mutation_table_master(scriptsdirectory, CLUSTERDIRECTORY)
+function build_mutation_table_master(scriptsdirectory, CLUSTERDIRECTORY)
 
 global CLUSTERDIR
 
@@ -226,4 +226,4 @@ end
 save(['windows_' run_postfix], 'fwindows', 'cwindows', '-v7.3')
 % save(['MutGenVCF_' run_postfix], 'MutGenVCF', '-v7.3')
 
-% end
+end
