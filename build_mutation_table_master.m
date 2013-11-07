@@ -30,7 +30,7 @@ gscatters=0; %output options -- this useful graph has not been tested since upda
 
 window_size=500; %parameters used during initial data structure generation
 
-analyze_diversity=1; %analyze diversity?
+analyze_diversity=0; %analyze diversity?
 
 looseFQmax=-30;
 
