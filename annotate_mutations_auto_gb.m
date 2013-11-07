@@ -18,7 +18,6 @@ fastaHeaders = {fastaFile.Header};
 
 % 1 if GB (i.e. annotated) 
 % 0 if FASTA/CONTIG (i.e. not annotated) 
-sourceFile = zeros(length(Scaf),1); 
 
 nts='atcg';
 rc='tagc';
@@ -26,9 +25,9 @@ rc='tagc';
 tic; fprintf(1,'annotate_mutations...\n ');
 mut_genenum = zeros(size(Positions,1),1);
 ref_sequences={};
+clear CDS 
 
 for i=1:length(Scaf)
-    
     scaf_i=Scaf{i};
    
     % GRAB HEADER FOR GB FILE
@@ -53,8 +52,6 @@ for i=1:length(Scaf)
         
         SOURCE_ANNOTATED = 1; 
         
-        sourceFile(i) = 1; 
-    
     else
         % check that header is in fasta file
         scafHeaderLoc = ~cellfun(@isempty, strfind(fastaHeaders, scaf_i)); 
@@ -62,11 +59,9 @@ for i=1:length(Scaf)
         assert(isHeaderFound~=0, 'Scaffold %s not found in FASTA file. Please specify reference source.', scaf_i); 
         
         % get sequence for this header
-        scafSeq = fastaFile(scafHeaderLoc).Sequence; 
+        scafSeq = lower(fastaFile(scafHeaderLoc).Sequence); 
         
         SOURCE_ANNOTATED = 0;
-        
-        sourceFile(i) = 0; 
         
     end
     
@@ -86,7 +81,7 @@ for i=1:length(Scaf)
         genesPlaceholder = make_annotation_placeholder(scaf_i, scafSeq); 
         CDS{i}=genesPlaceholder; 
         z = Positions(:,1)==i; 
-        mut_genenum(z) = 0; 
+        mut_genenum(z) = 1; 
     end
     
     ref_sequences{end+1}=scafSeq;
@@ -98,14 +93,10 @@ end
 mut_annotations=[] ;
 for i=1:size(Positions,1)
     
+    fprintf('\nOn %i\n', i); 
     if ~mod(i,100), fprintf(1,'.') ; end
     
-    if sourceFile(i)
-        mut_annotations(i).gene_num = mut_genenum(i) ;
-    else
-        mut_annotations(i).gene_num = 0; 
-    end
-    
+    mut_annotations(i).gene_num = mut_genenum(i) ;
     mut_annotations(i).scaffold = Positions(i,1) ;
     mut_annotations(i).pos = Positions(i,2) ;
     mut_annotations(i).ref=char(ref_sequences{mut_annotations(i).scaffold}(mut_annotations(i).pos)-32);
@@ -130,26 +121,26 @@ for i=1:size(Positions,1)
         mut_annotations(i).translation = cdf.translation;
                 
         
-        % ___ Bdolosa SPECIFIC ___ %
-        % fix frame annotation problems specific to Bdolosa genome
-        if strcmp(RefGenome,'Bdolosa')
-           % disp(mut(i).locustag)
-            frame=ana_Bdolosa_checkframe(mut_annotations(i).locustag, Positions(i,2), double(mut_annotations(i).loc1));
-        end
-        
-        mut_annotations(i).translation=nt2aa(mut_annotations(i).Sequence, 'ACGTOnly', false, 'ALTERNATIVESTARTCODONS','F', 'GENETICCODE', 11) ;
-
-        if strcmp(RefGenome,'Bdolosa') & frame~=0
-            mut_annotations(i).Sequence=mut_annotations(i).Sequence(frame:end);
-            if mut_annotations(i).strand==0
-                mut_annotations(i).loc1 = cdf.loc1 + (frame - 1);
-            else
-                mut_annotations(i).loc2 = cdf.loc2 + (frame - 1);
-            end
-            mut_annotations(i).translation=nt2aa(mut_annotations(i).Sequence, 'ACGTOnly', false, 'ALTERNATIVESTARTCODONS','F', 'GENETICCODE', 11) ;
-
-        end
-        % ___ END OF Bdolosa SPECIFIC ___ %
+%         % ___ Bdolosa SPECIFIC ___ %
+%         % fix frame annotation problems specific to Bdolosa genome
+%         if strcmp(RefGenome,'Bdolosa')
+%            % disp(mut(i).locustag)
+%             frame=ana_Bdolosa_checkframe(mut_annotations(i).locustag, Positions(i,2), double(mut_annotations(i).loc1));
+%         end
+%         
+%         mut_annotations(i).translation=nt2aa(mut_annotations(i).Sequence, 'ACGTOnly', false, 'ALTERNATIVESTARTCODONS','F', 'GENETICCODE', 11) ;
+% 
+%         if strcmp(RefGenome,'Bdolosa') & frame~=0
+%             mut_annotations(i).Sequence=mut_annotations(i).Sequence(frame:end);
+%             if mut_annotations(i).strand==0
+%                 mut_annotations(i).loc1 = cdf.loc1 + (frame - 1);
+%             else
+%                 mut_annotations(i).loc2 = cdf.loc2 + (frame - 1);
+%             end
+%             mut_annotations(i).translation=nt2aa(mut_annotations(i).Sequence, 'ACGTOnly', false, 'ALTERNATIVESTARTCODONS','F', 'GENETICCODE', 11) ;
+% 
+%         end
+%         % ___ END OF Bdolosa SPECIFIC ___ %
         
             
         if mut_annotations(i).strand
