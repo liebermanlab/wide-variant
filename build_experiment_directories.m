@@ -1,4 +1,4 @@
-function build_experiment_directories(scriptspath, CLUSTERDIR)
+function build_experiment_directories(scriptspath, CLUSTERDIR, paired)
 
 %February 2012 - March 2013
 %
@@ -18,12 +18,17 @@ function build_experiment_directories(scriptspath, CLUSTERDIR)
 
 
 %%  Important parameters that shouldn't be hardcoded in ideal version
-if nargin < 2
+if nargin < 2 
+    CLUSTERDIR = '/groups/kishony/'; 
+elseif isempty(CLUSTERDIR)
     CLUSTERDIR = '/groups/kishony/'; 
 end
 
+if nargin < 3
+    paired=true;
+end
+
 %running parameters
-paired = true; % could be acquired from files
 Parallel = true ;
 global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 1;
 
@@ -192,9 +197,12 @@ for i = 1:length(SampleTable)
     tname_out1 = [pwd '/' adapter_dir '/cutadapt_reads_1.fastq']; 
     tname_out2 = [pwd '/' adapter_dir '/cutadapt_reads_2.fastq']; 
     
-    if ~(exist(tname_out1,'file') && exist(tname_out2,'file')) || overwrite
+    if ~(exist(tname_out1,'file')) || overwrite
         trim_cmds{end+1} = ['cutadapt -a ' adapter ' ' tname_in1 ' > ' tname_out1];
         trim_dirs{end+1} = [s.Sample '/' adapter_dir]; 
+    end
+    
+    if paired & (~(exist(tname_out2,'file')) || overwrite)
         trim_cmds{end+1} = ['cutadapt -a ' adapter ' ' tname_in2 ' > ' tname_out2];
         trim_dirs{end+1} = [s.Sample '/' adapter_dir];
     end
@@ -211,7 +219,7 @@ end
 prevfiles=numel(dir('adapter_trimming_results/*.sh'));
 for i=1:numel(trim_cmds)
     copyfile(['run_parallel_unix_commands_fast_tmp/out' int2str(i) '.txt'],['adapter_trimming_results/out' int2str(prevfiles+i) '.txt']);
-    copyfile(['run_parallel_unix_commands_fast_tmp/tmp' int2str(i) '.sh'],['adapter_trimming_results/tmp' int2str(prevfiles+i) '.sh']);
+    copyfile(['run_parallel_unix_commands_fast_tmp/sh' int2str(i) '.sh'],['adapter_trimming_results/tmp' int2str(prevfiles+i) '.sh']);
 end
 
 
@@ -237,10 +245,11 @@ for i=1:length(SampleTable)
             mkdir(FilterTable(f).Filter)
         end
         
+        fname_in1=[pwd '/' adapter_dir '/cutadapt_reads_1.fastq'];
+        fname_out1=[pwd '/' FilterTable(f).Filter '/filter_reads_1.fastq'];
+                    
         if paired %SK
-            fname_in1=[pwd '/' adapter_dir '/cutadapt_reads_1.fastq'];
             fname_in2=[pwd '/' adapter_dir '/cutadapt_reads_2.fastq'];
-            fname_out1=[pwd '/' FilterTable(f).Filter '/filter_reads_1.fastq'];
             fname_out2=[pwd '/' FilterTable(f).Filter '/filter_reads_2.fastq'];
             
             if ~(exist(fname_out1,'file') && exist(fname_out2,'file')) || overwrite
@@ -270,13 +279,13 @@ for i=1:length(SampleTable)
             fname_out=[pwd '/' FilterTable(f).Filter '/filter_reads.fastq'];
             if ~exist(fname_out,'file') || overwrite
                 if strfind(FilterTable(f).Method,'nofilter') %if no filter, copy file into subdirectory-- not the best way to do this
-                    cmds{end+1}=['cp ../' s.Sample '.fastq filter_reads.fastq'];
+                    cmds{end+1}=['cp ' fname_in1 ' ' fname_out1];
                     dirs{end+1}=[s.Sample '/nofilter'];
                 elseif strfind(FilterTable(f).Method,'sickle')
-                    cmds{end+1}=['"' SCRIPTSPATH '/sickle-master/sickle" se -f ../' s.Sample '.fastq -t sanger -o filter_reads.fastq -q ' num2str(FilterTable(f).Params(1)) ' -l ' num2str(FilterTable(f).Params(2)) ' -x -n'];
+                    cmds{end+1}=['"' SCRIPTSPATH '/sickle-master/sickle" se -f ' fname_in1 ' -t sanger -o ' fname_out1 ' -q ' num2str(FilterTable(f).Params(1)) ' -l ' num2str(FilterTable(f).Params(2)) ' -x -n'];
                     dirs{end+1}=[s.Sample '/' FilterTable(f).Filter];
                 else
-                    fparams{end+1} =  {[pwd '/' s.Sample '.fastq'], [pwd '/' FilterTable(f).Filter '/filter_reads.fastq'], Phred_offset, FilterTable(f).Method, FilterTable(f).Params};
+                    fparams{end+1} =  {fname_in1, fname_out1, Phred_offset, FilterTable(f).Method, FilterTable(f).Params};
                 end
             end
         end
@@ -468,11 +477,10 @@ dirs = {} ;
 cmds = {} ;
 for i=1:length(all_dirs)
     if ~exist([all_dirs{i} '/variant.vcf'],'file') ;
-        %HC 11/6/2013: -B disables BAQ computation, consistent with pileup generation
         if Phred_offset==64
-            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -6 -S -ugf -B -d3000"' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
+            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -6 -S -ugf "' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
         else
-            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -S -ugf -B -d3000"' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
+            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -S -ugf "' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
         end
         
         dirs{end+1} = all_dirs{i} ;

@@ -26,8 +26,9 @@ for i=1:length(IsolateTable)
     else
         fastqs=dir([sourcefolder '/' s.ProviderName '*.fastq']); % TL fixed back
     end
+    
     %copys
-    if numel(fastqs) < 1
+    if numel(fastqs) < 1  & ~exist([s.Sample '/' s.Sample '_' num2str(1) '.fastq'],'file')
         error(['Could not find fastq file(s) for: ' s.ProviderName]);
     end
     
