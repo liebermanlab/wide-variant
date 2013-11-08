@@ -18,6 +18,7 @@ function build_experiment_directories(scriptspath, CLUSTERDIR, paired)
 
 
 %%  Important parameters that shouldn't be hardcoded in ideal version
+
 if nargin < 2 
     CLUSTERDIR = '/groups/kishony/'; 
 elseif isempty(CLUSTERDIR)
@@ -32,6 +33,7 @@ end
 Parallel = true ;
 global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 1;
 
+
 %orchestra parameters
 fast_q='short -W 30';
 medium_q='short -W 3:00';
@@ -42,6 +44,8 @@ long_q='short -W 4:00';
 overwrite=0;  %overwrite
 Phred_offset = 33 ; %Generally 33, was 64 in older versions. Phred_score= ascii value - Phred_offset.
 adapter='CTGTCTCTTAT';
+
+
 
 %% Set path
 
@@ -302,7 +306,7 @@ else
 end
 
 %run all filters that use unix commands
-run_parallel_unix_commands_fast(cmds,long_q,Parallel, dirs);
+run_parallel_unix_commands_fast(cmds,medium_q,Parallel, dirs);
 
 if ~exist('non-matlab_filter_stats','dir') & numel(cmds) > 0
     mkdir('non-matlab_filter_stats');
@@ -313,6 +317,8 @@ for i=1:numel(cmds)
     copyfile(['run_parallel_unix_commands_fast_tmp/out' int2str(i) '.txt'],['non-matlab_filter_stats/out' int2str(prevfiles+i) '.txt']);
     copyfile(['run_parallel_unix_commands_fast_tmp/tmp' int2str(i) '.sh'],['non-matlab_filter_stats/tmp' int2str(prevfiles+i) '.sh']);
 end
+
+
 
 
 
@@ -477,10 +483,11 @@ dirs = {} ;
 cmds = {} ;
 for i=1:length(all_dirs)
     if ~exist([all_dirs{i} '/variant.vcf'],'file') ;
+        %HC 11/6/2013: -B disables BAQ computation, consistent with pileup generation
         if Phred_offset==64
-            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -6 -S -ugf "' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
+            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -6 -S -ugf -B -d3000"' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
         else
-            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -S -ugf "' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
+            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -S -ugf -B -d3000"' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
         end
         
         dirs{end+1} = all_dirs{i} ;
