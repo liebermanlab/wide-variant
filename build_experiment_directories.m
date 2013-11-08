@@ -485,9 +485,9 @@ for i=1:length(all_dirs)
     if ~exist([all_dirs{i} '/variant.vcf'],'file') ;
         %HC 11/6/2013: -B disables BAQ computation, consistent with pileup generation
         if Phred_offset==64
-            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -6 -S -ugf -B -d3000"' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
+            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -6 -S -B -d3000 -ugf "' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
         else
-            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -S -ugf -B -d3000"' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
+            cmds{end+1} = ['/opt/samtools/bin/samtools mpileup -q30 -S -B -d3000 -ugf"' ref_folder '/Reference_Genomes/' all_genomes{i} '/genome.fasta" aligned.sorted.bam > strain'] ;
         end
         
         dirs{end+1} = all_dirs{i} ;
