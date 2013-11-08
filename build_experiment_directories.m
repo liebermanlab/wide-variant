@@ -281,7 +281,7 @@ for i=1:length(SampleTable)
             fprintf(1, 'Not paired! \n');  
             fname_in=[pwd '/' s.Sample '.fastq'];
             fname_out=[pwd '/' FilterTable(f).Filter '/filter_reads.fastq'];
-            if ~exist(fname_out,'file') || overwrite
+            if ~exist(fname_out1,'file') || overwrite
                 if strfind(FilterTable(f).Method,'nofilter') %if no filter, copy file into subdirectory-- not the best way to do this
                     cmds{end+1}=['cp ' fname_in1 ' ' fname_out1];
                     dirs{end+1}=[s.Sample '/nofilter'];
@@ -363,19 +363,19 @@ for i=1:length(SampleTable)
                 case 'bowtie'
                     if Phred_offset == 64
                         cmds{end+1} = ['/opt/bowtie/bowtie ' ae.Param1 '--phred64-quals --max ' dra '/multialigned.fastq --un ' dra '/unaligned.fastq ' ...
-                            'genome  ' drf '/filter_reads.fastq ' dra '/aligned.sam' ] ;
+                            'genome  ' drf '/filter_reads_1.fastq ' dra '/aligned.sam' ] ;
                     else
                         cmds{end+1} = ['/opt/bowtie/bowtie ' ae.Param1 ' --max ' dra '/multialigned.fastq --un ' dra '/unaligned.fastq ' ...
-                            'genome  ' drf '/filter_reads.fastq ' dra '/aligned.sam' ] ;
+                            'genome  ' drf '/filter_reads_1.fastq ' dra '/aligned.sam' ] ;
                     end
                     
                 case 'bowtie2'
                     if Phred_offset == 64
                         cmds{end+1} = ['/opt/bowtie2/bowtie2 --phred64 -x genome_bowtie2' ...
-                            ' -U   ' drf '/filter_reads.fastq -S ' dra '/aligned.sam --un ' dra '/unaligned.fastq '];
+                            ' -U   ' drf '/filter_reads_1.fastq -S ' dra '/aligned.sam --un ' dra '/unaligned.fastq '];
                     else
                         cmds{end+1} = ['/opt/bowtie2/bowtie2 -x genome_bowtie2' ...
-                            ' -U   ' drf '/filter_reads.fastq -S ' dra '/aligned.sam --un ' dra '/unaligned.fastq '];
+                            ' -U   ' drf '/filter_reads_1.fastq -S ' dra '/aligned.sam --un ' dra '/unaligned.fastq '];
                     end
                 case 'bowtie2paired'
                     if Phred_offset == 64
