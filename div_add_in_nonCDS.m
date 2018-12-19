@@ -8,19 +8,27 @@ function allgenes=div_add_in_nonCDS(cds, features)
 %just a gene
 
 %get all genes
-allgenes=extract_feature(features,'gene'); 
+allgenes=[extract_feature(features,'gene') extract_feature(features,'rRNA') extract_feature(features,'tRNA') extract_feature(features,'CDS')]; 
 allgenes=locustag_from_text(allgenes); %neccessary fix to add gene number to gene field
 
 %convert to gene numbers
-allgenesN=div_get_gene_numbers(allgenes);
-cdsN=div_get_gene_numbers(cds);
+if ~isempty(cds)
+    cdsN=div_get_gene_numbers(cds);
+else
+    cdsN=[];
+end
+if ~isempty(allgenes)
+    allgenesN=div_get_gene_numbers(allgenes);
+else
+    allgenesN=cdsN;
+end
 
 
 %find overlap
 [found,indices]=ismember(allgenesN, cdsN);
 
 
-for i=1:numel(found);
+for i=1:numel(allgenesN);
     if found(i)>0
         %carry all other information over
 

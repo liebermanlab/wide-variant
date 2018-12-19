@@ -8,7 +8,7 @@ function [allthresholdsmet] = div_single_sample_test_thresholds(d, p, controlMAF
 %Very similar but slightly different (single sample) then
 %div_test_tresholds
 
-num_reqs=11;
+num_reqs=12;
 
 
 NPositions=size(d,2);
@@ -23,7 +23,7 @@ min_td=p.min_td;
 max_td=p.max_td;
 max_sbp=p.max_sbp;
 max_bqp=p.max_bqp;
-%max_mqp=p.max_mqp;
+max_mqp=p.max_mqp;
 max_tdp=p.max_tdp;
 max_percent_indels=p.max_percent_indels;
 max_percent_ends=p.max_percent_ends;
@@ -96,17 +96,17 @@ Te = percent_ends < max_percent_ends;
 
 TSBp = SBp < max_sbp;
 TBQp = BQp < max_bqp;
-%TMQp = MQp < max_mqp;
+TMQp = MQp < max_mqp;
 TTDp = (TDFp < max_tdp) & (TDRp < max_tdp);
 
 if numel(controlMAF > 1)
     control = controlMAF > min_control_MAF;
 else
-    control = ones(Npositions,1);
+    control = ones(NPositions,1);
 end
 
 
-allreqs= Tminor + Treads + Tbq + Tmq + Ttd + Tid + Te + TSBp + TBQp +TTDp+ control; % TMQp 
+allreqs= Tminor + Treads + Tbq + Tmq + Ttd + Tid + Te + TSBp + TMQp+ TBQp +TTDp+ control; % TMQp 
 
 
 allthresholdsmet((allreqs==num_reqs))=1;

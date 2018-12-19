@@ -1,4 +1,8 @@
-function run_parallel_unix_commands_fast(cmds, qname, Parallel, dirs)
+function run_parallel_unix_commands_fast(cmds, maxtime, Parallel, dirs)
+
+%Edited November 2015 to work on c3ddb
+
+
 % function run_parallel_unix_commands_fast(cmds, qname)
 % a function that runs unix commands (given in a cell array cmds) in parallel by generating temp sh files
 % that also produce output files and waiitng for all output files to
@@ -29,17 +33,33 @@ if Parallel==1
         mkdir(dr) ;
     end
     delete([dr ,'/*']) ;
-    for i=1:max(length(cmds),length(dirs))
-        fname = sprintf('%s/tmp%g.sh',dr,i) ;
-        oname = sprintf('%s/out%g.txt',dr,i) ;
-        outs{end+1}=oname;
+    for i=1:max(length(cmds),length(dirs)) 
+        fname = [dr '/tmp' num2str(i) '.sh'] ;
         fid = fopen(fname,'w') ;
+        fprintf(fid,'#!/bin/bash\n') ;
+        fprintf(fid,'#SBATCH -p defq\n') ;
+        fprintf(fid,'#SBATCH -n 1\n') ;
+        fprintf(fid,'#SBATCH --time=%s\n',maxtime) ;
+        fprintf(fid,'#SBATCH --mem=10000\n') ;
+        outs{end+1}=[dr '/stdout' num2str(i) '.txt'];
+        fprintf(fid,'#SBATCH -o %s\n',outs{end}) ;
+        fprintf(fid,'#SBATCH -e %s/stderr%g.txt\n',dr,i) ;
+        fprintf(fid,'module add c3ddb/bamtools/2.4.0\n') ;
+        fprintf(fid,'module add c3ddb/bcftools/1.2\n') ;
+        fprintf(fid,'module add c3ddb/bowtie2/2.2.6 \n') ;
+        fprintf(fid,'module add c3ddb/htslib/1.2.1\n') ;
+        fprintf(fid,'module add c3ddb/samtools/1.2\n') ;
+        fprintf(fid,'module add c3ddb/sickle/1.33\n') ;
+        fprintf(fid,'module add c3ddb/samtools/1.2\n') ;
+        fprintf(fid,'module add c3ddb/python/2.7.11\n') ;
+        fprintf(fid,'pip install --user cutadapt\n') ;
+        fprintf(fid,'module add mit/matlab/2015b\n') ;
+        fprintf(fid,'module add c3ddb/deML/2016-05-25\n') ;
         fprintf(fid,'cd "%s"\n',dirs{min(i,end)}) ;
         fprintf(fid,'%s\n',cmds{min(i,end)}) ;
+        fprintf(fid,'echo Done!!!') ;
         fclose(fid) ;
-        eval(sprintf('!chmod +x %s',fname))
-       % eval(sprintf('!bsub -q %s ./%s',qname,fname))
-        eval(sprintf('!bsub -q %s -o %s ./%s',qname,oname,fname))
+        eval(sprintf('!sbatch %s',fname))
     end
     
     done = 0 ;
@@ -49,30 +69,43 @@ if Parallel==1
             if exist(outs{i},'file')
                 fid=fopen(outs{i});
                 l=fgetl(fid);
-                while isempty(strfind(l,'Subject: Job '))
+                while sum(l==-1)==0
+                    if strfind(l,'Done!!!')
+                        done=done+1;
+                        outs{i}=[];
+                    end
                     l=fgetl(fid);
                 end
-                if strfind(l,'Done')
-                    done=done+1;
-                    outs{i}=[];
-                else
-                    error(['A job failed. Check run_parallel_unix_commands_fast_tmp/out' num2str(i) '.txt for error message'])
-                end
+                fclose(fid);
             end    
         end
-        disp(done);
+        fprintf(1,num2str(done));
     end
     
 elseif Parallel==2
     for i=1:max(length(cmds),length(dirs))
         fname = ['tmp' num2str(i) '.sh'] ;
-        oname = ['out' num2str(i) '.txt'] ;
         fid = fopen(fname,'w') ;
-        fprintf(fid,'cd "%s"\n',dirs{min(i,end)}) ;
+        fprintf(fid,'#!/bin/bashn') ;
+        fprintf(fid,'#SBATCH -p defq\n') ;
+        fprintf(fid,'#SBATCH -n 1\n') ;
+        fprintf(fid,'#SBATCH --time=%s\n',maxtime) ; 
+        fprintf(fid,'#SBATCH -o stdout%g.txt\n',i) ; 
+        fprintf(fid,'#SBATCH -e stderr%g.txt\n',i) ; 
+        fprintf(fid,'module add c3ddb/bamtools/2.4.0\n') ;
+        fprintf(fid,'module add c3ddb/bcftools/1.2\n') ;
+        fprintf(fid,'module add c3ddb/bowtie2/2.2.6 \n') ;
+        fprintf(fid,'module add c3ddb/htslib/1.2.1\n') ;
+        fprintf(fid,'module add c3ddb/samtools/1.3\n') ;
+        fprintf(fid,'module add c3ddb/sickle/1.33\n') ;
+        fprintf(fid,'module add c3ddb/samtools/1.2\n') ;
+        fprintf(fid,'module add c3ddb/python/2.7.10\n') ;
+        fprintf(fid,'pip install --user cutadapt==1.9.1\n') ;
+        fprintf(fid,'module add mit/matlab/2015b\n') ;        
+        fprintf(fid,'cd "%s"\n',dirs{min(i,end)}) ; 
         fprintf(fid,'%s\n',cmds{min(i,end)}) ;
         fclose(fid) ;
-        eval(sprintf('!chmod +x %s',fname))
-        eval(sprintf('!bsub -q %s -o %s ./%s',qname,oname,fname))
+        eval(sprintf('!sbatch %s',fname))
     end
     fprintf('Continuing without waiting for last batch of jobs to finish...\n')
 else

@@ -6,8 +6,8 @@ global CONTROLSAMPLE
 %initialize
 strand=['g-','k-'];
 scrsz = get(0,'ScreenSize');
-figure(821);
-set(821,'Position',[scrsz(3)/2 scrsz(4) scrsz(3)/2.5 scrsz(4)/4]);clf;hold on;
+figure(821); clf; hold on;
+%set(821,'Position',[scrsz(3)/2 scrsz(4) scrsz(3)/2.5 scrsz(4)/4]);clf;hold on;
 othersamples=1:numel(names); othersamples(CONTROLSAMPLE)=[];
 
 
@@ -42,12 +42,13 @@ if numel(names)>10
     set(gca, 'ColorOrder', colormap(gray));
 end
 l=(center-window):(center+window);
-o = plot(l,cwindows(:,othersamples), '-', 'LineWidth', 1); %plot other samples
-c = plot(l,cwindows(:,CONTROLSAMPLE)','k-', 'LineWidth',2); %plot control in black
+cen=length(cwindows(:,othersamples))/2;
+o = plot(l,cwindows(int16(cen-window):int16(cen+window),othersamples), '-', 'LineWidth', 1); %plot other samples
+c = plot(l,cwindows(int16(cen-window):int16(cen+window),CONTROLSAMPLE)','k-', 'LineWidth',2); %plot control in black
 
 legendlist=[c]; legendnames={names{CONTROLSAMPLE}};
 if samplen > 0
-    s = plot(l,cwindows(:,samplen),'r-', 'LineWidth',2); %plot clicked in red
+    s = plot(l,cwindows(int16(cen-window):int16(cen+window),samplen),'r-', 'LineWidth',2); %plot clicked in red
     othersamples(othersamples==samplen)=[];
     legendlist(end+1)=s;
     legendnames{end+1}=names{samplen};

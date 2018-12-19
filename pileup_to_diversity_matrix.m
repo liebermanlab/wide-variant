@@ -1,10 +1,21 @@
-function pileup_to_diversity_matrix(fname_in,fname_out,refgenome)
+function pileup_to_diversity_matrix(dir)
+
+
+if nargin > 0
+    cd(dir)
+end
+
+fprintf(1,pwd)
 
 %Tami Lieberman 2012
 
 %edited Seungsoo Kim January 2013 to account for indels of size >= 10
 %data type changed to uint8
 
+%edited by Tami Lieberman 2014 to run from commandline
+
+
+%% Some notes
 
 %fname_in should me the name of a pileup file output from mpileup, including
 %base qualities, mapping qualities, and tail distances reported
@@ -13,6 +24,9 @@ function pileup_to_diversity_matrix(fname_in,fname_out,refgenome)
 
 %ChrStarts is an array holding the indices in the position dimension
 %corresponding to the start of a new chromsome. For B. dolosa this is [0,3413074,5589203]
+
+
+
 
 
 % Aq is the average phred qualities of all A's
@@ -31,7 +45,8 @@ function pileup_to_diversity_matrix(fname_in,fname_out,refgenome)
 % D is number of reads supporting indels in the +/- (indelregion) bp region
 
 
-%Important constants
+
+%% Important constants
 Phred_offset=33; %mpileup is told that the reads are in fastq format and corrects that so its always at Phred+33 when the mpileup comes out
 nts=int16('ATCGatcg');
 indels=int16('+-');
@@ -39,34 +54,47 @@ numfields=39;
 numtests=50; %how many ttests to do in parallel
 indelregion=3;
 
+%% Find out which reference genome we are in
 
-%Initialize
-[ChrStarts,GenomeLength,ChromosomeIndicator]=genomestats(refgenome, 1); %RUN_ON_CLUSTER
+load alignment_info
+refgenome=ae.Genome;
+
+fname_in='strain.pileup';
+fname_out='diversity.mat';
+
+%% Initialize
+fprintf(1,['\n' refgenome])
+[ChrStarts,GenomeLength,ChromosomeIndicator,ScafNames]=genomestats(['/scratch/mit_lieberman/Reference_Genomes/' refgenome]); %RUN_ON_CLUSTER
 data=zeros(numfields,GenomeLength,'uint16'); %[A T C G a t c g Aq ... gq Am .... gm  At .... gt Ps Pb Pm Pftd Prtd E D]
 temp=zeros(numfields,1); %holds data for each line before storing in data
-
 
 fid=fopen(fname_in);
 
 line = fgetl(fid);
-
+linec = 0; 
 
 while ischar(line)
-    
+	%fprintf(1, [line '\n']);     
     %parse line
-    lt=textscan(line,'%s','Delimiter', '\t', 'BufSize', 30000); l=lt{1};
-    chr=l{1};
+    lt=textscan(line,'%s','Delimiter', '\t'); l=lt{1};
+    chr=l{1}; 
     
     if numel(ChrStarts)==1
-        position= sscanf(l{2},'%f');
+        position= sscanf(l{2},'%f', inf);
     else
+        if sum(ismember(ScafNames,chr))==0
+            error('Scaffold name in pileup file not found in reference')
+        end
         %e.g. define position by looking at 28th character in string defining B. dolosa chrosome
-        position= double(ChrStarts(int8(chr(ChromosomeIndicator))-47)+sscanf(l{2},'%f'));
+        position= double(ChrStarts(ismember(ScafNames,chr))+sscanf(l{2},'%f'));
     end
-    
-    
+  
     
     ref=find(nts==int16(l{3}));
+    if ref > 4
+        ref = ref - 4;
+    end
+
     calls=int16(l{5});
     bq=int16(l{6}); %base quality, BAQ corrected
     mq=int16(l{7}); %mapping quality
@@ -128,6 +156,7 @@ while ischar(line)
     %replace all reference with their actual calls
     if ref
         calls(calls==46)=nts(ref); %'.'
+        %(1,[num2str(ref) ',' num2str(position) '\n']); %for error tracking
         calls(calls==44)=nts(ref+4); %','
     end
     
@@ -139,6 +168,8 @@ while ischar(line)
     %calculate how many of each type and average scores
     for nt=1:8
         if ~isempty(find(simplecalls==nts(nt),1))
+        %    fprintf(1,[num2str(length(simplecalls)) ',' num2str(temp(nt)) ',' num2str(length(nts)) ',' num2str(length(bq)) ',' num2str(length(mq)) ',' num2str(length(td))]);
+                        
             temp(nt)=sum(simplecalls==nts(nt));
             temp(nt+8)= int16(sum(bq(simplecalls==nts(nt)))/temp(nt))- Phred_offset;
             temp(nt+16)=int16(sum(mq(simplecalls==nts(nt)))/temp(nt)) - 33;
@@ -187,14 +218,16 @@ while ischar(line)
     
     line = fgetl(fid);
     temp=zeros(numfields,1);
-    
+	linec = linec+1;     
     
 end
 
 fclose(fid);
 
 
+coverage=sum(data(1:8,:));
 
+save('coverage','coverage');
 
 save(fname_out,'data');
 

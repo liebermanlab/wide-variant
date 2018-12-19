@@ -1,12 +1,12 @@
-function [ref_tree_positions, chr_name] = extract_outgroup_mutation_positions(ref_folder, RefGenome, chromosomal_positions)
-    fastafile = [ref_folder '/Reference_Genomes/' RefGenome '/genome.fasta']; 
+function ref_ID  = extract_outgroup_mutation_positions(ref_folder, positions)
     
-    fprintf('\nGetting outgroup sequences from reference genome\n\t%s\n', fastafile);
+    fastafile = [ref_folder '/genome.fasta']; 
+    
     fr = fastaread(fastafile) ;
-    fasta_seq = fr.Sequence; 
-    ref_tree_positions = fasta_seq(chromosomal_positions); 
     
-    % HACK (HC 2013/10/04)
-    divider_positions = strfind(fr.Header,'|'); 
-    chr_name = fr.Header(divider_positions(3)+1:divider_positions(4)-1); 
+    ref_ID=zeros(length(positions),1);
+    for i=1:length(positions)
+        ref_ID(i) = fr(positions(i,1)).Sequence(positions(i,2)); 
+    end
+    
 end

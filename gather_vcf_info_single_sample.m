@@ -1,4 +1,4 @@
-function gather_vcf_info_single_sample(filename,SampleName, ScafNames,ChrStarts,mut_list, tempfolder)
+function gather_vcf_info_single_sample(filename,SampleName)
 
 
 
@@ -8,11 +8,11 @@ function gather_vcf_info_single_sample(filename,SampleName, ScafNames,ChrStarts,
 %P must be sorted
 
 
+load('for_gather_vcf_info');
 
+pos_list=chrpos2index(Positions,ChrStarts);
 
-pos_list=chrpos2index(mut_list,ChrStarts);
-
-%check to make sure mut_list is formated properly
+%check to make sure Positions is formated properly
 sortedpos_list=sort(pos_list);
 if (sum(pos_list==sortedpos_list))~=(numel(pos_list))
     error('list of positions inputed to gather_vcf_info_single_sample needs to be sorted!\n')
@@ -65,11 +65,7 @@ end
 fprintf(1,' %6.0f \n',toc) ;
 
 
-if nargin < 5
-    tempfolder = '';
-end
-
-save([tempfolder '/vcfinfo_' char(SampleName)], 'calls', 'quals')
+save([TEMPORARYFOLDER '/vcfinfo_' char(SampleName)], 'calls', 'quals');
 
 end
 

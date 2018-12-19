@@ -31,7 +31,7 @@ if Parallel
                 error(['Matlab Task [' num2str(i) '] failed because of time limitation'])
             else
                 disp(job.Task(i).ErrorMessage)
-                error(['Matlab Task [' num2str(i) '] failed (others may have failed also)'])
+                error(['Matlrandab Task [' num2str(i) '] failed (others may have failed also)'])
             end
         end
     end

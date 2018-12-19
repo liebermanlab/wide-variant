@@ -4,11 +4,6 @@ function IsolateTable = read_sample_table
 
 
 d = tdfreadunix('samples.csv',',') ;
-%pwd
-%d = csvread('samples.csv') ;
-
-
-%disp(fieldnames(d))
 
 if ~all(ismember({'Batch','Lane','Barcode','Sample','Alignments'},fieldnames(d)))
     error('Notice headers in samples.csv')
@@ -23,12 +18,21 @@ for f=fieldnames(d)'
     end
     k(end+1,:) = {d.(f{1}){:}} ;
 end
+
+%check to for duplicate names
+if numel(unique(d.Sample)) ~= numel(d.Sample)
+    error('Error:Duplicate sample names in samples.csv!')
+end
+
 IsolateTable = cell2struct(k,fieldnames(d),1) ;
 
 for i=1:length(IsolateTable)
     tmp = textscan(IsolateTable(i).Alignments,'%s ',1000) ;
     IsolateTable(i).Alignments = tmp{1} ;
+    tmp = textscan(IsolateTable(i).Batch,'%s ',1000) ;
+    IsolateTable(i).Batch = tmp{1} ;
 end
+
 
 
 end

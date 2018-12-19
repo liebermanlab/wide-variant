@@ -20,6 +20,7 @@ for i=1:length(gb)
             gb(i).Sequence = seqrcomplement(Sequence(f.loc1:f.loc2)) ;
         end
     end
+    gb(i).translation2=nt2aa(gb(i).Sequence,'ACGTOnly',0);
 end
 
 gb(notgenes)=[];

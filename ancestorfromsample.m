@@ -1,5 +1,6 @@
 function [ancnt, ancnti] = ancestorfromsample(calls,sample)
 
+
 [~,callsi]=ismember(calls,'ATCG');
 callsi_mode=mode(callsi,2);
 

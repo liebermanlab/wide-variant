@@ -1,19 +1,15 @@
 function gp = genomic_position(dfasta,pos)
 
-gp=zeros(size(pos)) ;
+gp=0.5*ones(size(pos)) ;
 
-for i=1:length(pos) ;
-    
-    f1 = find(pos(i)>=[dfasta.loc1],1,'last') ;
-    
-    if isempty(f1)
-        gp(i) = 0.5 ;
-    elseif pos(i)<=dfasta(f1).loc2
-        gp(i) = f1 ;
-    else
-        gp(i) = f1+0.5 ;
-    end
-    
+
+genestarts=[dfasta.loc1];
+geneends=[dfasta.loc2];
+
+for i=1:(numel(genestarts)-1)
+    gp(genestarts(i):geneends(i))=i;
+    gp(geneends(i)+1:genestarts(i+1)-1)=i+0.5;
 end
+gp(genestarts(i+1):geneends(i+1))=i+1;
 
 return

@@ -1,4 +1,4 @@
-function [mutAF, mutantNT]=mutant_frequency(cnts,hasmut, anc, calls)
+function [mutAF, mutantNT, all_mutAF]=mutant_frequency(cnts,hasmut, anc, calls)
 
 %hasmut is a matrix with true/false
 %ancestor is a vector of 0-4 representing unknown,A,T,C,G
@@ -19,8 +19,15 @@ mutAF(minormutation)=minorAF(minormutation);
 %if insertion or deletion, counts is uniformative
 mutAF(hasmut>0 & ismember(calls,'ID'))=1;
 
-
 %mutantNT
 mutantNT=zeros(size(hasmut));
 mutantNT(hasmut)=maNT(hasmut); 
 mutantNT(minormutation)=minorNT(minormutation);
+
+%do all mutAF
+all_mutAF=zeros(size(mutAF));
+all_mutAF(repmat(anc,1,size(hasmut,2))==maNT & minorAF > 0 )=minorAF(repmat(anc,1,size(hasmut,2))==maNT & minorAF > 0);
+all_mutAF(repmat(anc,1,size(hasmut,2))~=maNT & maf > 0 )=maf(repmat(anc,1,size(hasmut,2))~=maNT & maf > 0);
+
+
+

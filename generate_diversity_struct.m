@@ -23,16 +23,19 @@ Counts=zeros(numfields, length(p), length(SampleDirs),'uint16');
 
 if parallel==1
     
+    
+    save('for_generate_diversity_struct_single_sample', 'p', 'window_size', 'createwindows', 'TEMPORARYFOLDER', '-v7.3')
+
     %run others
-    parallel_params={};
+    cmds={};
     for i=1:numel(SampleNames)
-        parallel_params{end+1}={SampleDirs{i}, SampleNames{i}, p, window_size, createwindows, TEMPORARYFOLDER};        
+        cmds{end+1} = ['matlab -r "path(' char(39) '/scratch/users/tami/illumina_pipeline_c3ddb/' char(39) ',path); generate_diversity_struct_single_sample(' char(39) SampleDirs{i} char(39) ',' char(39) SampleNames{i}  char(39) ');"'];
+ 
     end
     
-    disp(parallel_params) 
-    run_parallel_matlab_commands('generate_diversity_struct_single_sample', parallel_params, jobsubmitoptions, 1);
     
-    
+    run_parallel_unix_commands_fast(cmds,jobsubmitoptions,parallel,{'.'});
+
     %load files
     for i=1:size(SampleNames)
         load([TEMPORARYFOLDER '/countsatp_' SampleNames{i} '.mat'])
@@ -43,19 +46,19 @@ if parallel==1
             delete([TEMPORARYFOLDER '/countsatp_' SampleNames{i} '.mat'])
         end
     end
-
-   
+    
+    
     
 else
-
+    
     for i=1:length(SampleDirs)
-
-
+        
+        
         fprintf(1,'Sample: %g  \n',i) ;
         load([SampleDirs{i} '/diversity.mat']);
         Counts(:,:,i)=data(:,p);
         genome_size=size(data,2);
-
+        
         if createwindows==1
             for j=1:length(p)
                 pos=p(j);
@@ -64,9 +67,9 @@ else
                     w=data(1:4,1:pos+window_size)+data(5:8,1:pos+window_size);
                     [sorted, sortedpositions] = sort(w,1);
                     FWindows(st+1:end,j,i)=(single(sorted(end,:,:))./sum(w,1))';
-                    FWindows(1:st,j,i)=0;         
+                    FWindows(1:st,j,i)=0;
                     CWindows(st+1:end,j,i)=sum(w,1)';
-                    CWindows(1:st,j,i)=0;     
+                    CWindows(1:st,j,i)=0;
                 elseif pos +window_size > genome_size
                     w=data(1:4,pos-window_size:end)+data(5:8,pos-window_size:end);
                     [sorted, sortedpositions] = sort(w,1);
@@ -83,7 +86,7 @@ else
                     FWindows(:,j,i)=(single(sorted(end,:,:))./sum(w,1))';
                     %Store coverage
                     CWindows(:,j,i)=sum(w,1)';
-
+                    
                 end
             end
             

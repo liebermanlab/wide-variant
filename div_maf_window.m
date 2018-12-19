@@ -8,8 +8,8 @@ global CONTROLSAMPLE
 %initialize
 strand=['g-','k-'];
 scrsz = get(0,'ScreenSize');
-figure(820);
-set(820,'Position',[scrsz(3)/20 scrsz(4) scrsz(3)/2.5 scrsz(4)/4]);clf;hold on;
+figure(820); clf; hold on;
+%set(820,'Position',[scrsz(3)/20 scrsz(4) scrsz(3)/2.5 scrsz(4)/4]);clf;hold on;
 legendlist=[];
 legendnames={};
 l=(center-window):(center+window);
@@ -65,12 +65,14 @@ if numel(names)>10
     set(gca, 'ColorOrder', colormap(gray));
 end
 
-o = plot(l,dwindows(:,othersamples), '.', 'MarkerSize', 15); %plot other samples
-c = plot(l,dwindows(:,CONTROLSAMPLE)','k.', 'MarkerSize', 15); %plot control in black
+cen=length(dwindows(:,othersamples))/2;
+
+o = plot(l,dwindows(int16(cen-window):int16(cen+window),othersamples), '.', 'MarkerSize', 15); %plot other samples
+c = plot(l,dwindows(int16(cen-window):int16(cen+window),CONTROLSAMPLE)','k.', 'MarkerSize', 15); %plot control in black
 
 legendlist(end+1)=c; legendnames{end+1}=names{CONTROLSAMPLE};
 if samplen > 0
-    s = plot(l,dwindows(:,samplen),'r.', 'MarkerSize', 15); %plot sample in red
+    s = plot(l,dwindows(int16(cen-window):int16(cen+window),samplen),'r.', 'MarkerSize', 15); %plot sample in red
     legendlist(end+1)=s;
     legendnames{end+1}=names{samplen};
     othersamples(othersamples==samplen)=[];
@@ -85,7 +87,6 @@ if samplen~=CONTROLSAMPLE
     plot(goodp, goodf(:,samplen),'kd', 'MarkerSize', 10,'MarkerFaceColor', rgb('Pink'));
     plot(goodp, goodf(:,samplen),'r.', 'MarkerSize', 15)
 end
-    
 
 %Plot center
 plot([center,center],[0,1.1],'k:')
@@ -101,7 +102,7 @@ if showlegend >0
         legendnames{end+1}=names{othersamples(i)};
     end
 end
-legend(legendlist, legendnames,'Location', 'BestOutside')
+%legend(legendlist, legendnames,'Location', 'BestOutside')
 
 
 

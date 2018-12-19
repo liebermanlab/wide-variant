@@ -35,8 +35,8 @@ function s = tdfreadunix(filename,delimiter,displayopt,readvarnames)
 
 
 tab = sprintf('\t');
-%lf = sprintf('\n');
-lf = sprintf('\r');
+lf = sprintf('\n');
+%lf = sprintf('\r');
 
 
 % set the delimiter
@@ -82,6 +82,11 @@ end
 
 % now read in the data
 [bigM,count] = fread(fid,Inf);
+
+if isempty(find(bigM==lf))  
+    lf = sprintf('\r');
+end
+
 fclose(fid);
 if count == 0
     if nargout > 0

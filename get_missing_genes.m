@@ -1,4 +1,6 @@
-missing_genes_reload = 0; 
+
+
+missing_genes_reload = 1; 
 if missing_genes_reload == 1
     [gene_coverage, gene_coverage_error, coverage_modes, genes_nr, ALLCOVERAGE] = calculate_gene_coverage(SampleNames, cds, GenomeLength); 
 else

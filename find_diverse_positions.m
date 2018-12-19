@@ -1,6 +1,6 @@
 function [p, numfields, coveragethresholds] = find_diverse_positions(params, SampleDirs, SampleNames, showscatters, parallel, jobsubmitoptions)
 
-global TEMPORARYFOLDER; 
+global TEMPORARYFOLDER;
 
 %p is a structure that contains the list of genomic positions meetings
 %params
@@ -21,15 +21,23 @@ if parallel==1
     %run on control -- not parallel
     fprintf(1,['\nAnalyzing isogenic control (' SampleNames{1} ')\n']) ;
     
-    [p_control, coveragethresholds_control, MAF_control, numfields] = find_diverse_positions_single_sample(params, SampleDirs{1}, SampleNames{1}, [0], TEMPORARYFOLDER);
-    
+    MAF_control=[0];
+    save('for_finding_diverse_positions', 'params', 'MAF_control', '-v7.3')
+
+    [p_control, coveragethresholds_control, MAF_control, numfields] = find_diverse_positions_single_sample(SampleDirs{1}, SampleNames{1}, TEMPORARYFOLDER);   
+    save('for_finding_diverse_positions', 'params', 'MAF_control', '-v7.3')
+
     
     %run others
-    parallel_params={};
+    cmds={};
     for i=2:size(SampleNames)
-        parallel_params{end+1}={params, SampleDirs{i}, SampleNames{i}, MAF_control, TEMPORARYFOLDER};        
-    end
-    run_parallel_matlab_commands('find_diverse_positions_single_sample', parallel_params, jobsubmitoptions, 1);
+        cmds{end+1}=['matlab -r "path(' char(39) '/scratch/users/tami/illumina_pipeline_c3ddb/' char(39) ',path); find_diverse_positions_single_sample(' char(39) SampleDirs{i} char(39) ',' char(39) SampleNames{i} char(39) ',' char(39)  TEMPORARYFOLDER char(39) ');"'];
+
+    end  
+    run_parallel_unix_commands_fast(cmds,jobsubmitoptions,parallel,{'.'});
+    
+    
+    
     
     
     %load files
@@ -43,25 +51,25 @@ if parallel==1
         diverse=load([TEMPORARYFOLDER '/diverse_' SampleNames{i} '.mat']);
         p=p+diverse.p_sample;
         coveragethresholds(:,i)=diverse.coveragethresholds_sample;
-       delete([TEMPORARYFOLDER '/diverse_' SampleNames{i} '.mat'])
+        delete([TEMPORARYFOLDER '/diverse_' SampleNames{i} '.mat'])
     end
     delete([TEMPORARYFOLDER '/diverse_' SampleNames{1} '.mat'])
     
-
+    
     %return some information
     p=find(p>0);
-        
+    
     
 else
-
-
-
-
-   %Currently does not call ...single_sample because single_sample doesn't
-   %allow interactivity
-
-
-
+    
+    
+    
+    
+    %Currently does not call ...single_sample because single_sample doesn't
+    %allow interactivity
+    
+    
+    
     %unpack parameters
     minorfreqthreshold=params.minorfreqthreshold;
     %maxreads_perstrand=params.maxreads_perstrand;
@@ -76,27 +84,27 @@ else
     %max_mqp=params.max_mqp;
     max_tdp=params.max_tdp;
     max_percent_indels=params.max_percent_indels;
-
-
+    
+    
     num_reqs=9;
-
-
+    
+    
     p=zeros(10^7,1);
     fprintf(1,'Finding diverse locations \n') ;
-
-
+    
+    
     coveragethresholds=zeros(100,size(SampleDirs));
-
-
+    
+    
     %Find diverse locations
     for i=1:length(SampleDirs)
-
-
+        
+        
         %load data
         fprintf(1,'Sample: %g  \n',i) ;
         load([SampleDirs{i} '/diversity.mat']);
-
-
+        
+        
         %coveragethresholds -- contains cdf cutoffs .01:.01:1.0.
         %only counts positions where at least 1 read aligned
         %purpose of this data structure is to allow downstream processes to
@@ -108,18 +116,18 @@ else
         for j=1:numel(cutoffs);
             coveragethresholds(j,i)=cov(floor(cutoffs(j)*numel(cov)));
         end
-
-
-
-
-
+        
+        
+        
+        
+        
         %Parse data
         NPositions=size(data,2);
         [maf, majorNT, minorNT] = div_major_allele_freq(data);
         positionsv=(1:NPositions)';
         n1=majorNT';
         n2=minorNT';
-
+        
         minorfreq=(double(data(sub2ind(size(data),n2,positionsv)))+double(data((sub2ind(size(data),n2+4,positionsv)))))'./sum(double(data(1:8,:)));
         readsf=sum(double(data(1:4,:)));
         readsr=sum(double(data(5:8,:)));
@@ -135,7 +143,7 @@ else
         majormqr=data(sub2ind(size(data),n1+20,positionsv))';
         minormqf=data(sub2ind(size(data),n2+16,positionsv))';
         minormqr=data(sub2ind(size(data),n2+20,positionsv))';
-
+        
         %Changed December 2012 to require forward and reverse strand qualities
         %   majorbq=(((f1.*data(sub2ind(size(data),n1+8,positionsv)))+(r1.*data(sub2ind(size(data),n1+12,positionsv))))./(f1+r1))';
         % majormq=(((f1.*data(sub2ind(size(data),n1+16,positionsv)))+(r1.*data(sub2ind(size(data),n1+20,positionsv))))./(f1+r1))';
@@ -151,18 +159,18 @@ else
         MQp=data(end-4,:);
         TDFp=data(end-3,:);
         TDRp=data(end-2,:);
-
-
-
-
-
+        
+        
+        
+        
+        
         %Find true/false of meeting thresholds
         Tminor = minorfreq > minorfreqthreshold;
         Treads= readsf > minreads_perstrand & readsr > minreads_perstrand & (f2' > minreads_perstrand_per_allele) & (r2' > minreads_perstrand_per_allele);
         % max reads per strand removed for now in favor of thresholding later
         % & readsf < maxreads_perstrand & readsr < maxreads_perstrand ;
-
-
+        
+        
         %Changed December 2012 to require forward and reverse strand qualities
         Tbq= ((majorbqf > min_bq) & (minorbqf > min_bq) & (majorbqr > min_bq) & (minorbqr > min_bq));
         Tmq = ((majormqf > min_mq) & (minormqf > min_mq) & (majormqr > min_mq) & (minormqr > min_mq));
@@ -175,9 +183,9 @@ else
         TBQp = BQp < max_bqp;
         %TMQp = MQp < max_mqp;
         TTDp = (TDFp < max_tdp) & (TDRp < max_tdp);
-
-
-
+        
+        
+        
         %Report how many positions met each requirement
         fprintf(1,'MinorAlleleFreq: %g  \n',sum(Tminor)) ;
         fprintf(1,'Cov: %g  \n',sum(Treads)) ;
@@ -189,18 +197,18 @@ else
         fprintf(1,'minBQ: %g  \n',sum(Tbq)) ;
         fprintf(1,'minMQ: %g  \n',sum(Tmq)) ;
         fprintf(1,'acceptableTD: %g  \n',sum(Ttd)) ;
-
-
+        
+        
         %Records positions that met all requirements
         allreqs= Tminor + Treads + Tbq + Tmq + Ttd + Tid + TSBp + TBQp + TTDp; %TMQp
         %fprintf(1,'Max requirements met: %g  \n',num_reqs) ;
         %num_reqs=max(allreqs);
-
+        
         fprintf(1,'Positions meeting all requirements: %g  \n',sum(allreqs==num_reqs)) ;
-
+        
         p(allreqs==num_reqs)=1;
-
-
+        
+        
         %Report how many positions are removed because of Isogenic control
         if i==1
             controlMAF=maf;
@@ -210,13 +218,13 @@ else
             removedbycontrol(good>0)=0;
             fprintf(1,'Positions only removed from looseparameters because of Isogenic control: %g  \n',sum(removedbycontrol))
         end
-
-
-
+        
+        
+        
         %Clickable scatter vs control, only plotting  10% of 'bad' points
         %  toplot=(rand(size(allreqs)) > .9);%plot one in every 10 points
         if showscatters > 0 & i~=1
-
+            
             figure(130+i); clf; hold on;
             search_ind = find(removedbycontrol) ;
             title(SampleNames(i))
@@ -224,99 +232,99 @@ else
             plot(controlMAF(good>0),maf(good>0),'o','MarkerSize', 5, 'MarkerFaceColor', 'r', 'MarkerEdgeColor', 'k'); %, 'ButtonDownFcn' ,@clicked) ;
             plot(controlMAF(removedbycontrol>0),maf(removedbycontrol>0),'o','MarkerSize', 5, 'MarkerFaceColor', 'y', 'MarkerEdgeColor', 'k', 'ButtonDownFcn' ,@clicked) ;
             axis([.5 1 .5 1])
-
+            
             disp('Paused. Hit any key continue...')
             pause
         end
-
+        
     end
-
-
+    
+    
     %Find ll locations where at least one strain was diverse
-
+    
     p=find(p);
-
-
+    
+    
     %Convert positions to Chr, Pos
-
+    
     numfields=size(data,1);
-
-
-
+    
+    
+    
 end
 
 
-        function clicked(src,event)
-
-            %find data point clicked, this region written by Roy Kishony March
-            %2012
-            ac=get(gca,'position') ;
-            fc=get(gcf,'position') ;
-            pc=get(gcf,'CurrentPoint') ;
-            xl=xlim ;
-            yl=ylim ;
-            ax = [fc(3) * [ac(1), ac(1)+ac(3)]]  ;
-            ay = [fc(4) * [ac(2), ac(2)+ac(4)]]  ;
-            x0 = xl(1) + (xl(2)-xl(1))*(pc(1)-ax(1))/(ax(2)-ax(1)) ;
-            y0 = yl(1) + (yl(2)-yl(1))*(pc(2)-ay(1))/(ay(2)-ay(1)) ;
-
-            search_ind = find(removedbycontrol) ;
-
-            [~,ind] = min((controlMAF(search_ind)-x0).^2+(maf(search_ind)-y0).^2) ;
-            ind = search_ind(ind) ;
-            div_display_thresholds(data(:,ind), params, controlMAF(ind), coveragethresholds(:,i))
-
-
-            figure(80);clf;
-
-            %Plot number of calls
-            subplot(5,1,1); hold on;
-            title(['Number of calls....  log p(no strand bias) = ' num2str(SBp(ind))]);
-            a=squeeze(data(1:8,ind));
-            bar(reshape([a; nan(4,size(a,2))],4,[])','stacked')
-            legend('A','T','C','G')
-            ylabel('Number of reads')
-
-
-            %Plot call quality
-            subplot(5,1,2); hold on;
-            title(['Average call quality.... log p = ' num2str(BQp(ind))]);
-            a=squeeze(data(9:16,ind));
-            bar(reshape([a; nan(4,size(a,2))],4,[])','grouped')
-            axis([0.5 3.5 0 50])
-            legend('Aq','Tq','Cq','Gq')
-            ylabel('Average Base Quality')
-
-            %Plot mapping quality
-            subplot(5,1,3); hold on;
-            title(['Average mapping quality.... log p = ' num2str(MQp(ind))]);
-            a=squeeze(data(17:24,ind));
-            bar(reshape([a; nan(4,size(a,2))],4,[])','grouped')
-            axis([0.5 3.5 0 50])
-            legend('Am','Tm','Cm','Gm')
-            ylabel('Average Mapping Quality')
-
-
-            %Plot tail distance forward
-            subplot(5,1,4); hold on;
-            title(['Average tail distance....  log p = ' num2str(TDFp(ind))]);
-            a=squeeze(data(25:32,ind));
-            bar(reshape([a; nan(4,size(a,2))],4,[])','grouped')
-            axis([0.5 3.5 0 50])
-            legend('Atd','Ttd','Ctd','Gtd')
-            ylabel('Average Tail Distance')
-
-            %Plot tail distance reverse
-            subplot(5,1,5); hold on;
-            title(['Average tail distance.... log p = ' num2str(TDRp(ind))]);
-            a=squeeze(data(25:32,ind));
-            bar(reshape([a; nan(4,size(a,2))],4,[])','grouped')
-            axis([0.5 3.5 0 50])
-
-            legend('Atd','Ttd','Ctd','Gtd')
-            ylabel('Average Tail Distance')
-
-        end
+    function clicked(src,event)
+        
+        %find data point clicked, this region written by Roy Kishony March
+        %2012
+        ac=get(gca,'position') ;
+        fc=get(gcf,'position') ;
+        pc=get(gcf,'CurrentPoint') ;
+        xl=xlim ;
+        yl=ylim ;
+        ax = [fc(3) * [ac(1), ac(1)+ac(3)]]  ;
+        ay = [fc(4) * [ac(2), ac(2)+ac(4)]]  ;
+        x0 = xl(1) + (xl(2)-xl(1))*(pc(1)-ax(1))/(ax(2)-ax(1)) ;
+        y0 = yl(1) + (yl(2)-yl(1))*(pc(2)-ay(1))/(ay(2)-ay(1)) ;
+        
+        search_ind = find(removedbycontrol) ;
+        
+        [~,ind] = min((controlMAF(search_ind)-x0).^2+(maf(search_ind)-y0).^2) ;
+        ind = search_ind(ind) ;
+        div_display_thresholds(data(:,ind), params, controlMAF(ind), coveragethresholds(:,i))
+        
+        
+        figure(80);clf;
+        
+        %Plot number of calls
+        subplot(5,1,1); hold on;
+        title(['Number of calls....  log p(no strand bias) = ' num2str(SBp(ind))]);
+        a=squeeze(data(1:8,ind));
+        bar(reshape([a; nan(4,size(a,2))],4,[])','stacked')
+        legend('A','T','C','G')
+        ylabel('Number of reads')
+        
+        
+        %Plot call quality
+        subplot(5,1,2); hold on;
+        title(['Average call quality.... log p = ' num2str(BQp(ind))]);
+        a=squeeze(data(9:16,ind));
+        bar(reshape([a; nan(4,size(a,2))],4,[])','grouped')
+        axis([0.5 3.5 0 50])
+        legend('Aq','Tq','Cq','Gq')
+        ylabel('Average Base Quality')
+        
+        %Plot mapping quality
+        subplot(5,1,3); hold on;
+        title(['Average mapping quality.... log p = ' num2str(MQp(ind))]);
+        a=squeeze(data(17:24,ind));
+        bar(reshape([a; nan(4,size(a,2))],4,[])','grouped')
+        axis([0.5 3.5 0 50])
+        legend('Am','Tm','Cm','Gm')
+        ylabel('Average Mapping Quality')
+        
+        
+        %Plot tail distance forward
+        subplot(5,1,4); hold on;
+        title(['Average tail distance....  log p = ' num2str(TDFp(ind))]);
+        a=squeeze(data(25:32,ind));
+        bar(reshape([a; nan(4,size(a,2))],4,[])','grouped')
+        axis([0.5 3.5 0 50])
+        legend('Atd','Ttd','Ctd','Gtd')
+        ylabel('Average Tail Distance')
+        
+        %Plot tail distance reverse
+        subplot(5,1,5); hold on;
+        title(['Average tail distance.... log p = ' num2str(TDRp(ind))]);
+        a=squeeze(data(25:32,ind));
+        bar(reshape([a; nan(4,size(a,2))],4,[])','grouped')
+        axis([0.5 3.5 0 50])
+        
+        legend('Atd','Ttd','Ctd','Gtd')
+        ylabel('Average Tail Distance')
+        
+    end
 end
 
 

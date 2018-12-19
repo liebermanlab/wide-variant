@@ -2,13 +2,15 @@ function [mut_genenum, CDS, mut_annotations, ref_sequences] = annotate_mutations
 
 % Revised 2013/11/06 by HC to handle reference sequence concatenated with
 % contigs 
+% Revised 2013/11/01 by TDL to handle locus tags with 'c' on the end and to
+% define Sequence, Translation, and Mutational consequences by fasta file
 
 global RUN_ON_CLUSTER CLUSTERDIR 
 
 if RUN_ON_CLUSTER == 1
     mainfolder=CLUSTERDIR;
 else
-    mainfolder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
+    mainfolder='~/Dropbox';
 end
 
 % LOAD FASTA
@@ -28,8 +30,11 @@ ref_sequences={};
 clear CDS 
 
 for i=1:length(Scaf)
+    
     scaf_i=Scaf{i};
    
+    fprintf(1,[scaf_i '...']);
+    
     % GRAB HEADER FOR GB FILE
     f=find(scaf_i=='|',2,'last');
     if f > 1
@@ -53,16 +58,7 @@ for i=1:length(Scaf)
         SOURCE_ANNOTATED = 1; 
         
     else
-        % check that header is in fasta file
-        scafHeaderLoc = ~cellfun(@isempty, strfind(fastaHeaders, scaf_i)); 
-        isHeaderFound = length(find(scafHeaderLoc));
-        assert(isHeaderFound~=0, 'Scaffold %s not found in FASTA file. Please specify reference source.', scaf_i); 
-        
-        % get sequence for this header
-        scafSeq = lower(fastaFile(scafHeaderLoc).Sequence); 
-        
-        SOURCE_ANNOTATED = 0;
-        
+       error(['Could not find a genebank file at' gbfilename]);  
     end
     
     % IF GENBANK SOURCE, ANNOTATE
@@ -70,7 +66,7 @@ for i=1:length(Scaf)
     if SOURCE_ANNOTATED
         genes = locustag_from_text(genbankFile.CDS) ;
         genes = div_add_in_nonCDS(genes, genbankFile.Features);
-        CDS{i} = parse_all_locations_gb(genes, genbankFile.Sequence) ;  %also reverses strands in this, sorts by position
+        CDS{i} = parse_all_locations_gb(genes, char([fastaFile.Sequence]+32)) ;  %also reverses strands in this, sorts by position
         
         %sort by position on genome
         [~,sortedpositions]=sort([CDS{i}.loc1]);
@@ -88,13 +84,15 @@ for i=1:length(Scaf)
     
 end
 
+
+
 % Fill annotation for mutated positions 
 
 mut_annotations=[] ;
 for i=1:size(Positions,1)
     
-    fprintf('\nOn %i\n', i); 
-    if ~mod(i,100), fprintf(1,'.') ; end
+    
+    if ~mod(i,100), fprintf('\nOn %i\n', i); end
     
     mut_annotations(i).gene_num = mut_genenum(i) ;
     mut_annotations(i).scaffold = Positions(i,1) ;
@@ -118,7 +116,7 @@ for i=1:size(Positions,1)
         mut_annotations(i).Sequence   = cdf.Sequence ;
         mut_annotations(i).note       = cdf.note ;
         mut_annotations(i).locustag   = cdf.locustag ;
-        mut_annotations(i).translation = cdf.translation;
+        mut_annotations(i).translation = nt2aa(cdf.Sequence, 'GENETICCODE', 11,'ACGTOnly','F');
                 
         
 %         % ___ Bdolosa SPECIFIC ___ %
@@ -201,6 +199,6 @@ for i=1:size(Positions,1)
     end
     
 end
-fprintf(1,'%6.1f min\n',toc/60) ;
+%fprintf(1,'%6.1f min\n',toc/60) ;
 
 return

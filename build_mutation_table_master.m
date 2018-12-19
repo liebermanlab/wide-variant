@@ -1,183 +1,164 @@
-function build_mutation_table_master(scriptsdirectory, CLUSTERDIRECTORY)
+function build_mutation_table_master
 
-global CLUSTERDIR
+%% Parameters  -- IMPORTANT TO ADJUST !!!!
+% Much of SCRIPTSDIRECTORYthis will need to vary according to your reference genome and
+% coverage
 
-% if nargin < 2
-%     CLUSTERDIR = '/groups/kishony';
-% else
-%     CLUSTERDIR = CLUSTERDIRECTORY; 
-% end
+folder=char(pwd);
 
-
-%% Important variables to set each time
-
-run_postfix='13_04_02';
-TEMPFOLDER = '/hms/scratch1/hattie/'; 
- 
-
-%Run in cluster?
-Parallel=1;
-onlysnps=1;
-jobsubmitoptions1='sysbio_2h'; %short -W 0:15
-jobsubmitoptions2='sysbio_12h'; %short -W 0:15
-
-global RUN_ON_CLUSTER; RUN_ON_CLUSTER = 1;
-
-
-positionfiles={}; %get data from other positions? (found in analysis of single isolates, previous study)
-
-gscatters=0; %output options -- this useful graph has not been tested since updating code
-
-window_size=500; %parameters used during initial data structure generation
-
-analyze_diversity=0; %analyze diversity?
+SCRIPTSDIRECTORY = ['/scratch/users/mit_alm/gutevo/scripts'];
+REF_GENOME_DIRECTORY = ['/scratch/users/mit_alm/gutevo/Reference_Genomes/Pseudomonas_subH/'];
+other_positions_to_consider={};
 
 looseFQmax=-30;
 
-loose_parameters=struct('minorfreqthreshold',.01, 'minreads_perstrand',2,...
-    'maxreads_perstrand_percentile', 100,'minreads_perstrand_per_allele',1,...
-    'min_bq',15,'min_mq' ,30, 'min_td', 10, 'max_td',90, 'max_sbp', 5,...
-    'max_bqp', 255,'max_tdp',255, 'max_percent_ends', .50, 'max_percent_indels', .30, 'min_control_MAF', .01);
+loose_parameters=struct('minorfreqthreshold',.05, 'minreads_perstrand',1,...
+    'maxreads_perstrand_percentile', 100,'minreads_perstrand_per_allele',2,...
+    'min_bq',15,'min_mq',30, 'min_td', 10, 'max_td',90, 'max_sbp', 10,...
+    'max_bqp', 255,'max_tdp',255, 'max_percent_ends', .90, 'max_percent_indels', .90, 'min_control_MAF', .01);
 
-%most threshold checks are strictly > or strictly <
-%loose parameters doesn't have an upper coverage thershold yet
+% Most threshold checks are strictly > or strictly <
+% and many of these filters are not used in this instance
 
 % min_td and max_td are not symmetrical relative to read length of 100
 % because some reads were trimmed prior to alignment
-%maxreads_perstrand_percentile is which threshold in list .01:.01:1 ...
+% maxreads_perstrand_percentile is which threshold in list .01:.01:1 ...
 %    e.g. 98 is 98 percentile of covered positions
 
 
+%% Enviornment set up -- IMPORTANT TO DO !!!!
+% Much of this will need to vary according to your computing system
 
-%% create parameters log 
 
-% add window size to log 
-log_parameters = loose_parameters; 
-log_parameters.('window_size') = window_size; 
+RUN_ON_COMPUTING_CLUSTER = 1;  %set to zero if you aren't running on a cluster --  may take a very long time
 
-% set log directory
-logfolder = 'log_build_mutation_table'; 
-if exist(logfolder, 'dir') ~= 7
-    mkdir(logfolder);
+TEMPORARYFOLDER =  [folder '/temp/'];
+
+
+% Options for the cluster, used for HMS Orchestra LSF
+% Please adjust this and send_jobs_to_cluster if on other computing cluster
+jobsubmitoptions_short = '1:00:00';
+jobsubmitoptions_long='12:00:00';
+
+if ~exist(TEMPORARYFOLDER,'dir')
+    mkdir(TEMPORARYFOLDER);
 end
 
-global TEMPORARYFOLDER;
-timestamp=save_structure_parameters(logfolder, log_parameters);
-TEMPORARYFOLDER=[TEMPFOLDER timestamp];
+fprintf(['Usings scripts directory: ' SCRIPTSDIRECTORY  '\n']);
+fprintf(1,['Genome : ' REF_GENOME_DIRECTORY]);
 
-mkdir(TEMPORARYFOLDER)
-
-
-%% Set path
-
-global SCRIPTSPATH;
-
-%For use as script
-SCRIPTSPATH = scriptsdirectory;
-
-%For use as function
-% if nargin > 0
-%      SCRIPTSPATH = scriptspath;
-% else
-%    a=pwd; SCRIPTSPATH=[a(1:find(double(a)==47,1,'last')) 'scripts']; 
-%    if ~exist(SCRIPTSPATH, 'dir')
-%        fprintf(['Could not find ' SCRIPTSPATH '...\n'])
-%        error('Error: Must run from an experiment folder, with scripts folder in parent directory')
-%    else
-%        path(SCRIPTSPATH,path);
-%    end
-% end
-
-fprintf(['Usings scripts directory: ' SCRIPTSPATH  '\n']);
+path(SCRIPTSDIRECTORY,path);
 
 
+%% Read in csv files
 
-%% Set main folder
-if RUN_ON_CLUSTER == 1
-    mainfolder=CLUSTERDIR;
-else
-    mainfolder='/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
-end
+cd(folder)
 
+save('for_matlab_scripts','SCRIPTSDIRECTORY','REF_GENOME_DIRECTORY','TEMPORARYFOLDER');
 
-
-%% Read in csv files 
-
-
-% Get SampleInfo and ScafNames
 SampleInfo = read_sample_names ;
 
-SampleNames={SampleInfo(:).Sample}';
-
-NSample = length(SampleInfo) ;
-RefGenome = {} ;
 SampleDirs = {} ;
-
-% Ensure that there is one reference genome
-for i=1:NSample
-    SampleDirs{i} = [SampleInfo(i).ExperimentFolder '/' SampleInfo(i).Sample '/' SampleInfo(i).AlignmentFolder ] ;
-    ainfo = load([SampleDirs{i} '/alignment_info']) ;
-    RefGenome{i} = ainfo.ae.Genome ;
+SampleNames={SampleInfo(:).Sample}';
+for i=1:numel(SampleNames)
+    SampleDirs{i} = [SampleInfo(i).ExperimentFolder '/' SampleInfo(i).AlignmentFolder ] ;
 end
 
-
-RefGenome = unique(RefGenome) ;
-if length(RefGenome)>1
-    error('Must compare samples aligned to the same reference genome')
+in_outgroup=zeros(numel(SampleNames),1);
+if isfield(SampleInfo,'Outgroup')
+    in_outgroup=[SampleInfo(:).Outgroup];
 end
+    
+fprintf('\nNumber of samples read from csv file: %i\n', numel(SampleNames));
 
-% Get Scafold names and build useful informations
-RefGenome = RefGenome{1} ;
-fr = fastaread([mainfolder '/Reference_Genomes/' RefGenome '/genome.fasta']) ;
-GenomeLength=0;
-ChrStarts=[];
 
-ScafNames = {fr.Header} ;
-for i=1:length(ScafNames)
-    f=find(ScafNames{i}==' ',1) ;
-    if f>0
-        ScafNames{i} = ScafNames{i}(1:f-1) ;
+fprintf('\nReading reference genome...\n');
+[ChrStarts, GenomeLength, ~, ScafNames]= genomestats(REF_GENOME_DIRECTORY);
+
+
+
+%% Summarize pileup files in an easily accesible MATLAB structure, if not already done
+
+
+fprintf(1,'Create diversity.mat and Create quals.mat for each sample... \n') ;
+
+cmds = {} ;
+for i=1:length(SampleDirs)
+    if ~exist([SampleDirs{i} '/diversity.mat'],'file') ;
+        if RUN_ON_COMPUTING_CLUSTER == 1
+            cmds{end+1} = ['matlab -r "path(' char(39) SCRIPTSDIRECTORY char(39) ',path); pileup_to_diversity_matrix(' char(39) SampleDirs{i} char(39) ')"'];
+        else
+            pileup_to_diversity_matrix(SampleDirs{i});
+        end
     end
-    ChrStarts(end+1)=GenomeLength;
-    GenomeLength=GenomeLength+numel(fr(i).Sequence);
 end
 
-fprintf('\nFinished reading reference genome...\n'); 
+
+%% Summarize quality scores from vcf file in an easily accesible MATLAB structure, if not already done
+
+
+for i=1:length(SampleDirs)
+    if ~exist([SampleDirs{i} '/quals.mat'],'file') ;
+        if RUN_ON_COMPUTING_CLUSTER == 1
+            cmds{end+1} = ['matlab -r "path(' char(39) SCRIPTSDIRECTORY char(39) ',path); vcf_to_quals(' char(39) SampleDirs{i} char(39) ')"'];
+        else
+            vcf_to_quals(SampleDirs{i});
+        end
+    end
+    
+end
+
+%run the things
+send_jobs_to_cluster(cmds,jobsubmitoptions_long,RUN_ON_COMPUTING_CLUSTER,{'.'});
+
+
+%% Remove intermediate files from alignment folders, if not already done
+
+for i=1:length(SampleDirs)
+    cd(SampleDirs{i})
+    d=dir('diversity.mat');
+    q=dir('quals.mat');
+    if ~isempty(d) & ~isempty(q) & d.bytes > 0 & q.bytes > 0
+        if exist('strain','file')
+            !rm strain
+        end
+        if exist('strain.pileup','file')
+            !rm strain.pileup
+        end
+        if exist('strain.vcf','file')
+            !rm strain.vcf
+        end
+    else
+        error(['Error: quals.mat and diversity.mat not generated successfully for directory ' all_dirs{i}]);
+    end
+end
 
 
 
-%% Get all positions
+%% Make a list of candiate positions
+
+cd(folder)
 
 fprintf(1,'\n\nFinding positions with at least 1 fixed mutation...\n');
+cp = generate_positions({SampleDirs{~in_outgroup}}, {SampleNames{~in_outgroup}}', looseFQmax, RUN_ON_COMPUTING_CLUSTER, jobsubmitoptions_short, TEMPORARYFOLDER,SCRIPTSDIRECTORY);
+fprintf(1,['Found ' num2str(length(cp)) ' positions where provided vcf called a fixed variant in at least one in-group sample with FQ score < ' num2str(looseFQmax) '\n']) ;
 
-cp = generate_positions(SampleDirs, SampleNames, GenomeLength, ScafNames, ChrStarts, looseFQmax, onlysnps, 100000, Parallel, jobsubmitoptions1);
-fprintf(1,'Found %g positions where samtools called a variant in at least one sample \n',length(cp)) ;
+
+fprintf(1,'\nFinding single nucleotide positions with within-sample polymorphisms...\n');
+[dp, coveragethresholds] = find_diverse_positions_no_control(loose_parameters, {SampleDirs{~in_outgroup}}, {SampleNames{~in_outgroup}}', RUN_ON_COMPUTING_CLUSTER, jobsubmitoptions_short,TEMPORARYFOLDER,SCRIPTSDIRECTORY);
+fprintf(1,'Found %i positions with within-sample polymorphism that meets loose parameters in at least 1 in-group sample \n',length(dp)) ;
 
 
 op=[];
-if numel(positionfiles)>0
-    for i=1:numel(positionfiles)
-        other=load(positionfiles{i});
-        op=[op; chrpos2index(other.Positions, ChrStarts)];
+if numel(other_positions_to_consider)>0
+    for i=1:numel(other_positions_to_consider)
+        other=load(other_positions_to_consider{i});
+        op=[op; chrpos2index(other.pos_list, ChrStarts)];
     end
 end
+fprintf(1,'\nConsidering %g positions previously specified \n',length(op)) ;
 
-dp=[];
-if analyze_diversity
-    fprintf(1,'\nFinding single nucleotide positions with within-sample polymorphisms...');
-    
-    %Find diverse positions
-    [dp, numfields, coveragethresholds] = find_diverse_positions(loose_parameters, SampleDirs, SampleNames, gscatters, Parallel, jobsubmitoptions1);
-
-    fprintf(1,'Found %i positions with within-sample polymorphism that meets loose parameters in at least 1 sample \n',length(dp)) ;
-    fprintf('\nNumber of samples %i\n', numel(SampleNames)); 
-    memreq=2*4*length(dp)*numel(SampleNames)*(2*window_size)/(10^6);
-    fprintf(1,['Please ensure that enough memory was requested when starting matlab session (use -R rusage[mem=' num2str(memreq) ']) (memory in MB) \n']);
-    fprintf(1,'If p is large, frequency and coverage windows are not generated-- use smaller window or stricter parameters\n');
-else
-	numfields=39;
-end 
-
+%% Combine positions
 
 allp=unique([dp; op; cp;]);
 p=sort(allp);
@@ -185,45 +166,34 @@ p=p(p>0); %remove any 0s
 positions=p2chrpos(p,ChrStarts);
 
 
-%% Get counts and mutgenvcf
+%% Get counts and mutgenvcf for snp positions
 
 fprintf(1,'\nAcquiring detailed information at each potential position...\n');
-fprintf(1,'vcf...');
-[Calls, Quals] = gather_vcf_info(positions,SampleDirs,SampleNames, ScafNames,ChrStarts,jobsubmitoptions2,Parallel) ;                
 
-
-fprintf(1,'diversity.mat...');
-[counts, fwindows, cwindows] = generate_diversity_struct(SampleDirs, SampleNames, p, numfields, window_size, Parallel, jobsubmitoptions2) ;
-
-
-%% Copy over select files so they don't get erased from scratch
-
-fprintf(1,'\n\nCopying files over from scratch to pwd for storage...\n');
-
-cmds={}; 
-for i=1:NSample
-    if ~exist(SampleNames{i},'dir')
-        %don't use run_parallel_unix_commands_fast, because we want this to
-        %run in background, and we aren't using the output at all
-        mkdir(SampleNames{i})
-    end
-    cmds{end+1}=['cp ' SampleDirs{i} '/* ' SampleNames{i} '/'];
+fprintf(1,'Gathering quality scores at each candidate position ...\n');
+Quals=zeros(length(p), length(SampleDirs),'int16');
+for i=1:length(SampleDirs)
+    fprintf(1,'Loading quals matrix for sample: %g  \n',i) ;
+    load([SampleDirs{i} '/quals.mat']);
+    Quals(:,i)=quals(p);
 end
-run_parallel_unix_commands_fast(cmds,jobsubmitoptions1,2,{'.'});
 
 
-
-%% Annotations
-
-%This step generates an extra data structure containing information about
-%the genomic position mutations -- can take > 10 minutes
-[geneloc, cds, mutations, sequences] = annotate_mutations_auto_gb(positions,ScafNames,RefGenome) ;
-
-save(['mutation_table_' run_postfix], 'RefGenome', 'ScafNames', 'ChrStarts', 'GenomeLength', 'p', 'positions', 'counts',  'geneloc', 'cds', 'mutations', 'Calls', 'Quals', 'sequences', '-v7.3')
-if analyze_diversity==1
-	save(['cov_' run_postfix],'coveragethresholds','-v7.3')
+fprintf(1,'Gathering detailed read information from MATLAB counts matrix at each candidate position...\n');
+counts=zeros(39, length(p), length(SampleDirs),'uint16');
+for i=1:length(SampleDirs)
+    fprintf(1,'Loading counts matrix for sample: %g  \n',i) ;
+    load([SampleDirs{i} '/diversity.mat']);
+    counts(:,:,i)=data(:,p);
 end
-save(['windows_' run_postfix], 'fwindows', 'cwindows', '-v7.3')
-% save(['MutGenVCF_' run_postfix], 'MutGenVCF', '-v7.3')
+
+
+fprintf(1,'Getting all the coverage information...\n');
+[all_coverage_per_bp, ~] = get_all_coverage(SampleInfo, GenomeLength);
+
+%% Save
+
+save('candidate_mutation_table', 'SampleNames', 'p', 'counts', 'Quals','coveragethresholds', 'in_outgroup', '-v7.3') ;
+save('coveragematrix', 'all_coverage_per_bp', '-v7.3'); 
 
 end

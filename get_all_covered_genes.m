@@ -16,7 +16,7 @@ function [all_coverage_per_bp, cov_modes] = get_all_covered_genes(samplenames, g
         sname = samplenames{i};
         % get covered positions
         fprintf('\nGetting coverage for isolate %i of %i\n', i, length(samplenames))
-        [coverage, coverage_mode] = get_covered_genes_sample(sname, threshold); 
+        [coverage, coverage_mode] = get_covered_genes_sample(sname, threshold, genome_size); 
         all_coverage_per_bp(i,:) = coverage;
         cov_modes(i) = coverage_mode; 
     end

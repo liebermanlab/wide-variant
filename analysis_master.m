@@ -1,27 +1,31 @@
 %% Variables you might want to change 
 
-%path('/Users/tdl7/Dropbox/illumina_pipeline',path)
+path('/Users/tdl7/Dropbox/illumina_pipeline',path)
 
 
 
-global ANALYZE_DIVERSITY qual_0 CONTROLSAMPLE LABEL_SIZE barcharttype; 
+global ANALYZE_DIVERSITY qual_0 CONTROLSAMPLE LABEL_SIZE BARCHARTYPE; 
 SampleInfo = read_sample_names ;
+
+    
 
 
 
 %important options
-qual_0=130; % want to use FQ and not qual from VCF 
+qual_0=40; % want to use FQ and not qual from VCF 
 goodsamples=1:numel(SampleInfo);
 
 %run options
-run_postfix='13_04_02'; %must match postfix in build_mutation_table_master.m
+run_postfix='13_11_20'; %must match postfix in build_mutation_table_master.m
+
+load(['mutation_table_' run_postfix])
 
 %diversity
 ANALYZE_DIVERSITY= 0;
 CONTROLSAMPLE=1; % deep isogenic control 
 
 %other options
-onlySNPs=1; 
+onlySNPs=0; 
 promotersize=150;
 
 %choose ancestor setting
@@ -33,8 +37,12 @@ ancestorismode=0; %use mode of major alleles as ancestor
 %Display options
 LABEL_SIZE=2;
 loadwindows=1; % f and c windows 
-barcharttype=3; %1 means shows all strains; 2 means show 2 used for MutQual, 3 means is same #2, but also one that was clicked
+BARCHARTYPE=1; %1 means shows all strains; 2 means show 2 used for MutQual, 3 means is same #2, but also one that was clicked
 
+
+
+
+[MutQual, MutQualIsolates] = ana_mutation_quality(Calls,Quals,1) ;
 
 
 

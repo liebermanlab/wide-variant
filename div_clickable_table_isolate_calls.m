@@ -1,21 +1,17 @@
-function [annotations, tabledata] = div_clickable_table_isolate_calls(muts, calls, allp, ancnti, cnts, fwindows, cwindows, hasmutation, MutQual, MutQualIsolates, RefGenome, ScafNames, SampleInfo, ChrStarts, promoterdistance, showlegends, QualSort, QualCutOff, cutoff_qual)
+function [annotations, tabledata, annotations_all] = div_clickable_table_isolate_calls(muts, calls, allp, ancnti, cnts, fwindows, cwindows, hasmutation, MutQual, MutQualIsolates, coveragethresholds, RefGenome, ScafNames, SampleNames, ChrStarts, promoterdistance, showlegends, QualSort,hidefigure)
 % for isolates!!
 
-global barcharttype
+global BARCHARTYPE
+global STRICT_PARAMETERS
+global COVERAGETHRESHOLDS
+
 
 % set optional variables
 if nargin < 17
     QualSort = 0;
 end
-if nargin < 18
-    QualCutOff = 0;
-    cutoff_qual = 0;
-end
-if nargin < 19
-    barcharttype = 2; 
-end
 
-fprintf(1,'\nGenerating table...\n')
+%fprintf(1,'\nGenerating table...\n')
 
 % params
 scrsz = get(0,'ScreenSize');
@@ -25,29 +21,28 @@ IsGenomeLoaded = false ;
 NTs='ATCG';
 show_alignment=1;
 d = hasmutation;
+diverse=div_test_thresholds(cnts,STRICT_PARAMETERS, COVERAGETHRESHOLDS);
 
-[maf, majorNT, ~] = div_major_allele_freq(cnts);
+callsfortable=calls;
 
+[maf, majorNT, minorNT] = div_major_allele_freq(cnts);
 
 Npositions=numel(muts);
 positions_to_iterate = 1:Npositions;
-goodpositions = zeros(Npositions,1);
 Nsamples=size(calls,2);
 
 
-goodmaf=zeros(size(d)); 
+goodmaf=zeros(size(d));
 goodmaf(d>0)=maf(d>0);
 
 
 % Impose quality cut off
-if QualCutOff == 1
-    goodpositions=MutQual>cutoff_qual;
-    positions_to_iterate = positions_to_iterate(goodpositions);
-    
-end
+goodpositions=sum(hasmutation,2)>0;
+positions_to_iterate = positions_to_iterate(goodpositions);
 
-fprintf('\nGood positions length %i\n', length(goodpositions));
-fprintf('\nLength of positions to iterate %i\n', length(positions_to_iterate));
+
+%fprintf('\nGood positions length %i\n', length(goodpositions));
+%fprintf('\nLength of positions to iterate %i\n', length(positions_to_iterate));
 
 %Modify annotations such that it is a stand-alone record
 annotations=muts;
@@ -97,10 +92,27 @@ for i = positions_to_iterate
     % Iterate through all samples
     for j = 1:Nsamples
         if d(i,j)>0
-            annotations(i).nts(end+1)=calls(i,j);
-            if numel(annotations(i).AA)==4
-                annotations(i).AAs(end+1)=annotations(i).AA(majorNT(i,j));
+            %major mutation
+            if calls(i,j)~='N'
+                annotations(i).nts(end+1)=calls(i,j);
+                if numel(annotations(i).AA)==4
+                    annotations(i).AAs(end+1)=annotations(i).AA(majorNT(i,j));
+                end
             end
+            
+            
+            %if diverse (calls not a mutation), add minor and major call
+            if diverse(i,j)>0
+                annotations(i).nts(end+1)=NTs(majorNT(i,j));
+                annotations(i).nts(end+1)=NTs(minorNT(i,j));
+                if numel(annotations(i).AA)==4
+                    annotations(i).AAs(end+1)=annotations(i).AA(majorNT(i,j));
+                    annotations(i).AAs(end+1)=annotations(i).AA(minorNT(i,j));
+                end
+                callsfortable(i,j)='d';
+            end
+            
+            
         end
     end
     
@@ -138,19 +150,20 @@ for i = positions_to_iterate
     %         end
 end
 
-fprintf('\nFinished generating all annotations\n')
+%fprintf('\nFinished generating all annotations\n')
 
 %     %for returning
 %     allannotations=annotations;
 
 %actual table
+annotations_all=annotations;
 annotations=annotations(goodpositions>0);
 MutQualIsolates = MutQualIsolates(goodpositions>0,:);
 allp=allp(goodpositions>0);
 cnts(:,~goodpositions,:)=[];
 
-if numel(fwindows)>1
-    fwindows(:,~goodpositions,:)=[];
+if numel(cwindows)>1
+    %fwindows(:,~goodpositions,:)=[];
     cwindows(:,~goodpositions,:)=[];
 end
 
@@ -158,15 +171,15 @@ end
 %generate table
 if numel(ScafNames)>1
     colnames={'Qual', 'Type','Chr','Pos', 'Locustag', 'Gene','Annotation', 'AApos', 'NTs', 'AAs'};
-    widths=num2cell([48, 16, 12, 58, 50, 38, 250, 42, 40, 40, ones(1,numel(SampleInfo))*26]);
+    widths=num2cell([48, 16, 12, 58, 50, 38, 250, 42, 40, 40, ones(1,numel(SampleNames))*26]);
 else
     colnames={'Qual', 'Type','Pos', 'Locustag','Gene','Annotation', 'AApos', 'NTs', 'AAs'};
-    widths=num2cell([48, 16, 58, 50, 38, 250, 45, 40, 40, ones(1,numel(SampleInfo))*26]);
+    widths=num2cell([48, 16, 58, 50, 38, 250, 45, 40, 40, ones(1,numel(SampleNames))*26]);
 end
 
 nonsamplecols=numel(colnames);
 for i=1:Nsamples
-    colnames{end+1}=SampleInfo(i).Sample;
+    colnames{end+1}=SampleNames{i};
 end
 
 tabledata=cell(sum(goodpositions),numel(colnames));
@@ -175,7 +188,8 @@ tabledata=cell(sum(goodpositions),numel(colnames));
 
 
 for i=1:numel(annotations)
-    if numel(annotations(i).locustag)>0
+    if numel(annotations(i).locustag)>1
+        %disp(annotations(i).locustag)
         locustag=annotations(i).locustag(end-4:end);
     else
         locustag=0;
@@ -184,7 +198,7 @@ for i=1:numel(annotations)
     % ___ generate table ___ %
     
     if numel(ScafNames)>1
-        tabledata(i,1:nonsamplecols)=[{[annotations(i).qual]} {annotations(i).type} {annotations(i).scafold} {annotations(i).pos} ...
+        tabledata(i,1:nonsamplecols)=[{[annotations(i).qual]} {annotations(i).type} {annotations(i).scaffold} {annotations(i).pos} ...
             {locustag} {annotations(i).gene} {annotations(i).annotation} {annotations(i).AApos} {[annotations(i).nts]} ...
             {[annotations(i).AAs]}];
     else
@@ -213,10 +227,11 @@ for i=1:numel(annotations)
     % FOR ISOLATES
     % ___ fill in maNT for each isolate ___ %
     for j = 1:Nsamples
-        tabledata(i,nonsamplecols+j) = cellstr(calls(positions_to_iterate(i),j));
+        tabledata(i,nonsamplecols+j) = cellstr(callsfortable(positions_to_iterate(i),j));
     end
 end
 
+callsfortable=callsfortable(goodpositions>0,:);
 
 positions = 1:size(tabledata,1);
 oldtable=tabledata;
@@ -225,34 +240,41 @@ if QualSort==1
 end
 
 %display table
-figure();clf;hold on;
-set(gcf, 'Position',[10         50        1250         550]);
-uicontrol('Style','text','Position',[400 45 120 20],'String','Vertical Exaggeration')
-t = uitable('Units','normalized','Position',[0 0 1 .97], 'Data', tabledata,...
-    'ColumnName', colnames,...
-    'RowName',[], ...
-    'CellSelectionCallback',@mut_matix_clicked, ...
-    'ColumnWidth',widths);
-h.checkbox1 = uicontrol('Units','normalized','Style','checkbox','String','Show Alignment in IGV when clicked (must have IGV viewer open already)','Min',0,'Max',1, 'Value',0, 'Position',[0 .97 1 .03]);
-
-%intialize divbarchartswindow
-figure(660);clf;
-set(660,'Position',[scrsz(3)*2/3 scrsz(4)/20 scrsz(3)/3 scrsz(4)/2]);clf;hold on;
-
+if ~hidefigure
+    figure();clf;hold on;
+    set(gcf, 'Position',[10         50        1250         550]);
+    uicontrol('Style','text','Position',[400 45 120 20],'String','Vertical Exaggeration')
+    t = uitable('Units','normalized','Position',[0 0 1 .97], 'Data', tabledata,...
+        'ColumnName', colnames,...
+        'RowName',[], ...
+        'CellSelectionCallback',@mut_matix_clicked, ...
+        'ColumnWidth',widths);
+    h.checkbox1 = uicontrol('Units','normalized','Style','checkbox','String','Show Alignment in IGV when clicked (must have IGV viewer open already)','Min',0,'Max',1, 'Value',0, 'Position',[0 .97 1 .03]);
+    
+    %intialize divbarchartswindow
+    figure(660);clf;
+    set(660,'Position',[scrsz(3)*2/3 scrsz(4)/20 scrsz(3)/3 scrsz(4)/2]);clf;hold on;
+    
+end
 
     function mut_matix_clicked(src, event)
         % ___ MODIFY TO SHOW ONLY ISOLATES IN MUTQUALISOLATES!! ___ %
         
+        
         scrsz = get(0,'ScreenSize');
         strand=['g-','k-'];
-        window_size=floor(size(fwindows,1)/2);
+        window_size=floor(size(cwindows,1)/2);
         
         rc = event.Indices ;
         dt = get(src,'data') ;
         
         ind=positions(rc(1));
         
-        chr=annotations(ind).scafold;
+        if isfield(annotations(ind),'scafold')
+            chr=annotations(ind).scafold;
+        else
+            chr=1;
+        end
         position= annotations(ind).pos;
         
         disp(ind);
@@ -260,6 +282,8 @@ set(660,'Position',[scrsz(3)*2/3 scrsz(4)/20 scrsz(3)/3 scrsz(4)/2]);clf;hold on
         
         % get the two isolates used for MutQual in this position
         calledisolates = MutQualIsolates(ind,:);
+        
+        
         fprintf('\nIsolates used to make call is %i and %i\n', calledisolates(1), calledisolates(2));
         
         if rc(2) > nonsamplecols
@@ -270,61 +294,82 @@ set(660,'Position',[scrsz(3)*2/3 scrsz(4)/20 scrsz(3)/3 scrsz(4)/2]);clf;hold on
         end
         
         %Bar charts of counts
-        if barcharttype==1
-            div_bar_charts(squeeze(cnts(:,ind,:)), sample, {SampleInfo.Sample})
-        elseif barcharttype==2
-            div_bar_charts(squeeze(cnts(:,ind,calledisolates)), sample, {SampleInfo(calledisolates).Sample})
-        elseif barcharttype==3
-            div_bar_charts(squeeze(cnts(:,ind,[sample calledisolates])), sample, {SampleInfo([sample calledisolates]).Sample})
-        end
         
-        %Plot MAF in region neighboring locus
-        region=(find(allp>allp(ind)-window_size,1):find(allp<allp(ind)+window_size,1,'last'));
+        callsfortable(ind,sample)
         
-        if numel(fwindows)>1
-            div_maf_window(annotations(ind), allp(ind)-ChrStarts(chr), window_size, [], squeeze(fwindows(:,ind,:)), allp(region)-ChrStarts(chr), goodmaf(region,:), {SampleInfo.Sample},sample,showlegends)
-            div_cov_window(annotations(ind), allp(ind)-ChrStarts(chr), window_size, squeeze(cwindows(:,ind,:)), {SampleInfo.Sample},sample, showlegends)
-        end
-        
-        
-        show_alignment=get(h.checkbox1, 'Value');
-        if show_alignment==1
-            
-            t = tcpip('localhost', 60152) ;
-            fopen(t) ;
-            if rc(2) > nonsamplecols
-                bai_name = ['/Volumes/sysbio/KISHONY LAB/illumina_pipeline/' SampleInfo(sample).ExperimentFolder '/' SampleInfo(sample).Sample '/' SampleInfo(sample).AlignmentFolder '/aligned.sorted.bam.bai' ]
-                
-                
-                if ~exist(bai_name,'file')
-                    error('Create bai files for viewing alignment')
-                end
-                
-                
-                if ~IsGenomeLoaded
-                    run_cmd(['genome  /Volumes/sysbio/kishonylab/illumina_pipeline/Reference_Genomes/' RefGenome '/genome.fasta' ])
-                    IsGenomeLoaded = true ;
-                end
-                
-                run_cmd(['load "' bai_name(1:end-4) '"']) ;
-                
-                run_cmd(['goto "' ScafNames{chr} ':' num2str(position) '"'])
-                
+        if callsfortable(ind,sample)=='d'
+            if BARCHARTYPE==1
+                barsamples=1:numel(SampleNames);
+            elseif BARCHARTYPE==2
+                barsamples=calledisolates;
+            elseif BARCHARTYPE==3
+                barsamples=[sample floor(rand(1,10)*numel(SampleNames))+1];
             end
-            
-            
-            fclose(t);
-            delete(t);
-            clear t
-            
+            div_bar_charts(squeeze(cnts(:,ind,barsamples)), sample, {SampleNames{barsamples}},1)
+        else
+            if BARCHARTYPE==1
+                barsamples=1:numel(SampleNames);
+            elseif BARCHARTYPE==2
+                barsamples=calledisolates;
+            elseif BARCHARTYPE==3
+                barsamples=[sample calledisolates floor(rand(1,10)*numel(SampleNames))+1];
+            end
+            div_bar_charts(squeeze(cnts(:,ind,barsamples)), sample, {SampleNames{barsamples}},1)
         end
         
-        function run_cmd(c)
-            disp(c)
-            fprintf(t, c);
-            response = fgetl(t);
-        end
+      %  disp(squeeze(cnts(:,ind,:)))
         
+        % disp(squeeze(cnts(:,ind,1:16,:)))
+        
+        %         %Plot MAF in region neighboring locus
+       
+        %
+        if numel(cwindows)>1
+            div_cov_window(annotations(ind), allp(ind)-ChrStarts(chr), window_size, squeeze(cwindows(:,ind,:)), SampleNames,sample, 0)
+        end
+%         if numel(fwindows)>1
+%             region=(find(allp>allp(ind)-window_size,1):find(allp<allp(ind)+window_size,1,'last'));
+%             div_maf_window(annotations(ind), allp(ind)-ChrStarts(chr), window_size, [], squeeze(fwindows(:,ind,:)), allp(region)-ChrStarts(chr), goodmaf(region,:), SampleNames,sample,0)
+%         end
+        %
+        %         show_alignment=get(h.checkbox1, 'Value');
+        % %         if show_alignment==1
+        % %
+        % %             t = tcpip('localhost', 60152) ;
+        % %             fopen(t) ;
+        % %             if rc(2) > nonsamplecols
+        % %                 bai_name = ['/Volumes/sysbio/KISHONY LAB/illumina_pipeline/' SampleInfo(sample).ExperimentFolder '/' SampleInfo(sample).Sample '/' SampleInfo(sample).AlignmentFolder '/aligned.sorted.bam.bai' ]
+        % %
+        % %
+        % %                 if ~exist(bai_name,'file')
+        % %                     error('Create bai files for viewing alignment')
+        % %                 end
+        % %
+        % %
+        % %                 if ~IsGenomeLoaded
+        % %                     run_cmd(['genome  /Volumes/sysbio/kishonylab/illumina_pipeline/Reference_Genomes/' RefGenome '/genome.fasta' ])
+        % %                     IsGenomeLoaded = true ;
+        % %                 end
+        % %
+        % %                 run_cmd(['load "' bai_name(1:end-4) '"']) ;
+        % %
+        % %                 run_cmd(['goto "' ScafNames{chr} ':' num2str(position) '"'])
+        % %
+        % %             end
+        % %
+        %
+        %             fclose(t);
+        %             delete(t);
+        %             clear t
+        %
+        %         end
+        %
+        %         function run_cmd(c)
+        %             disp(c)
+        %             fprintf(t, c);
+        %             response = fgetl(t);
+        %         end
+        %
         
         
     end

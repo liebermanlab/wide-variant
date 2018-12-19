@@ -1,4 +1,4 @@
-function [allcalls, allquals] =gather_vcf_info(Positions,StrainDirs,SampleNames,ScafNames,ChrStarts, qname,Parallel) 
+function [allcalls, allquals] =gather_vcf_info(Positions,StrainDirs,SampleNames,ScafNames,ChrStarts, qname,Parallel)
 
 global TEMPORARYFOLDER;
 
@@ -10,11 +10,27 @@ global TEMPORARYFOLDER;
 allquals=zeros(size(Positions,1),numel(StrainDirs));
 allcalls=char(allquals);
 
-params = {} ;
+
+
+save('for_gather_vcf_info', 'ScafNames','ChrStarts', 'Positions', 'TEMPORARYFOLDER', '-v7.3')
+
+
+cmds = {} ;
 for i=1:numel(StrainDirs)
-    params{end+1} = {[StrainDirs{i} '/strain.vcf'],SampleNames{i}, ScafNames,ChrStarts, Positions, TEMPORARYFOLDER} ;
+    
+    
+    if ~(exist([TEMPORARYFOLDER '/vcfinfo_' SampleNames{i} '.mat'],'file'))
+        vcfpath=[StrainDirs{i} '/strain.vcf'];
+        cmds{end+1} = ['matlab -r "path(' char(39) '/scratch/users/tami/illumina_pipeline_c3ddb/' char(39) ',path); gather_vcf_info_single_sample(' char(39) vcfpath char(39) ',' char(39) SampleNames{i} char(39) ');"'];
+        
+    end
+    %     if numel(params) >800
+    %         run_parallel_matlab_commands('gather_vcf_info_single_sample', params, qname, Parallel) ;
+    %         params={};
+    %     end
+    
 end
-run_parallel_matlab_commands('gather_vcf_info_single_sample', params, qname, Parallel) ;
+run_parallel_unix_commands_fast(cmds,qname,Parallel,{'.'});
 
 
 

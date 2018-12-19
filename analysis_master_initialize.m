@@ -2,27 +2,28 @@
 
 MutQualFig=1; 
 
-strict_parameters = struct( 'minorfreqthreshold',           .03, ...
+STRICT_PARAMETERS = struct( 'minorfreqthreshold',           .10, ...
                             'maxreads_perstrand_percentile', 99, ...
                             'minreads_perstrand',            10, ...
-                            'minreads_perstrand_per_allele', 4,...
+                            'minreads_perstrand_per_allele', 2,...
                             'min_bq',                        19,...
                             'min_mq',                        33, ...
                             'min_td',                        7, ... % avg tail dist of each allele
                             'max_td',                        93, ...
                             'max_sbp',                       3,...  % p-val fisher's exact test of strand bias
                             'max_percent_indels',           .20, ...
-                            'min_control_MAF',              .985, ...
+                            'min_control_MAF',              .95, ...
                             'max_bqp',                      200, ...% t-test whether qual diff between two alleles
                             'max_tdp',                      200, ...% t-test whether tail dist diff b/t two alleles
-                            'max_percent_ends',               1 ... 
+                            'max_percent_ends',               1, ... 
+                            'max_mqp',                      200 ...% t-test whether qual diff between two alleles
                         );
 
 % ___ create parameters log ___ %
 
 % add promoter size, qual_0 to log
 
-log_parameters = strict_parameters; 
+log_parameters = STRICT_PARAMETERS; 
 log_parameters.('promotersize') = promotersize; 
 log_parameters.('qual_o') = qual_0; 
 
@@ -37,12 +38,6 @@ save_structure_parameters(logfolder, log_parameters);
 
 
 
-%% Load output from build_mutation_table_master
-
-SampleNames={SampleInfo(:).Sample}';
-load(['mutation_table_' run_postfix])
-% load(['MutGenVCF_' run_postfix])
-
 
 %% Set useful useful variables
 
@@ -56,7 +51,6 @@ else
      acceptabletypes='ATCGDI';
 end
 
-Nsample=numel(SampleNames);
 
 cwindows=[]; fwindows=[];
 if loadwindows==1
@@ -68,12 +62,17 @@ if numel(SampleNames)>10
     showlegends=0;
 end
 
-%% Fixed mutations:  Quality threshold anaysis (set value for qual_0)
 
-%Number of mutations
-[MutQual, MutQualIsolates] = ana_mutation_quality(Calls,Quals,MutQualFig) ;
-%  plot(qual_0,sum(MutQual>=qual_0),'dr', 'MarkerFaceColor', 'r', 'MarkerSize', 10)
+SampleNames=SampleNames(goodsamples);
+counts=counts(:,:,goodsamples);
+cwindows=cwindows(:,:,goodsamples);
+fwindows=fwindows(:,:,goodsamples);
+Quals=Quals(:,goodsamples);
+Calls=Calls(:,goodsamples);
+%dindel_freqs=dindel_freqs(:,goodsamples);
+%dindel_ids=dindel_ids(:,goodsamples);
+%dindel_quals=dindel_quals(:,goodsamples);
 
-%Pairwise distance between strains
-step=floor(qual_0/10);
-qual_th = sort([0:step:min([max(MutQual)-1 qual_0+20]) qual_0]) ; 
+Nsample=numel(SampleNames);
+
+

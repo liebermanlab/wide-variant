@@ -1,23 +1,32 @@
 outgroup = 1; 
-mainfolder = '/Volumes/sysbio/KISHONY LAB/illumina_pipeline';
-RefGenomeNameUnedited = 'Mtuberculosis';
+mainfolder = '../../';
+RefGenomeNameUnedited = RefGenome;
 % RefGenomeNameUnedited = 'Paeruginosa_DK2'; 
 % TreeSampleNames = SampleNames; 
 all_positions = 1:size(Calls,1); 
-quality_positions = all_positions(MutQual>qual_0);
+
+quality_positions = MutQual>qual_0 ;
 quality_positions_chromosomal = p(quality_positions); 
 %calls_for_tree = Calls(quality_positions,:); 
-calls_for_tree = NTs(maNT(quality_positions,:)); 
+%dontplotisolates=[99 100];
+toplot=ones(1,numel(names));
+%toplot(dontplotisolates)=0;
+
+%% fill in calls
+
+
+calls_for_tree = Calls;
+calls_for_tree=calls_for_tree(quality_positions,(~mixedisolates & toplot));
+
 
 if outgroup == 1
     % ADD REFERENCE AT THESE POSITIONS
     [outgroup_nts, chromosome_name] = extract_outgroup_mutation_positions(mainfolder, RefGenomeNameUnedited, quality_positions_chromosomal); 
-    
     calls_for_tree = [outgroup_nts', calls_for_tree]; 
     TreeSampleNames{1} = 'Outgroup'; 
-    TreeSampleNames(2:length(mynames)+1) = mynames; 
+    TreeSampleNames(2:sum(~mixedisolates & toplot)+1) = {SampleInfo(~mixedisolates & toplot).Sample};
 else
-    TreeSampleNames = mynames; 
+    TreeSampleNames = SampleNames(SampleNames,:); 
 end
 
 generate_parsimony_tree(calls_for_tree, TreeSampleNames); 

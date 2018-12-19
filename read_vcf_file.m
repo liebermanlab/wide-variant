@@ -12,7 +12,11 @@ while ~feof(fid)
     f = find(s==Tab,2) ;
     if length(f)>=2
         if i>0
-            lins(i) = read_vcf_line(s) ;
+            if ~exist('lins')
+                lins = read_vcf_line_light(s) ;
+            else
+                lins(i) = read_vcf_line_light(s) ;
+            end
         end
         i=i+1 ;
     end
