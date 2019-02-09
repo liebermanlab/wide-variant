@@ -29,7 +29,7 @@ fname_in='strain.pileup';
 fname_out='diversity.mat';
 
 %% Initialize
-[ChrStarts,GenomeLength,ChromosomeIndicator,ScafNames]=genomestats(['/scratch/mit_lieberman/Reference_Genomes/' refgenome]); %RUN_ON_CLUSTER
+[ChrStarts,GenomeLength,ChromosomeIndicator,ScafNames]=genomestats(['/scratch/mit_lieberman/reference_genomes/' refgenome]); %RUN_ON_CLUSTER
 data=zeros(numfields,GenomeLength,'uint16'); %[A T C G a t c g Aq ... gq Am .... gm  At .... gt Ps Pb Pm Pftd Prtd E D]
 
 fid=fopen(fname_in);

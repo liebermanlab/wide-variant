@@ -32,7 +32,7 @@ for i=1:length(SampleDirs)
         x=chrpos2index(pos.Positions,ChrStarts);
         timesvariant(x)=timesvariant(x)+1;
     end
-    delete([TEMPORARYFOLDER '/vcf_' SampleNames{i} '.mat'])
+    %delete([TEMPORARYFOLDER '/vcf_' SampleNames{i} '.mat']) % Arolyn 2019.01.23, for troubleshooting
 end
 
 p=find(timesvariant>0 & timesvariant <numel(SampleDirs));
