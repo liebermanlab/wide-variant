@@ -13,10 +13,7 @@ function mut_annotations = annotate_mutations_gb(Positions,REFGENOMEFOLDER)
 
 nts='atcg';
 rc='tagc';
-
-mut_genenum = zeros(size(Positions,1),1);
-
-[ChrStarts, ~, ~, ScafNames]= genomestats(REFGENOMEFOLDER);
+[ChrStarts, GLength, ~, ScafNames]= genomestats(REFGENOMEFOLDER);
 
 
 if ~exist([REFGENOMEFOLDER '/cds_sorted.mat'], 'file')
@@ -30,6 +27,7 @@ load([REFGENOMEFOLDER '/cds_sorted.mat'])
 %find corresponding genes by using reference created in creation of
 %cds_sorted
 p=chrpos2index(Positions,ChrStarts);
+genenum=genomic_position_all(CDS, GLength, ChrStarts);
 mut_genenum=genenum(p);
 
 
@@ -45,6 +43,7 @@ for i=1:size(Positions,1)
     
     nScf = Positions(i,1) ;
     if mut_genenum(i)==round(mut_genenum(i)) % intragenic
+      %  disp(i)
         cdf = CDS{nScf}(mut_genenum(i)) ;
         
         %if product is more than one line, reshape
@@ -139,6 +138,7 @@ for i=1:size(Positions,1)
             end
         end
         mut_annotations(i).NonSyn = nan;
+        mut_annotations(i).AA   = nan ;
     end
     
 end

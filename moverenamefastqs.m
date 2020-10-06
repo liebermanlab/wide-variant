@@ -1,5 +1,6 @@
 function cmds = moverenamefastqs(IsolateTable)
 
+
 %Modified by TDL on 10/14/2013. Now the first column in samples.csv ('Batch') must
 %contain either (1) entire path to the folder containing all fastq files or
 % (2) entire path to folder containing subfolder (1 subfolder per sample)
@@ -11,6 +12,8 @@ function cmds = moverenamefastqs(IsolateTable)
 % Modified by TDL 10/2018 to enable provder name to be the name of a folder
 % starting with 'ProviderName' but longer
 
+% Modified by TDL 5/2019 to deal with unzipped starting files
+
 cmds = {} ;
 
 k=0;
@@ -18,6 +21,9 @@ forwardcmd=[];
 reversecmd=[];
 
 for i=1:numel(IsolateTable)
+    
+    iszipped=0;
+
     
     s = IsolateTable(i) ;
     if ~exist(s.Sample,'dir')
@@ -56,9 +62,14 @@ for i=1:numel(IsolateTable)
                 forward=dir([sourcefolder '/' f.name '/*' s.ProviderName '*1*.fastq']);
                 reverse=dir([sourcefolder '/' f.name '/*' s.ProviderName '*2*.fastq']); 
                 sourcefolder=[sourcefolder '/' f.name];
-            else %otherwise look in main folder
+            elseif ~isempty(dir([sourcefolder '/' s.ProviderName '*1*.fastq'])) %otherwise look in main folder
                 forward=dir([sourcefolder '/' s.ProviderName '*1*.fastq']); 
                 reverse=dir([sourcefolder '/' s.ProviderName '*2*.fastq']); 
+            else %is it is .gz file?
+                forward=dir([sourcefolder '/' s.ProviderName '*1*.fastq.gz']); 
+                reverse=dir([sourcefolder '/' s.ProviderName '*2*.fastq.gz']);
+                iszipped=1;
+                fprintf(1,'found zipped source...')
             end
             
             
@@ -72,15 +83,26 @@ for i=1:numel(IsolateTable)
             
         end
         
-        if k==10
-            cmds{end+1}=[forwardcmd ' > ' s.Sample '/' s.Sample '_1.fastq'];
-            cmds{end+1}=[reversecmd ' > ' s.Sample '/' s.Sample '_2.fastq'];
+        if k==10 %send batches of jobs to avoid sending tiny jobs to cluster
+            if iszipped==0
+                cmds{end+1}=[forwardcmd ' > ' s.Sample '/' s.Sample '_1.fastq'];
+                cmds{end+1}=[reversecmd ' > ' s.Sample '/' s.Sample '_2.fastq'];
+            else
+                cmds{end+1}=[forwardcmd ' > ' s.Sample '/' s.Sample '_1.fastq.gz; gunzip ' s.Sample '/' s.Sample '_1.fastq.gz'];
+                cmds{end+1}=[reversecmd ' > ' s.Sample '/' s.Sample '_2.fastq.gz; gunzip ' s.Sample '/' s.Sample '_2.fastq.gz'];
+            end
             k=0;
             forwardcmd=[];
             reversecmd=[];
         else
-            forwardcmd=[forwardcmd ' > ' s.Sample '/' s.Sample '_1.fastq ; '];
-            reversecmd=[reversecmd ' > ' s.Sample '/' s.Sample '_2.fastq ; '];
+            if iszipped==0
+                forwardcmd=[forwardcmd ' > ' s.Sample '/' s.Sample '_1.fastq ; '];
+                reversecmd=[reversecmd ' > ' s.Sample '/' s.Sample '_2.fastq ; '];
+            else
+                forwardcmd=[forwardcmd ' > ' s.Sample '/' s.Sample '_1.fastq.gz ; gunzip ' s.Sample '/' s.Sample '_1.fastq.gz; '];
+                reversecmd=[reversecmd ' > ' s.Sample '/' s.Sample '_2.fastq.gz ; gunzip ' s.Sample '/' s.Sample '_2.fastq.gz; '];
+            end
+      
         end
         
     end

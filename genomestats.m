@@ -1,5 +1,6 @@
 function [CStarts, GLength, CIndicator, ScafNames, Sequences]= genomestats(REF_GENOME_DIRECTORY)
 
+% 2020.06.19, Arolyn: Removed try/catch statements because they were not implemented correctly; restored to original version.
 
 fprintf(1,REF_GENOME_DIRECTORY)
 

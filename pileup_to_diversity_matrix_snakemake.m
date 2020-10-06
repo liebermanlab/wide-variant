@@ -68,7 +68,7 @@ fname_out_cov=[pwd '/' sample_path_to_coverage ]; % Aro_Change: new; print this
 %load alignment_info % Aro_Change: old
 %refgenome=ae.Genome; % Aro_Change: old
 
-fprintf(1,['\n Reference genome: ' REF_GENOME_DIRECTORY])
+fprintf(1,['\n Reference genome: ' REF_GENOME_DIRECTORY '\n'])
 [ChrStarts,GenomeLength,ChromosomeIndicator,ScafNames] = genomestats(REF_GENOME_DIRECTORY); % Aro_Change: new
 fprintf(1,['\n' num2str(GenomeLength) '\n']) % Aro_Change: print this
 %[ChrStarts,GenomeLength,ChromosomeIndicator,ScafNames]=genomestats(['/scratch/mit_lieberman/Reference_Genomes/'
@@ -95,6 +95,8 @@ while ischar(line)
         position= sscanf(l{2},'%f', inf);
     else
         if sum(ismember(ScafNames,chr))==0
+	    ScafNames'
+	    chr
             error('Scaffold name in pileup file not found in reference')
         end
         %e.g. define position by looking at 28th character in string defining B. dolosa chrosome

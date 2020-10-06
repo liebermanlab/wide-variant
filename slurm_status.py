@@ -28,7 +28,7 @@ map_state={"PENDING":'running',
            "NODE_FAIL":'failed',
            "REVOKED":'failed',
            "SPECIAL_EXIT":'failed',
-           "":'success'}
+           "":'running'}
 
 
 print(map_state[state])
