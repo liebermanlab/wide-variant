@@ -1,3 +1,4 @@
 # Files types to ignore when adding/commiting/pushing 
 
 *.delete/*
+*.pyc
