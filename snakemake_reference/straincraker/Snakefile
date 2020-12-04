@@ -1,0 +1,161 @@
+###########################################################
+#SNAKEFILE FOR QC using Kracken2, Straincraker and Bracken#
+###########################################################
+
+#Version History:
+# Nov2020: Added straincracker
+# Jan2020: some bug fixes by fmk
+# 13Dec19: created by JSB at LL Hackathon 2019
+
+#Reminders:
+# Put your own email address in cluster.slurm.json so that you get emails about failures. No one else wants your slurm emails.
+
+''' VARIABLES '''
+#USER defined variables (in theory do not need to be touched)
+spls = "samples.csv"
+
+import sys
+SCRIPTS_DIRECTORY = "/scratch/mit_lieberman/scripts"
+sys.path.insert(0, SCRIPTS_DIRECTORY)
+
+from read_move_link_samplesCSV import *
+
+
+
+''' PRE-SNAKEMAKE '''
+# define couple of lists from samples.csv
+# Format: Path,Sample,ReferenceGenome,ProviderName,Subject
+[PATH_ls, SAMPLE_ls, REF_Genome_ls, PROVIDER_ls, CLADEID_ls] = read_samplesCSV(spls)
+# Write sample_info.csv for each sample
+split_samplesCSV(PATH_ls,SAMPLE_ls,REF_Genome_ls,PROVIDER_ls,CLADEID_ls)
+
+CLADES_ls = set(CLADEID_ls)
+
+
+# set(list_patient) provides only unique clade IDs
+
+
+''' SNAKEMAKE '''
+rule all:
+	input:
+		# # Only data links # #
+		#expand("data/{sampleID}/R1.fq.gz",sampleID=SAMPLE_ls),
+		#expand("data/{sampleID}/R2.fq.gz",sampleID=SAMPLE_ls),
+		# Through all steps# #
+		expand("3-bracken/{sampleID}.bracken",sampleID=SAMPLE_ls),
+		# Including cleanup # #
+
+
+#PART 0: prepare filtered, clean FASTQ samples
+
+rule make_data_links:
+	# NOTE: All raw data needs to be names fastq.gz. No fq! The links will be names fq though.
+	input:
+		sample_info_csv="data/{sampleID}/sample_info.csv",
+	output:
+		# Recommend using symbolic links to your likely many different input files
+		fq1="data/{sampleID}/R1.fq.gz",
+		fq2="data/{sampleID}/R2.fq.gz",
+	run:
+		# get stuff out of mini csv file
+		with open(input.sample_info_csv,'r') as f:
+			this_sample_info = f.readline() # only one line to read
+		this_sample_info = this_sample_info.strip('\n').split(',')
+		path = this_sample_info[0] # remember python indexing starts at 0
+		paths = path.split(' ')
+		sample = this_sample_info[1]
+		provider = this_sample_info[3]
+		# make links
+		if len(paths)>1:
+			cp_append_files(paths, sample, provider)
+		else:
+			makelink(path, sample, provider)
+
+rule cutadapt:
+	input:
+		# Recommend using symbolic links to your likely many different input files
+		fq1 = rules.make_data_links.output.fq1,
+		fq2 = rules.make_data_links.output.fq2,
+	output:
+		fq1o="0-tmp/{sampleID}_R1_trim.fq.gz",
+		fq2o="0-tmp/{sampleID}_R2_trim.fq.gz",
+	conda:
+		"envs/cutadapt.yaml"
+	shell:
+		"cutadapt -a CTGTCTCTTAT -o {output.fq1o} {input.fq1} ;"
+		"cutadapt -a CTGTCTCTTAT -o {output.fq2o} {input.fq2} ;"
+
+rule sickle2050:
+	input:
+		fq1o = rules.cutadapt.output.fq1o,
+		fq2o = rules.cutadapt.output.fq2o,
+	output:
+		fq1o="1-data_processed/{sampleID}/filt1.fq.gz",
+		fq2o="1-data_processed/{sampleID}/filt2.fq.gz",
+		fqSo="1-data_processed/{sampleID}/filt_sgls.fq.gz",
+	conda:
+		"envs/sickle-trim.yaml"
+	shell:
+		"sickle pe -g -f {input.fq1o} -r {input.fq2o} -t sanger -o {output.fq1o} -p {output.fq2o} -s {output.fqSo} -q 20 -l 50 -x -n"
+
+
+rule FQ2FA:
+	# Kracken only uses forward reads
+	input:
+		fq1o=rules.sickle2050.output.fq1o,
+	output:
+		fa1o="0-tmp/{sampleID}_1.fa",
+	shell:
+		# set +o pipefail; necessary to prevent pipefail (zcat runs but head is done)
+		"set +o pipefail; "
+		"gzip -cd {input.fq1o} | scripts/fq2fa_sed.sh /dev/stdin > {output.fa1o} ;"
+
+
+""" KRAKEN """
+
+rule kraken2:
+	#quality assessment based only on fwd 
+	input:
+		fa1o = rules.FQ2FA.output.fa1o,
+	output:
+		report="1-kraken2/{sampleID}_krakenRep.txt",
+		seq_results="0-tmp/{sampleID}_krakSeq.txt.gz",
+	conda:
+		"envs/kraken2_bracken.yaml",
+	shell:
+		"kraken2 --threads 20 "
+		"--db /scratch/mit_lieberman/tools/databases/kraken2 {input} "
+		"--report {output.report} |gzip > {output.seq_results} "
+
+rule straincrack:
+	#reassigns taxa
+	input:
+		seq_results = rules.kraken2.output.seq_results,
+	output:
+		cracked_results="2-cracker/{sampleID}_cracked.txt",
+	shell:
+		"python scripts/straincracker.py "
+		"--t /scratch/mit_lieberman/tools/straincracker/treematrix.npy --i {input.seq_results} "
+		"--o {output.cracked_results} --p .99 "
+		
+rule makereport:
+	#convert cracked results to kraken report
+	input:
+		cracked = rules.straincrack.output.cracked_results,
+	output:
+		report="2-cracker/{sampleID}_crackedreport.txt",
+	shell:
+		"python scripts/make_kreport.py --i {input.cracked} "
+		"--t /scratch/mit_lieberman/tools/straincracker/krakentax.txt "
+		"--o {output.report}"		
+
+
+rule bracken:
+	input:
+		report = rules.makereport.output.report,
+	output:
+		bracken_rep="3-bracken/{sampleID}.bracken",
+	conda:
+		"envs/kraken2_bracken.yaml",
+	shell:
+		"bracken -d /scratch/mit_lieberman/tools/databases/kraken2 -i {input.report} -o {output.bracken_rep} "
