@@ -7,6 +7,7 @@
 
 
 # Version History:
+# # 2020.12.14, Ashley: added qc rules for cutadapt, sickle2050, and bowtie2 and adjusted the rules to make it easier to do qc
 # # 2020.06.24, Arolyn: cleaned up json and log file naming
 # # 2020.02.20, JSB: refurb. 
 # # 2019.02.11, Arolyn: Added python function (split_samplesCSV.py; NOT a rule) so that Snakemake does not re-run ALL samples whenver samp.es.csv changes. The script to make mini csv files (breaks samples.csv line by line for each sample), and only updates them if samples.csv changed or if the sample didn't previously exist. 
@@ -19,6 +20,7 @@
 ''' PRE-SNAKEMAKE '''
 
 import sys
+import os
 SCRIPTS_DIRECTORY = "/scratch/mit_lieberman/scripts"
 sys.path.insert(0, SCRIPTS_DIRECTORY)
 
@@ -34,6 +36,8 @@ spls = "samples.csv"
 split_samplesCSV(PATH_ls,SAMPLE_ls,REF_Genome_ls,PROVIDER_ls,CLADEID_ls)
 CLADES_ls = set(CLADEID_ls)
 
+# grab current working directory for qc rules to use
+current_directory = os.getcwd()
 
 ''' SNAKEMAKE '''
 rule all:
@@ -45,6 +49,9 @@ rule all:
 		expand("/scratch/mit_lieberman/reference_genomes/{reference}/genome_bowtie2.1.bt2",reference=set(REF_Genome_ls)),
 		expand("5-quals/{sampleID}_ref_{reference}_aligned.sorted.strain.variant.quals.mat", zip, sampleID=SAMPLE_ls, reference=REF_Genome_ls),
 		expand("6-diversity/{sampleID}_ref_{reference}_aligned.sorted.strain.variant.diversity.mat", zip, sampleID=SAMPLE_ls, reference=REF_Genome_ls),
+		# # With QC # #
+		"1-data_processed/alignment_stats.csv",
+		"3-bowtie2/alignment_stats.csv",
 		# # Including cleanup # #
 		"logs/cleanUp_done.txt",
 
@@ -80,11 +87,13 @@ rule cutadapt:
 	output:
 		fq1o="0-tmp/{sampleID}_R1_trim.fq.gz",
 		fq2o="0-tmp/{sampleID}_R2_trim.fq.gz",
+	log:
+		log="logs/cutadapt_{sampleID}.txt",
 	conda:
 		"envs/cutadapt.yaml"
 	shell:
-		"cutadapt -a CTGTCTCTTAT -o {output.fq1o} {input.fq1} ;"
-		"cutadapt -a CTGTCTCTTAT -o {output.fq2o} {input.fq2} ;"
+		"cutadapt -a CTGTCTCTTAT -o {output.fq1o} {input.fq1} 1> {log};"
+		"cutadapt -a CTGTCTCTTAT -o {output.fq2o} {input.fq2} 1>> {log};"
 
 rule sickle2050:
 	input:
@@ -94,10 +103,25 @@ rule sickle2050:
 		fq1o="1-data_processed/{sampleID}/filt1.fq.gz",
 		fq2o="1-data_processed/{sampleID}/filt2.fq.gz",
 		fqSo="1-data_processed/{sampleID}/filt_sgls.fq.gz",
+	log:
+		log="logs/sickle2050_{sampleID}.txt",
 	conda:
 		"envs/sickle-trim.yaml"
 	shell:
-		"sickle pe -g -f {input.fq1o} -r {input.fq2o} -t sanger -o {output.fq1o} -p {output.fq2o} -s {output.fqSo} -q 20 -l 50 -x -n"
+		"sickle pe -g -f {input.fq1o} -r {input.fq2o} -t sanger -o {output.fq1o} -p {output.fq2o} -s {output.fqSo} -q 20 -l 50 -x -n 1> {log}"
+
+rule read_filtering_qc:
+	input:
+		cutadapt_logs = expand("logs/cutadapt_{sampleID}.txt", sampleID=SAMPLE_ls),
+		sickle_logs = expand("logs/sickle2050_{sampleID}.txt", sampleID=SAMPLE_ls)
+	output:
+		alignment_stats = "1-data_processed/alignment_stats.csv",
+	conda:
+		"envs/bowtie2qc.yaml"
+	shell:
+		"""
+		python3 {SCRIPTS_DIRECTORY}/read_filtering_qc.py -s {spls} -d{current_directory}
+		"""
 
 rule refGenome_index: 
 	input:
@@ -121,11 +145,25 @@ rule bowtie2:
 		fqU="3-bowtie2/{sampleID}_ref_{reference}_unaligned.fastq", # just a prefix. 
 	output:
 		samA="3-bowtie2/{sampleID}_ref_{reference}_aligned.sam",
+	log:
+		log="logs/bowtie2_{sampleID}_ref_{reference}.txt",
 	conda:
 		"envs/bowtie2.yaml"
 	shell:
 		# 8 threads coded into json
-		"bowtie2 --threads 8 -X 2000 --no-mixed --dovetail --un-conc {params.fqU} -x {params.refGenome} -1 {input.fq1} -2 {input.fq2} -S {output.samA} "
+		"bowtie2 --threads 8 -X 2000 --no-mixed --dovetail --un-conc {params.fqU} -x {params.refGenome} -1 {input.fq1} -2 {input.fq2} -S {output.samA} 2> {log} "
+
+rule bowtie2qc:
+	input:
+		bowtie2_logs = expand("logs/bowtie2_{sampleID}_ref_{reference}.txt", sampleID=SAMPLE_ls, reference=set(REF_Genome_ls)),
+	output:
+		alignment_stats = "3-bowtie2/alignment_stats.csv",
+	conda:
+		"envs/bowtie2qc.yaml",
+	shell:
+		"""
+		python3 {SCRIPTS_DIRECTORY}/bowtie2qc.py -s {spls} -d {current_directory}
+		"""
 
 rule sam2bam:
 	input:
